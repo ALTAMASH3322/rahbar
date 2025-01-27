@@ -1,44 +1,287 @@
-{% extends "coordinator/dashboard.html" %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Generate Reports | Rahbar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      content="Generate Reports for Rahbar Application"
+      name="description"
+    />
+    <meta content="Coderthemes" name="author" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
-{% block content %}
-<div class="container-fluid">
-    <!-- Page Title -->
-    <div class="row">
-        <div class="col-12">
-            <div class="page-title-box">
-                <h4 class="page-title">Generate Reports</h4>
+    <!-- App favicon -->
+    <link
+      rel="shortcut icon"
+      href="{{ url_for('static', filename='images/favicon.ico') }}"
+    />
+
+    <!-- App css -->
+    <link
+      href="{{ url_for('static', filename='css/bootstrap.min.css') }}"
+      rel="stylesheet"
+      type="text/css"
+      id="bootstrap-stylesheet"
+    />
+    <link
+      href="{{ url_for('static', filename='css/icons.min.css') }}"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="{{ url_for('static', filename='css/app.min.css') }}"
+      rel="stylesheet"
+      type="text/css"
+      id="app-stylesheet"
+    />
+  </head>
+
+  <body>
+    <!-- Begin page -->
+    <div id="wrapper">
+      <!-- Topbar Start -->
+      <div class="navbar-custom">
+        <ul class="list-unstyled topnav-menu float-right mb-0">
+          <!-- User Dropdown -->
+          <li class="dropdown notification-list">
+            <a
+              class="nav-link dropdown-toggle nav-user mr-0 waves-effect"
+              data-toggle="dropdown"
+              href="#"
+              role="button"
+              aria-haspopup="false"
+              aria-expanded="false"
+            >
+              <img
+                src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}"
+                alt="user-image"
+                class="rounded-circle"
+              />
+              <span class="d-none d-sm-inline-block ml-1"
+                >{{ current_user.name }}</span
+              >
+            </a>
+            <div class="dropdown-menu dropdown-menu-right profile-dropdown">
+              <!-- User menu items here -->
+              <a
+                href="{{ url_for('auth.logout') }}"
+                class="dropdown-item notify-item"
+              >
+                <i class="mdi mdi-logout-variant"></i>
+                <span>Logout</span>
+              </a>
             </div>
-        </div>
-    </div>
+          </li>
+        </ul>
 
-    <!-- Reports Section -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <h4 class="header-title">Generate Reports</h4>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="report_type">Select Report Type</label>
-                                <select class="form-control" id="report_type">
-                                    <option value="applications">Applications Report</option>
-                                    <option value="payments">Payments Report</option>
-                                    <option value="sponsors">Sponsors Report</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="date_range">Select Date Range</label>
-                                <input type="text" class="form-control" id="date_range" placeholder="Select Date Range">
-                            </div>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Generate Report</button>
+        <!-- LOGO -->
+        <a href="{{ url_for('main.homepage') }}" class="text-success">
+          <span
+            style="
+              display: inline-block;
+              background-color: grey;
+              color: white;
+              font-weight: bold;
+              padding: 10px;
+              border-radius: 4px;
+            "
+          >
+            RAHBAR
+          </span>
+        </a>
+      </div>
+      <!-- end Topbar -->
+
+      <!-- ========== Left Sidebar Start ========== -->
+      <div class="left-side-menu">
+        <div class="slimscroll-menu">
+          <!--- Sidemenu -->
+          <div id="sidebar-menu">
+            <ul class="metismenu" id="side-menu">
+              <li class="menu-title">Navigation</li>
+              <!-- Dashboard -->
+              <li>
+                <a
+                  href="{{ url_for('coordinator.coordinator_dashboard') }}"
+                  class="waves-effect waves-light"
+                >
+                  <i class="mdi mdi-view-dashboard"></i>
+                  <span>Dashboard</span>
+                </a>
+              </li>
+              <!-- Applications -->
+              <li>
+                <a
+                  href="{{ url_for('coordinator.co_view_applications') }}"
+                  class="waves-effect waves-light"
+                >
+                  <i class="mdi mdi-file-document"></i>
+                  <span>View Applications</span>
+                </a>
+              </li>
+              <!-- Sponsors -->
+              <li>
+                <a
+                  href="{{ url_for('coordinator.co_manage_sponsors') }}"
+                  class="waves-effect waves-light"
+                >
+                  <i class="mdi mdi-account-multiple"></i>
+                  <span>Manage Sponsors</span>
+                </a>
+              </li>
+              <!-- Monitor Payments -->
+              <li>
+                <a
+                  href="{{ url_for('coordinator.monitor_payments') }}"
+                  class="waves-effect waves-light"
+                >
+                  <i class="mdi mdi-cash-multiple"></i>
+                  <span>Monitor Payments</span>
+                </a>
+              </li>
+              <!-- Generate Reports -->
+              <li>
+                <a
+                  href="{{ url_for('coordinator.generate_reports') }}"
+                  class="waves-effect waves-light"
+                >
+                  <i class="mdi mdi-chart-bar"></i>
+                  <span>Generate Reports</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+          <!-- End Sidebar -->
+        </div>
+      </div>
+      <!-- Left Sidebar End -->
+
+      <!-- ============================================================== -->
+      <!-- Start Page Content here -->
+      <!-- ============================================================== -->
+
+      <div class="content-page">
+        <div class="content">
+          <!-- Start Content-->
+          <div class="container-fluid">
+            <!-- start page title -->
+            <div class="row">
+              <div class="col-12">
+                <div class="page-title-box">
+                  <h4 class="page-title">Generate Reports</h4>
                 </div>
+              </div>
             </div>
+            <!-- end page title -->
+
+            <!-- Report Generation Section -->
+            <div class="row">
+              <div class="col-md-12">
+                <div class="card">
+                  <div class="card-body">
+                    <h4 class="header-title">Select Report Type</h4>
+                    <form
+                      action="{{ url_for('coordinator.generate_reports') }}"
+                      method="POST"
+                    >
+                      <div class="form-group">
+                        <label for="reportType">Report Type</label>
+                        <select
+                          class="form-control"
+                          id="reportType"
+                          name="reportType"
+                          required
+                        >
+                          <option value="applications">
+                            Applications Report
+                          </option>
+                          <option value="payments">Payments Report</option>
+                          <option value="sponsors_convenors">
+                            Sponsors & Convenors Report
+                          </option>
+                          <option value="grantees">Grantees Report</option>
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label for="format">Download Format</label>
+                        <select
+                          class="form-control"
+                          id="format"
+                          name="format"
+                          required
+                        >
+                          <option value="csv">CSV</option>
+                          <option value="excel">Excel</option>
+                          <option value="pdf">PDF</option>
+                        </select>
+                      </div>
+                      <button type="submit" class="btn btn-primary">
+                        Generate Report
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- End Report Generation Section -->
+
+            <!-- Report Preview Section -->
+            <div class="row mt-4">
+              <div class="col-md-12">
+                <div class="card">
+                  <div class="card-body">
+                    <h4 class="header-title">Applications Report Preview</h4>
+                    <div class="table-responsive">
+                      <table class="table table-bordered">
+                        <thead>
+                          <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for application in applications %}
+                          <tr>
+                            <td>{{ application.id }}</td>
+                            <td>{{ application.name }}</td>
+                            <td>{{ application.email }}</td>
+                            <td>{{ application.status }}</td>
+                          </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- End Report Preview Section -->
+          </div>
+          <!-- end container-fluid -->
         </div>
+        <!-- end content -->
+
+        <!-- Footer Start -->
+        <footer class="footer">
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col-md-12">2024 &copy; Rahbar</div>
+            </div>
+          </div>
+        </footer>
+        <!-- end Footer -->
+      </div>
+      <!-- End Page content -->
     </div>
-</div>
-{% endblock %}
+    <!-- END wrapper -->
+
+    <!-- Vendor js -->
+    <script src="{{ url_for('static', filename='js/vendor.min.js') }}"></script>
+
+    <!-- App js -->
+    <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
+  </body>
+</html>

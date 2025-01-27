@@ -1,57 +1,372 @@
-{% extends "coordinator/dashboard.html" %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Monitor Payments | Rahbar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      content="Monitor Payments for Rahbar Application"
+      name="description"
+    />
+    <meta content="Coderthemes" name="author" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
-{% block content %}
-<div class="container-fluid">
-    <!-- Page Title -->
-    <div class="row">
-        <div class="col-12">
-            <div class="page-title-box">
-                <h4 class="page-title">Monitor Payments</h4>
+    <!-- App favicon -->
+    <link
+      rel="shortcut icon"
+      href="{{ url_for('static', filename='images/favicon.ico') }}"
+    />
+
+    <!-- App css -->
+    <link
+      href="{{ url_for('static', filename='css/bootstrap.min.css') }}"
+      rel="stylesheet"
+      type="text/css"
+      id="bootstrap-stylesheet"
+    />
+    <link
+      href="{{ url_for('static', filename='css/icons.min.css') }}"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="{{ url_for('static', filename='css/app.min.css') }}"
+      rel="stylesheet"
+      type="text/css"
+      id="app-stylesheet"
+    />
+
+    <!-- DataTables CSS -->
+    <link
+      href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.bootstrap4.min.css"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body>
+    <!-- Begin page -->
+    <div id="wrapper">
+      <!-- Topbar and Sidebar code remains the same as before -->
+      <!-- Topbar Start -->
+      <div class="navbar-custom">
+        <ul class="list-unstyled topnav-menu float-right mb-0">
+          <!-- User Dropdown -->
+          <li class="dropdown notification-list">
+            <a
+              class="nav-link dropdown-toggle nav-user mr-0 waves-effect"
+              data-toggle="dropdown"
+              href="#"
+              role="button"
+              aria-haspopup="false"
+              aria-expanded="false"
+            >
+              <img
+                src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}"
+                alt="user-image"
+                class="rounded-circle"
+              />
+              <span class="d-none d-sm-inline-block ml-1"
+                >{{ current_user.name }}</span
+              >
+            </a>
+            <div class="dropdown-menu dropdown-menu-right profile-dropdown">
+              <!-- User menu items here -->
+              <a
+                href="{{ url_for('auth.logout') }}"
+                class="dropdown-item notify-item"
+              >
+                <i class="mdi mdi-logout-variant"></i>
+                <span>Logout</span>
+              </a>
             </div>
-        </div>
-    </div>
+          </li>
+        </ul>
 
-    <!-- Payments Table -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <h4 class="header-title">Payments List</h4>
-                    <div class="table-responsive">
-                        <table class="table table-centered mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Payment ID</th>
-                                    <th>Grantee Name</th>
-                                    <th>Sponsor Name</th>
-                                    <th>Amount</th>
-                                    <th>Status</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for payment in payments %}
-                                <tr>
-                                    <td>{{ payment.payment_id }}</td>
-                                    <td>{{ payment.grantee_name }}</td>
-                                    <td>{{ payment.grantor_name }}</td>
-                                    <td>{{ payment.amount }}</td>
-                                    <td>
-                                        <span class="badge badge-{{ 'success' if payment.status == 'Paid' else 'warning' if payment.status == 'Pending' else 'danger' }}">
-                                            {{ payment.status }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <a href="#" class="btn btn-sm btn-primary">View Details</a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+        <!-- LOGO -->
+        <a href="{{ url_for('main.homepage') }}" class="text-success">
+          <span
+            style="
+              display: inline-block;
+              background-color: grey;
+              color: white;
+              font-weight: bold;
+              padding: 10px;
+              border-radius: 4px;
+            "
+          >
+            RAHBAR
+          </span>
+        </a>
+      </div>
+      <!-- end Topbar -->
+      <!-- ========== Left Sidebar Start ========== -->
+      <div class="left-side-menu">
+        <div class="slimscroll-menu">
+          <!--- Sidemenu -->
+          <div id="sidebar-menu">
+            <ul class="metismenu" id="side-menu">
+              <li class="menu-title">Navigation</li>
+              <!-- Dashboard -->
+              <li>
+                <a
+                  href="{{ url_for('coordinator.coordinator_dashboard') }}"
+                  class="waves-effect waves-light"
+                >
+                  <i class="mdi mdi-view-dashboard"></i>
+                  <span>Dashboard</span>
+                </a>
+              </li>
+              <!-- Applications -->
+              <li>
+                <a
+                  href="{{ url_for('coordinator.co_view_applications') }}"
+                  class="waves-effect waves-light"
+                >
+                  <i class="mdi mdi-file-document"></i>
+                  <span>View Applications</span>
+                </a>
+              </li>
+              <!-- Sponsors -->
+              <li>
+                <a
+                  href="{{ url_for('coordinator.co_manage_sponsors') }}"
+                  class="waves-effect waves-light"
+                >
+                  <i class="mdi mdi-account-multiple"></i>
+                  <span>Manage Sponsors</span>
+                </a>
+              </li>
+              <!-- Assign Students -->
+              <!-- <li>
+                            <a href="{{ url_for('coordinator.assign_students_to_sponsors') }}" class="waves-effect waves-light">
+                                <i class="mdi mdi-account-multiple-plus"></i>
+                                <span>Assign Students</span>
+                            </a>
+                        </li> -->
+              <!-- Monitor Payments -->
+              <li>
+                <a
+                  href="{{ url_for('coordinator.monitor_payments') }}"
+                  class="waves-effect waves-light"
+                >
+                  <i class="mdi mdi-cash-multiple"></i>
+                  <span>Monitor Payments</span>
+                </a>
+              </li>
+              <!-- Generate Reports -->
+              <li>
+                <a
+                  href="{{ url_for('coordinator.generate_reports') }}"
+                  class="waves-effect waves-light"
+                >
+                  <i class="mdi mdi-chart-bar"></i>
+                  <span>Generate Reports</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+          <!-- End Sidebar -->
+        </div>
+      </div>
+      <!-- Left Sidebar End -->
+
+      <!-- ============================================================== -->
+      <!-- Start Page Content here -->
+      <!-- ============================================================== -->
+
+      <div class="content-page">
+        <div class="content">
+          <!-- Start Content-->
+          <div class="container-fluid">
+            <!-- start page title -->
+            <div class="row">
+              <div class="col-12">
+                <div class="page-title-box">
+                  <h4 class="page-title">Monitor Payments</h4>
                 </div>
+              </div>
             </div>
+            <!-- end page title -->
+
+            <!-- Payments List -->
+            <div class="row">
+              <div class="col-12">
+                <div class="card">
+                  <div class="card-body">
+                    <h4 class="header-title">Payment Details</h4>
+                    <div class="mt-3">
+                      <!-- Filter Dropdown for Status -->
+                      <div class="row mb-3">
+                        <div class="col-md-3">
+                          <label for="statusFilter">Filter by Status:</label>
+                          <select id="statusFilter" class="form-control">
+                            <option value="">All</option>
+                            <option value="Paid">Paid</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Approved">Approved</option>
+                            <option value="Rejected">Rejected</option>
+                          </select>
+                        </div>
+                        <div class="col-md-3">
+                          <button
+                            id="clearFilter"
+                            class="btn btn-secondary mt-4"
+                          >
+                            Clear Filter
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- Payments Table -->
+                      <table id="paymentsTable" class="table table-striped">
+                        <thead>
+                          <tr>
+                            <th>Payment ID</th>
+                            <th>Grantee</th>
+                            <th>Grantor</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Receipt</th>
+                            <th>Comments</th>
+                            <th>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <!-- Data will be populated by DataTables -->
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- End Payments List -->
+          </div>
+          <!-- end container-fluid -->
         </div>
+        <!-- end content -->
+
+        <!-- Footer Start -->
+        <footer class="footer">
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col-md-12">2024 &copy; Rahbar</div>
+            </div>
+          </div>
+        </footer>
+        <!-- end Footer -->
+      </div>
+      <!-- End Page content -->
     </div>
-</div>
-{% endblock %}
+    <!-- END wrapper -->
+
+    <!-- Vendor js -->
+    <script src="{{ url_for('static', filename='js/vendor.min.js') }}"></script>
+
+    <!-- App js -->
+    <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
+
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.bootstrap4.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.print.min.js"></script>
+
+    <!-- Custom Script for DataTables -->
+    <script>
+      $(document).ready(function () {
+        var table = $("#paymentsTable").DataTable({
+          processing: true,
+          serverSide: true,
+          ajax: {
+            url: "{{ url_for('coordinator.monitor_payments_data') }}",
+            type: "GET",
+          },
+          dom: "Bfrtip",
+          buttons: ["copy", "csv", "excel", "pdf", "print"],
+          columns: [
+            { data: "payment_id" },
+            { data: "grantee_name" },
+            { data: "grantor_name" },
+            { data: "amount" },
+            {
+              data: "status",
+              render: function (data) {
+                if (data === "Paid")
+                  return '<span class="badge badge-success">Paid</span>';
+                if (data === "Pending")
+                  return '<span class="badge badge-warning">Pending</span>';
+                if (data === "Approved")
+                  return '<span class="badge badge-primary">Approved</span>';
+                if (data === "Rejected")
+                  return '<span class="badge badge-danger">Rejected</span>';
+                return data;
+              },
+            },
+            {
+              data: "receipt_url",
+              render: function (data) {
+                return data
+                  ? `<a href="${data}" target="_blank" class="btn btn-sm btn-info">View Receipt</a>`
+                  : "No Receipt";
+              },
+            },
+            { data: "comments" },
+            {
+              data: null,
+              render: function (data) {
+                return `
+                <form method="POST" action="{{ url_for('coordinator.monitor_payments_data') }}">
+                  <input type="hidden" name="payment_id" value="${
+                    data.payment_id
+                  }" />
+                  <select name="status" class="form-control form-control-sm">
+                    <option value="Paid" ${
+                      data.status === "Paid" ? "selected" : ""
+                    }>Paid</option>
+                    <option value="Pending" ${
+                      data.status === "Pending" ? "selected" : ""
+                    }>Pending</option>
+                    <option value="Approved" ${
+                      data.status === "Approved" ? "selected" : ""
+                    }>Approved</option>
+                    <option value="Rejected" ${
+                      data.status === "Rejected" ? "selected" : ""
+                    }>Rejected</option>
+                  </select>
+                  <textarea name="comments" class="form-control form-control-sm mt-2" placeholder="Add comments">${
+                    data.comments || ""
+                  }</textarea>
+                  <button type="submit" class="btn btn-sm btn-primary mt-2">Update</button>
+                </form>
+              `;
+              },
+            },
+          ],
+          responsive: true,
+          language: {
+            processing:
+              '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i> Loading...',
+          },
+        });
+
+        // Filter by Status
+        $("#statusFilter").on("change", function () {
+          table.column(4).search(this.value).draw(); // Column 4 = Status
+        });
+
+        // Clear Filter
+        $("#clearFilter").on("click", function () {
+          $("#statusFilter").val(""); // Clear the dropdown
+          table.column(4).search("").draw(); // Clear the filter
+        });
+      });
+    </script>
+  </body>
+</html>

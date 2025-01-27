@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Progress | Rahbar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="Progress for Rahbar Application" name="description" />
+    <meta content="Coderthemes" name="author" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- App favicon -->
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+
+    <!-- App css -->
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" id="bootstrap-stylesheet" />
+    <link href="{{ url_for('static', filename='css/icons.min.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ url_for('static', filename='css/app.min.css') }}" rel="stylesheet" type="text/css" id="app-stylesheet" />
+</head>
+
+<body>
+    <!-- Begin page -->
+    <div id="wrapper">
+
+        <!-- Topbar Start -->
+        <div class="navbar-custom">
+            <ul class="list-unstyled topnav-menu float-right mb-0">
+                <!-- User Dropdown -->
+                <li class="dropdown notification-list">
+                    <a class="nav-link dropdown-toggle nav-user mr-0 waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
+                        <img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" alt="user-image" class="rounded-circle">
+                        <span class="d-none d-sm-inline-block ml-1">{{ current_user.name }}</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right profile-dropdown">
+                        <!-- User menu items here -->
+                        <a href="{{ url_for('auth.logout') }}" class="dropdown-item notify-item">
+                            <i class="mdi mdi-logout-variant"></i>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </li>
+            </ul>
+
+            <!-- LOGO -->
+            <div class="logo-box">
+                <a href="{{ url_for('main.homepage') }}" class="text-success">
+                    <span style="display: inline-block; background-color: grey; color: white; font-weight: bold; padding: 10px; border-radius: 4px;">
+                        RAHBAR
+                    </span>
+                </a>
+            </div>
+        </div>
+        <!-- end Topbar -->
+
+        <!-- ========== Left Sidebar Start ========== -->
+        <div class="left-side-menu">
+            <div class="slimscroll-menu">
+                <!--- Sidemenu -->
+                <div id="sidebar-menu">
+                    <ul class="metismenu" id="side-menu">
+                        <li class="menu-title">Navigation</li>
+                        <!-- Dashboard -->
+                        <li>
+                            <a href="{{ url_for('student.student_dashboard') }}" class="waves-effect waves-light">
+                                <i class="mdi mdi-view-dashboard"></i>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <!-- Payments -->
+                        <li>
+                            <a href="{{ url_for('student.student_payments') }}" class="waves-effect waves-light">
+                                <i class="mdi mdi-cash-multiple"></i>
+                                <span>Payments</span>
+                            </a>
+                        </li>
+                        <!-- Progress -->
+                        <li>
+                            <a href="{{ url_for('student.student_progress') }}" class="waves-effect waves-light">
+                                <i class="mdi mdi-chart-line"></i>
+                                <span>Progress</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <!-- End Sidebar -->
+            </div>
+        </div>
+        <!-- Left Sidebar End -->
+
+        <!-- ============================================================== -->
+        <!-- Start Page Content here -->
+        <!-- ============================================================== -->
+
+        <div class="content-page">
+            <div class="content">
+                <!-- Start Content-->
+                <div class="container-fluid">
+                    <!-- start page title -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="page-title-box">
+                                <h4 class="page-title">Progress</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- end page title -->
+
+                    <!-- Main Content -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h4 class="header-title">Your Progress</h4>
+                                    <p class="text-muted">Here you can view and submit your progress.</p>
+
+                                    <!-- Progress Form -->
+                                    <form method="POST" enctype="multipart/form-data">
+                                        <div class="form-group">
+                                            <label for="marks">Marks</label>
+                                            <input type="number" class="form-control" id="marks" name="marks" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="file">Upload File</label>
+                                            <input type="file" class="form-control-file" id="file" name="file" required>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Submit</button>
+                                    </form>
+
+                                    <!-- Progress Table -->
+                                    <div class="table-responsive mt-4">
+                                        <table class="table table-centered mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Progress ID</th>
+                                                    <th>Marks</th>
+                                                    <th>File</th>
+                                                    <th>Date</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for progress in progress_data %}
+                                                <tr>
+                                                    <td>{{ progress.progress_id }}</td>
+                                                    <td>{{ progress.marks }}</td>
+                                                    <td>
+                                                        <a href="{{ url_for('student.uploaded_file', filename=progress.file_path.split('/')[-1]) }}" target="_blank">View File</a>
+                                                    </td>
+                                                    <td>{{ progress.created_at }}</td>
+                                                </tr>
+                                                {% else %}
+                                                <tr>
+                                                    <td colspan="4" class="text-center">No progress data found.</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End Main Content -->
+                </div>
+                <!-- end container-fluid -->
+            </div>
+            <!-- end content -->
+
+            <!-- Footer Start -->
+            <footer class="footer">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-12">
+                            2024 &copy; Rahbar
+                        </div>
+                    </div>
+                </div>
+            </footer>
+            <!-- end Footer -->
+        </div>
+        <!-- End Page content -->
+    </div>
+    <!-- END wrapper -->
+
+    <!-- Vendor js -->
+    <script src="{{ url_for('static', filename='js/vendor.min.js') }}"></script>
+
+    <!-- App js -->
+    <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
+</body>
+</html>

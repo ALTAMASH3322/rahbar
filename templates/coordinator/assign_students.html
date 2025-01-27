@@ -1,0 +1,44 @@
+{% extends "coordinator/dashboard.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Title -->
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <h4 class="page-title">Assign Students to Sponsors</h4>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assign Students Form -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="header-title">Assign Students</h4>
+                    <form method="POST" action="{{ url_for('coordinator.assign_students_to_sponsors') }}">
+                        <div class="form-group">
+                            <label for="sponsor_id">Select Sponsor</label>
+                            <select class="form-control" id="sponsor_id" name="sponsor_id" required>
+                                {% for sponsor in sponsors_convenors %}
+                                <option value="{{ sponsor.user_id }}">{{ sponsor.name }} ({{ sponsor.region }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="student_ids">Select Students</label>
+                            <select multiple class="form-control" id="student_ids" name="student_ids" required>
+                                {% for grantee in grantees %}
+                                <option value="{{ grantee.user_id }}">{{ grantee.name }} ({{ grantee.email }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Assign Students</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Sponsor Dashboard | Rahbar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="Sponsor Dashboard for Rahbar Application" name="description" />
+    <meta content="Coderthemes" name="author" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- App favicon -->
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+
+    <!-- App css -->
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" id="bootstrap-stylesheet" />
+    <link href="{{ url_for('static', filename='css/icons.min.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ url_for('static', filename='css/app.min.css') }}" rel="stylesheet" type="text/css" id="app-stylesheet" />
+    <link href="{{ url_for('static', filename='libs/bootstrap-daterangepicker/daterangepicker.css') }}" rel="stylesheet" />
+</head>
+
+<body>
+    <!-- Begin page -->
+    <div id="wrapper">
+
+        <!-- Topbar Start -->
+        <div class="navbar-custom">
+            <ul class="list-unstyled topnav-menu float-right mb-0">
+                <!-- User Dropdown -->
+                <li class="dropdown notification-list">
+                    <a class="nav-link dropdown-toggle nav-user mr-0 waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
+                        <img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" alt="user-image" class="rounded-circle">
+                        <span class="d-none d-sm-inline-block ml-1">{{ current_user.name }}</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right profile-dropdown">
+                        <!-- User menu items here -->
+                        <a href="{{ url_for('auth.logout') }}" class="dropdown-item notify-item">
+                            <i class="mdi mdi-logout-variant"></i>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </li>
+            </ul>
+
+            <!-- LOGO -->
+            <a href="{{ url_for('main.homepage') }}" class="text-success">
+                <span style="display: inline-block; background-color: grey; color: white; font-weight: bold; padding: 10px; border-radius: 4px;">
+                    RAHBAR
+                </span>
+            </a>
+        </div>
+        <!-- end Topbar -->
+
+        <!-- ========== Left Sidebar Start ========== -->
+        <div class="left-side-menu">
+            <div class="slimscroll-menu">
+                <!--- Sidemenu -->
+                <div id="sidebar-menu">
+                    <ul class="metismenu" id="side-menu">
+                        <li class="menu-title">Navigation</li>
+                        <!-- Dashboard -->
+                        <li>
+                            <a href="{{ url_for('sponsor.sponsor_dashboard') }}" class="waves-effect waves-light">
+                                <i class="mdi mdi-view-dashboard"></i>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <!-- Payments -->
+                        <li>
+                            <a href="{{ url_for('sponsor.sponsor_payments') }}" class="waves-effect waves-light">
+                                <i class="mdi mdi-cash-multiple"></i>
+                                <span>Payments</span>
+                            </a>
+                        </li>
+                        <!-- Progress -->
+                        <li>
+                            <a href="{{ url_for('sponsor.sponsor_student_progress') }}" class="waves-effect waves-light">
+                                <i class="mdi mdi-chart-line"></i>
+                                <span>Student Progress</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <!-- End Sidebar -->
+            </div>
+        </div>
+        <!-- Left Sidebar End -->
+
+        <!-- ============================================================== -->
+        <!-- Start Page Content here -->
+        <!-- ============================================================== -->
+
+        <div class="content-page">
+            <div class="content">
+                <!-- Start Content-->
+                <div class="container-fluid">
+                    <!-- start page title -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="page-title-box">
+                                <h4 class="page-title">Sponsor Dashboard</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- end page title -->
+
+                    <!-- Sponsor Details -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h4 class="header-title">Sponsor Details</h4>
+                                    <div class="mt-3">
+                                        <p><strong>Name:</strong> {{ sponsor.name }}</p>
+                                        <p><strong>Email:</strong> {{ sponsor.email }}</p>
+                                        <p><strong>Phone:</strong> {{ sponsor.phone }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Grantees List -->
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h4 class="header-title">Assigned Grantees</h4>
+                                    <div class="mt-3">
+                                        <ul class="list-group">
+                                            {% for grantee in grantees %}
+                                                <li class="list-group-item">
+                                                    <strong>{{ grantee.name }}</strong> - {{ grantee.email }}
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End Sponsor Details -->
+
+                    <!-- Charts Section -->
+                    <div class="row">
+                        <!-- Total Revenue Chart -->
+                        <div class="col-xl-6">
+                            <div class="card-box">
+                                <h4 class="header-title mb-4">Marks comparison between grantors</h4>
+                                <div id="website-stats" style="height: 320px;" class="flot-chart"></div>
+                            </div>
+                        </div>
+
+                        <!-- Sales Analytics Chart -->
+                        <div class="col-xl-6">
+                            <div class="card-box">
+                                <h4 class="header-title mb-4">Marks Distribution</h4>
+                                <div class="float-right">
+                                    <div id="reportrange" class="form-control form-control-sm">
+                                        <i class="far fa-calendar-alt mr-1"></i>
+                                        <span></span>
+                                    </div>
+                                </div>
+                                <div class="clearfix"></div>
+                                <div id="donut-chart">
+                                    <div id="donut-chart-container" class="flot-chart" style="height: 246px;"></div>
+                                </div>
+                                <p class="text-muted mb-0 mt-3 text-truncate">Pie chart showing marks distribution on various exam type</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End Charts Section -->
+                </div>
+                <!-- end container-fluid -->
+            </div>
+            <!-- end content -->
+
+            <!-- Footer Start -->
+            <footer class="footer">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-12">
+                            2024 &copy; Rahbar
+                        </div>
+                    </div>
+                </div>
+            </footer>
+            <!-- end Footer -->
+        </div>
+        <!-- End Page content -->
+    </div>
+    <!-- END wrapper -->
+
+    <!-- Vendor js -->
+    <script src="{{ url_for('static', filename='js/vendor.min.js') }}"></script>
+
+    <!-- Add these lines for chart functionality -->
+    <script src="{{ url_for('static', filename='libs/flot-charts/jquery.flot.js') }}"></script>
+    <script src="{{ url_for('static', filename='libs/flot-charts/jquery.flot.time.js') }}"></script>
+    <script src="{{ url_for('static', filename='libs/flot-charts/jquery.flot.tooltip.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='libs/flot-charts/jquery.flot.resize.js') }}"></script>
+    <script src="{{ url_for('static', filename='libs/flot-charts/jquery.flot.pie.js') }}"></script>
+    <script src="{{ url_for('static', filename='libs/flot-charts/jquery.flot.crosshair.js') }}"></script>
+    <script src="{{ url_for('static', filename='libs/flot-charts/jquery.flot.selection.js') }}"></script>
+    <script src="{{ url_for('static', filename='libs/moment/moment.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='libs/bootstrap-daterangepicker/daterangepicker.js') }}"></script>
+
+    <!-- App js -->
+    <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
+
+    <!-- Initialize the charts -->
+    <script>
+        $(document).ready(function() {
+            // Example data for the charts
+            var data1 = [
+                [0, 10],
+                [1, 20],
+                [2, 30],
+                [3, 40],
+                [4, 50]
+            ];
+
+            var data2 = [
+                { label: "Internal", data: 30 },
+                { label: "External", data: 20 },
+                { label: "viva", data: 50 }
+            ];
+
+            // Total Revenue Chart
+            $.plot("#website-stats", [data1], {
+                series: {
+                    lines: { show: true, fill: true },
+                    points: { show: true }
+                },
+                grid: { hoverable: true, clickable: true },
+                colors: ["#3bafda"]
+            });
+
+            // Sales Analytics Donut Chart
+            $.plot("#donut-chart-container", data2, {
+                series: {
+                    pie: {
+                        show: true,
+                        innerRadius: 0.5
+                    }
+                },
+                colors: ["#3bafda", "#1abc9c", "#f7b84b"]
+            });
+
+            // Date Range Picker
+            $('#reportrange').daterangepicker({
+                startDate: moment().subtract(29, 'days'),
+                endDate: moment(),
+                ranges: {
+                    'Today': [moment(), moment()],
+                    'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                    'This Month': [moment().startOf('month'), moment().endOf('month')],
+                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                }
+            }, function(start, end) {
+                $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+            });
+        });
+    </script>
+</body>
+
+</html>

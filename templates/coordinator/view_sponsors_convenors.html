@@ -1,0 +1,55 @@
+{% extends "coordinator/dashboard.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Title -->
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <h4 class="page-title">View Sponsors and Convenors</h4>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sponsors and Convenors Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="header-title">Sponsors and Convenors List</h4>
+                    <div class="table-responsive">
+                        <table class="table table-centered mb-0">
+                            <thead>
+                                <tr>
+                                    <th>User ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Region</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in sponsors_convenors %}
+                                <tr>
+                                    <td>{{ user.user_id }}</td>
+                                    <td>{{ user.name }}</td>
+                                    <td>{{ user.email }}</td>
+                                    <td>{{ user.role_name }}</td>
+                                    <td>{{ user.region }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ 'success' if user.status == 'Active' else 'danger' }}">
+                                            {{ user.status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

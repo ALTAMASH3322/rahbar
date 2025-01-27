@@ -1,0 +1,57 @@
+{% extends "coordinator/dashboard.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Title -->
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <h4 class="page-title">Monitor Payments</h4>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payments Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="header-title">Payments List</h4>
+                    <div class="table-responsive">
+                        <table class="table table-centered mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Payment ID</th>
+                                    <th>Grantee Name</th>
+                                    <th>Sponsor Name</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payment in payments %}
+                                <tr>
+                                    <td>{{ payment.payment_id }}</td>
+                                    <td>{{ payment.grantee_name }}</td>
+                                    <td>{{ payment.grantor_name }}</td>
+                                    <td>{{ payment.amount }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ 'success' if payment.status == 'Paid' else 'warning' if payment.status == 'Pending' else 'danger' }}">
+                                            {{ payment.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn btn-sm btn-primary">View Details</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

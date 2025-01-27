@@ -1,10 +1,243 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Bihar Anjuman</title>
-</head>
-<body>
-<h1>Hello World</h1>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <title>Welcome to Rahbar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta content="Landing Page for Rahbar Application" name="description" />
+    <meta content="Coderthemes" name="author" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- App favicon -->
+    <link
+      rel="shortcut icon"
+      href="{{ url_for('static', filename='images/favicon.ico') }}"
+    />
+
+    <!-- App css -->
+    <link
+      href="{{ url_for('static', filename='css/bootstrap.min.css') }}"
+      rel="stylesheet"
+      type="text/css"
+      id="bootstrap-stylesheet"
+    />
+    <link
+      href="{{ url_for('static', filename='css/icons.min.css') }}"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="{{ url_for('static', filename='css/app.min.css') }}"
+      rel="stylesheet"
+      type="text/css"
+      id="app-stylesheet"
+    />
+  </head>
+
+  <body>
+    <!-- Begin page -->
+    <div id="wrapper">
+      <!-- Navbar Start -->
+      <nav class="navbar-custom">
+        <div class="container-fluid">
+          <!-- LOGO -->
+          <a href="{{ url_for('main.homepage') }}" class="text-success">
+            <span
+              style="
+                display: inline-block;
+                background-color: grey;
+                color: white;
+                font-weight: bold;
+                padding: 10px;
+                border-radius: 4px;
+              "
+            >
+              RAHBAR
+            </span>
+          </a>
+
+          <!-- Navigation Links -->
+          <ul class="list-unstyled topnav-menu float-right mb-0">
+            <li>
+              <a href="#about" class="nav-link">About</a>
+            </li>
+            <li>
+              <a href="#features" class="nav-link">Features</a>
+            </li>
+            <li>
+              <a href="#contact" class="nav-link">Contact</a>
+            </li>
+            <li>
+              <a
+                href="{{ url_for('auth.login') }}"
+                class="btn btn-success btn-sm"
+                >Login</a
+              >
+            </li>
+          </ul>
+        </div>
+      </nav>
+      <!-- end Navbar -->
+
+      <!-- Hero Section -->
+      <section
+        class="hero-section"
+        style="
+          background: url('{{ url_for('static', filename='images/hero-bg.jpg') }}')
+            no-repeat center center;
+          background-size: cover;
+          padding: 150px 0;
+          text-align: center;
+          color: white;
+        "
+      >
+        <div class="container">
+          <h1>Welcome to Rahbar</h1>
+          <p class="lead">
+            Empowering students and sponsors to connect and grow together.
+          </p>
+          <a
+            href="{{ url_for('auth.register') }}"
+            class="btn btn-primary btn-lg"
+            >Get Started</a
+          >
+        </div>
+      </section>
+      <!-- End Hero Section -->
+
+      <!-- About Section -->
+      <section id="about" class="section bg-light">
+        <div class="container">
+          <div class="row">
+            <div class="col-lg-6">
+              <img
+                src="{{ url_for('static', filename='images/about.jpg') }}"
+                alt="About Us"
+                class="img-fluid rounded"
+              />
+            </div>
+            <div class="col-lg-6">
+              <h2>About Rahbar</h2>
+              <p>
+                Rahbar is a platform designed to bridge the gap between students
+                and sponsors. Our mission is to provide students with the
+                resources they need to succeed while enabling sponsors to make a
+                meaningful impact.
+              </p>
+              <p>
+                Whether you're a student seeking financial support or a sponsor
+                looking to invest in the future, Rahbar is here to help.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- End About Section -->
+
+      <!-- Features Section -->
+      <section id="features" class="section">
+        <div class="container">
+          <h2 class="text-center mb-5">Features</h2>
+          <div class="row">
+            <div class="col-lg-4">
+              <div class="card">
+                <div class="card-body">
+                  <i class="mdi mdi-account-multiple h1 text-primary"></i>
+                  <h4 class="card-title">Student Profiles</h4>
+                  <p class="card-text">
+                    Students can create profiles to showcase their achievements
+                    and needs.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-4">
+              <div class="card">
+                <div class="card-body">
+                  <i class="mdi mdi-cash-multiple h1 text-primary"></i>
+                  <h4 class="card-title">Sponsorship Opportunities</h4>
+                  <p class="card-text">
+                    Sponsors can find and support students who align with their
+                    goals.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-4">
+              <div class="card">
+                <div class="card-body">
+                  <i class="mdi mdi-chart-bar h1 text-primary"></i>
+                  <h4 class="card-title">Progress Tracking</h4>
+                  <p class="card-text">
+                    Track the progress of sponsored students and measure impact.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- End Features Section -->
+
+      <!-- Contact Section -->
+      <section id="contact" class="section bg-light">
+        <div class="container">
+          <h2 class="text-center mb-5">Contact Us</h2>
+          <div class="row">
+            <div class="col-lg-6 mx-auto">
+              <form>
+                <div class="form-group">
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Your Name"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <input
+                    type="email"
+                    class="form-control"
+                    placeholder="Your Email"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <textarea
+                    class="form-control"
+                    rows="5"
+                    placeholder="Your Message"
+                    required
+                  ></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">
+                  Send Message
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- End Contact Section -->
+
+      <!-- Footer Start -->
+      <footer class="footer">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-md-12 text-center">
+              2024 &copy; Rahbar. Designed by Coderthemes.
+            </div>
+          </div>
+        </div>
+      </footer>
+      <!-- end Footer -->
+    </div>
+    <!-- END wrapper -->
+
+    <!-- Vendor js -->
+    <script src="{{ url_for('static', filename='js/vendor.min.js') }}"></script>
+
+    <!-- App js -->
+    <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
+  </body>
 </html>

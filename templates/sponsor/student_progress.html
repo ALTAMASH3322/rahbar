@@ -128,7 +128,7 @@
                                                 {% for progress in progress_data %}
                                                 <tr>
                                                     <td>{{ progress.grantee_name }}</td>
-                                                    <td>{{ progress.progress }}%</td>
+                                                    <td>{{ progress.marks }}%</td>
                                                     <td>
                                                         <a href="{{ url_for('student.uploaded_file', filename=progress.file_path.split('/')[-1]) }}" target="_blank">View File</a>
                                                     </td>

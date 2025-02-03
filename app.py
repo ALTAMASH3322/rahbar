@@ -90,6 +90,7 @@ def create_app():
     from routes.sponsor import sponsor_bp
     from routes.student import student_bp
     from routes.coordinator import coordinator_bp
+    from routes.admin import admin_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
@@ -97,5 +98,6 @@ def create_app():
     app.register_blueprint(student_bp)
     app.register_blueprint(convenor_bp)
     app.register_blueprint(coordinator_bp)
+    app.register_blueprint(admin_bp)
 
     return app

@@ -123,9 +123,9 @@ def login():
 
                 # Redirect based on user role
                 if user.role_id == 1:  # Super Admin
-                    return redirect(url_for('admin.dashboard'))
+                    return redirect(url_for('admin.admin_dashboard'))
                 elif user.role_id == 2:  # Application Administrator
-                    return redirect(url_for('admin.dashboard'))
+                    return redirect(url_for('admin.admin_dashboard'))
                 elif user.role_id == 3:  # Application Coordinator
                     return redirect(url_for('coordinator.coordinator_dashboard'))
                 elif user.role_id == 4:  # Convenor

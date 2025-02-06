@@ -3,9 +3,9 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>Admin Dashboard | Rahbar</title>
+    <title>Application Period | Rahbar</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta content="Admin Dashboard for Rahbar Application" name="description" />
+    <meta content="Application Period Management for Rahbar Application" name="description" />
     <meta content="Coderthemes" name="author" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
@@ -110,40 +110,11 @@
                     <div class="row">
                         <div class="col-12">
                             <div class="page-title-box">
-                                <h4 class="page-title">Admin Dashboard</h4>
+                                <h4 class="page-title">Application Period</h4>
                             </div>
                         </div>
                     </div>
                     <!-- end page title -->
-
-                    <!-- Summary Cards -->
-                    <div class="row">
-                        <div class="col-md-6 col-xl-3">
-                            <div class="card-box">
-                                <h4 class="header-title mt-0 mb-3">Total Users</h4>
-                                <h2 class="text-primary">{{ users|length }}</h2>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-xl-3">
-                            <div class="card-box">
-                                <h4 class="header-title mt-0 mb-3">Total Applications</h4>
-                                <h2 class="text-success">{{ applications|length }}</h2>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-xl-3">
-                            <div class="card-box">
-                                <h4 class="header-title mt-0 mb-3">Total Payments</h4>
-                                <h2 class="text-info">{{ payments|length }}</h2>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-xl-3">
-                            <div class="card-box">
-                                <h4 class="header-title mt-0 mb-3">Active Sponsors</h4>
-                                <h2 class="text-warning">{{ sponsors_convenors|length }}</h2>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- End Summary Cards -->
 
                     <!-- Application Period Status -->
                     <div class="row">
@@ -159,6 +130,29 @@
                                             <span class="badge badge-danger">Inactive</span>
                                         {% endif %}
                                     </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Start/End Application Period -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h4 class="header-title">Manage Application Period</h4>
+                                    <form method="POST" action="{{ url_for('admin.manage_application_period') }}">
+                                        <div class="form-group">
+                                            <label for="start_date">Start Date</label>
+                                            <input type="date" class="form-control" id="start_date" name="start_date" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="end_date">End Date</label>
+                                            <input type="date" class="form-control" id="end_date" name="end_date" required>
+                                        </div>
+                                        <button type="submit" name="action" value="start" class="btn btn-success">Start Application Period</button>
+                                        <button type="submit" name="action" value="end" class="btn btn-danger">End Application Period</button>
+                                    </form>
                                 </div>
                             </div>
                         </div>

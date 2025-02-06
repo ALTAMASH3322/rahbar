@@ -3,9 +3,9 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>Admin Dashboard | Rahbar</title>
+    <title>Generate Reports | Rahbar</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta content="Admin Dashboard for Rahbar Application" name="description" />
+    <meta content="Generate Reports for Rahbar Application" name="description" />
     <meta content="Coderthemes" name="author" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
@@ -110,55 +110,38 @@
                     <div class="row">
                         <div class="col-12">
                             <div class="page-title-box">
-                                <h4 class="page-title">Admin Dashboard</h4>
+                                <h4 class="page-title">Generate Reports</h4>
                             </div>
                         </div>
                     </div>
                     <!-- end page title -->
 
-                    <!-- Summary Cards -->
-                    <div class="row">
-                        <div class="col-md-6 col-xl-3">
-                            <div class="card-box">
-                                <h4 class="header-title mt-0 mb-3">Total Users</h4>
-                                <h2 class="text-primary">{{ users|length }}</h2>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-xl-3">
-                            <div class="card-box">
-                                <h4 class="header-title mt-0 mb-3">Total Applications</h4>
-                                <h2 class="text-success">{{ applications|length }}</h2>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-xl-3">
-                            <div class="card-box">
-                                <h4 class="header-title mt-0 mb-3">Total Payments</h4>
-                                <h2 class="text-info">{{ payments|length }}</h2>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-xl-3">
-                            <div class="card-box">
-                                <h4 class="header-title mt-0 mb-3">Active Sponsors</h4>
-                                <h2 class="text-warning">{{ sponsors_convenors|length }}</h2>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- End Summary Cards -->
-
-                    <!-- Application Period Status -->
+                    <!-- Report Options -->
                     <div class="row">
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-body">
-                                    <h4 class="header-title">Application Period Status</h4>
-                                    <p>
-                                        {% if application_period and application_period.is_active %}
-                                            <span class="badge badge-success">Active</span>
-                                            ({{ application_period.start_date }} to {{ application_period.end_date }})
-                                        {% else %}
-                                            <span class="badge badge-danger">Inactive</span>
-                                        {% endif %}
-                                    </p>
+                                    <h4 class="header-title">Select Report Type</h4>
+                                    <form method="POST" action="{{ url_for('admin.generate_reports') }}">
+                                        <div class="form-group">
+                                            <label for="reportType">Report Type</label>
+                                            <select class="form-control" id="reportType" name="reportType" required>
+                                                <option value="applications">Applications</option>
+                                                <option value="payments">Payments</option>
+                                                <option value="sponsors_convenors">Sponsors & Convenors</option>
+                                                <option value="grantees">Grantees</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="format">Format</label>
+                                            <select class="form-control" id="format" name="format" required>
+                                                <option value="csv">CSV</option>
+                                                <option value="excel">Excel</option>
+                                                <option value="pdf">PDF</option>
+                                            </select>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Generate Report</button>
+                                    </form>
                                 </div>
                             </div>
                         </div>

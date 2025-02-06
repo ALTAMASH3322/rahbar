@@ -3,9 +3,9 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>Admin Dashboard | Rahbar</title>
+    <title>System Configuration | Rahbar</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta content="Admin Dashboard for Rahbar Application" name="description" />
+    <meta content="System Configuration for Rahbar Application" name="description" />
     <meta content="Coderthemes" name="author" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
@@ -110,55 +110,29 @@
                     <div class="row">
                         <div class="col-12">
                             <div class="page-title-box">
-                                <h4 class="page-title">Admin Dashboard</h4>
+                                <h4 class="page-title">System Configuration</h4>
                             </div>
                         </div>
                     </div>
                     <!-- end page title -->
 
-                    <!-- Summary Cards -->
-                    <div class="row">
-                        <div class="col-md-6 col-xl-3">
-                            <div class="card-box">
-                                <h4 class="header-title mt-0 mb-3">Total Users</h4>
-                                <h2 class="text-primary">{{ users|length }}</h2>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-xl-3">
-                            <div class="card-box">
-                                <h4 class="header-title mt-0 mb-3">Total Applications</h4>
-                                <h2 class="text-success">{{ applications|length }}</h2>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-xl-3">
-                            <div class="card-box">
-                                <h4 class="header-title mt-0 mb-3">Total Payments</h4>
-                                <h2 class="text-info">{{ payments|length }}</h2>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-xl-3">
-                            <div class="card-box">
-                                <h4 class="header-title mt-0 mb-3">Active Sponsors</h4>
-                                <h2 class="text-warning">{{ sponsors_convenors|length }}</h2>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- End Summary Cards -->
-
-                    <!-- Application Period Status -->
+                    <!-- Configuration Form -->
                     <div class="row">
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-body">
-                                    <h4 class="header-title">Application Period Status</h4>
-                                    <p>
-                                        {% if application_period and application_period.is_active %}
-                                            <span class="badge badge-success">Active</span>
-                                            ({{ application_period.start_date }} to {{ application_period.end_date }})
-                                        {% else %}
-                                            <span class="badge badge-danger">Inactive</span>
-                                        {% endif %}
-                                    </p>
+                                    <h4 class="header-title">Update System Settings</h4>
+                                    <form method="POST" action="{{ url_for('admin.system_configuration') }}">
+                                        <div class="form-group">
+                                            <label for="fee_schedule">Fee Schedule</label>
+                                            <input type="text" class="form-control" id="fee_schedule" name="fee_schedule" value="{{ config.fee_schedule if config else '' }}" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="deadline">Application Deadline</label>
+                                            <input type="date" class="form-control" id="deadline" name="deadline" value="{{ config.deadline if config else '' }}" required>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                                    </form>
                                 </div>
                             </div>
                         </div>

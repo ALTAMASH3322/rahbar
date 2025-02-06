@@ -83,7 +83,7 @@ def admin_dashboard():
     )
 
 # Start or End Application Period
-@admin_bp.route('/manage_application_period', methods=['POST'])
+@admin_bp.route('/manage_application_period', methods=['POST','GET'])
 @login_required
 def manage_application_period():
     if current_user.role_id not in [1, 2]:  # Ensure only Admins can access this route
@@ -193,6 +193,51 @@ def manage_users():
     conn.close()
 
     return render_template('admin/manage_users.html', users=users, roles=roles)
+
+
+
+# Edit User
+@admin_bp.route('/edit_user/<int:user_id>', methods=['GET', 'POST'])
+@login_required
+def edit_user(user_id):
+    if current_user.role_id not in [1, 2]:  # Ensure only Admins can access this route
+        flash('You do not have permission to access this page.', 'error')
+        return redirect(url_for('auth.login'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    if request.method == 'POST':
+        # Handle user update
+        name = request.form.get('name')
+        email = request.form.get('email')
+        role_id = request.form.get('role_id')
+        status = request.form.get('status')
+
+        cursor.execute("""
+            UPDATE users
+            SET name = %s, email = %s, role_id = %s, status = %s
+            WHERE user_id = %s
+        """, (name, email, role_id, status, user_id))
+        conn.commit()
+        flash('User updated successfully!', 'success')
+        return redirect(url_for('admin.manage_users'))
+
+    # Fetch user details
+    cursor.execute("SELECT * FROM users WHERE user_id = %s", (user_id,))
+    user = cursor.fetchone()
+
+    # Fetch all roles
+    cursor.execute("SELECT * FROM roles")
+    roles = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return render_template('admin/edit_user.html', user=user, roles=roles)
+
+
+
 
 # Delete User
 @admin_bp.route('/delete_user/<int:user_id>', methods=['GET'])

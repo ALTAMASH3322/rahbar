@@ -83,62 +83,63 @@ def admin_dashboard():
     )
 
 # Start or End Application Period
-@admin_bp.route('/manage_application_period', methods=['POST','GET'])
+@admin_bp.route('/manage_application_period', methods=['GET', 'POST'])
 @login_required
 def manage_application_period():
-    if current_user.role_id not in [1, 2]:  # Ensure only Admins can access this route
+    if current_user.role_id not in [1, 2]:
         flash('You do not have permission to access this page.', 'error')
         return redirect(url_for('auth.login'))
 
-    action = request.form.get('action')  # 'start' or 'end'
-    start_date = request.form.get('start_date')
-    end_date = request.form.get('end_date')
-
     conn = get_db_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(dictionary=True)
 
-    try:
-        if action == 'start':
-            # Validate start and end dates
-            if not start_date or not end_date:
-                flash('Start date and end date are required to start the application period.', 'error')
-                return redirect(url_for('admin.admin_dashboard'))
+    # Fetch current application period status
+    cursor.execute("SELECT * FROM application_period WHERE id = 1")
+    application_period = cursor.fetchone()
 
-            # Convert dates to datetime objects
-            start_date = datetime.strptime(start_date, '%Y-%m-%d')
-            end_date = datetime.strptime(end_date, '%Y-%m-%d')
+    if request.method == 'POST':
+        action = request.form.get('action')
+        start_date = request.form.get('start_date')
+        end_date = request.form.get('end_date')
 
-            # Check if the application period is already active
-            cursor.execute("SELECT * FROM application_period WHERE id = 1")
-            existing_period = cursor.fetchone()
+        try:
+            if action == 'start':
+                if not start_date or not end_date:
+                    flash('Start and end dates are required.', 'error')
+                    return redirect(url_for('admin.manage_application_period'))
 
-            if existing_period and existing_period['is_active']:
-                flash('An application period is already active.', 'error')
-                return redirect(url_for('admin.admin_dashboard'))
+                start_date = datetime.strptime(start_date, '%Y-%m-%d')
+                end_date = datetime.strptime(end_date, '%Y-%m-%d')
 
-            # Start the application period
-            cursor.execute("""
-                INSERT INTO application_period (id, start_date, end_date, is_active)
-                VALUES (1, %s, %s, 1)
-                ON DUPLICATE KEY UPDATE start_date = %s, end_date = %s, is_active = 1
-            """, (start_date, end_date, start_date, end_date))
-            conn.commit()
-            flash('Application period started successfully!', 'success')
+                cursor.execute("""
+                    INSERT INTO application_period (id, start_date, end_date, is_active)
+                    VALUES (1, %s, %s, 1)
+                    ON DUPLICATE KEY UPDATE
+                        start_date = VALUES(start_date),
+                        end_date = VALUES(end_date),
+                        is_active = VALUES(is_active)
+                """, (start_date, end_date))
+                conn.commit()
+                flash('Application period started successfully!', 'success')
 
-        elif action == 'end':
-            # End the application period
-            cursor.execute("UPDATE application_period SET is_active = 0 WHERE id = 1")
-            conn.commit()
-            flash('Application period ended successfully!', 'success')
+            elif action == 'end':
+                cursor.execute("UPDATE application_period SET is_active = 0 WHERE id = 1")
+                conn.commit()
+                flash('Application period ended successfully!', 'success')
 
-    except Exception as e:
-        conn.rollback()
-        flash(f'An error occurred: {str(e)}', 'error')
-    finally:
-        cursor.close()
-        conn.close()
+        except Exception as e:
+            conn.rollback()
+            flash(f'Error: {str(e)}', 'error')
+        finally:
+            cursor.close()
+            conn.close()
 
-    return redirect(url_for('admin.admin_dashboard'))
+        return redirect(url_for('admin.manage_application_period'))
+
+    # For GET requests, render the template
+    cursor.close()
+    conn.close()
+    return render_template('admin/manage_application_period.html', application_period=application_period)
 
 # Manage Users
 @admin_bp.route('/manage_users', methods=['GET', 'POST'])
@@ -300,11 +301,12 @@ def system_configuration():
     return render_template('admin/system_configuration.html', config=config)
 
 # Generate Reports
-@admin_bp.route('/generate_reports', methods=['GET', 'POST'])
+@admin_bp.route('/admin_generate_reports', methods=['GET', 'POST'])
 @login_required
-def generate_reports():
+def admin_generate_reports():
     if current_user.role_id not in [1, 2]:  # Ensure only Admins can access this route
         flash('You do not have permission to access this page.', 'error')
+        print("This is creating the issue")
         return redirect(url_for('auth.login'))
 
     conn = get_db_connection()

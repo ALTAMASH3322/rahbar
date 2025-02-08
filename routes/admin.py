@@ -270,68 +270,67 @@ def delete_user(user_id):
 @login_required
 def system_configuration():
     if current_user.role_id not in [1, 2]:
-        flash('You do not have permission to access this page.', 'error')
+        flash('Permission denied', 'error')
         return redirect(url_for('auth.login'))
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
+    frequencies = ['yearly', 'half-yearly', 'quarterly', 'monthly']
+
     if request.method == 'POST':
-        # Handle both fee schedule and deadline updates
-        fee_schedule = request.form.get('fee_schedule')
-        deadline_type = request.form.get('deadline_type')
-        deadline_date = request.form.get('deadline_date')
-
         try:
-            # Update fee schedule in system_config
-            cursor.execute("""
-                UPDATE system_config
-                SET fee_schedule = %s
-                WHERE config_id = 1
-            """, (fee_schedule,))
+            # Process all frequencies
+            for freq in frequencies:
+                amount = request.form.get(f'amount_{freq}')
+                deadline = request.form.get(f'deadline_{freq}')
 
-            # Insert or update deadline
-            if deadline_type and deadline_date:
-                cursor.execute("""
-                    INSERT INTO deadlines (frequency, deadline_date)
-                    VALUES (%s, %s)
-                    ON DUPLICATE KEY UPDATE deadline_date = VALUES(deadline_date)
-                """, (deadline_type, deadline_date))
+                if amount and deadline:
+                    cursor.execute("""
+                        INSERT INTO payment_schedules (frequency, amount, deadline_date)
+                        VALUES (%s, %s, %s)
+                        ON DUPLICATE KEY UPDATE
+                            amount = VALUES(amount),
+                            deadline_date = VALUES(deadline_date),
+                            updated_at = NOW()
+                    """, (freq, float(amount), deadline))
 
             conn.commit()
-            flash('Configuration updated successfully!', 'success')
+            flash('Payment schedules updated successfully', 'success')
 
-        except Exception as e:
+        except ValueError:
+            flash('Invalid amount format', 'error')
             conn.rollback()
-            flash(f'Error: {str(e)}', 'error')
+        except Exception as e:
+            flash(f'Database error: {str(e)}', 'error')
+            conn.rollback()
         finally:
             cursor.close()
             conn.close()
 
         return redirect(url_for('admin.system_configuration'))
 
-    # For GET requests
-    # Fetch current system configuration
-    cursor.execute("SELECT * FROM system_config WHERE config_id = 1")
-    config = cursor.fetchone()
+    # GET request - load existing data
+    cursor.execute("SELECT * FROM payment_schedules")
+    existing_data = {row['frequency']: row for row in cursor.fetchall()}
 
-    # Fetch all existing deadlines
-    cursor.execute("SELECT * FROM deadlines")
-    deadlines = cursor.fetchall()
+    # Prepare data structure for template
+    payment_data = []
+    for freq in frequencies:
+        payment_data.append({
+            'frequency': freq,
+            'amount': existing_data.get(freq, {}).get('amount', ''),
+            'deadline': existing_data.get(freq, {}).get('deadline_date', '')
+        })
 
     cursor.close()
     conn.close()
 
-    # Create a dictionary of deadlines for easy access in template
-    deadline_dict = {d['frequency']: d['deadline_date'].strftime('%Y-%m-%d') for d in deadlines} if deadlines else {}
-
     return render_template(
         'admin/system_configuration.html',
-        config=config,
-        deadlines=deadline_dict,
-        frequency_options=['yearly', 'half-yearly', 'quarterly', 'monthly']
+        payment_data=payment_data,
+        frequencies=frequencies
     )
-
 # Generate Reports
 @admin_bp.route('/admin_generate_reports', methods=['GET', 'POST'])
 @login_required
@@ -414,3 +413,232 @@ def admin_generate_reports():
 @admin_bp.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
+
+
+# Public Application Form
+@admin_bp.route('/apply', methods=['GET', 'POST'])
+def public_application():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Check application period
+    cursor.execute(
+        "SELECT * FROM application_period WHERE is_active = 1 AND start_date <= CURDATE() AND end_date >= CURDATE()")
+    period = cursor.fetchone()
+    cursor.execute("SELECT * FROM rcc_centers")
+    rcc_centers = cursor.fetchall()
+
+    cursor.execute("SELECT * FROM courses")
+    courses = cursor.fetchall()
+
+    if not period:
+        cursor.close()
+        conn.close()
+        return render_template('application_closed.html')
+
+    if request.method == 'POST':
+        try:
+            # Get mobile numbers
+            father_mobile = request.form['father_mobile']
+            mother_mobile = request.form['mother_mobile']
+            student_mobile = request.form['student_mobile']
+
+            # Server-side validation
+            mobiles = [father_mobile, mother_mobile, student_mobile]
+
+            # Check uniqueness
+            if len(set(mobiles)) != 3:
+                flash('All three mobile numbers must be different', 'error')
+                return redirect(url_for('admin.public_application'))
+
+            # Check valid 10-digit numbers
+            if not all(num.isdigit() and len(num) == 10 for num in mobiles):
+                flash('Invalid mobile numbers. Must be 10 digits', 'error')
+                return redirect(url_for('admin.public_application'))
+
+            form_data = {
+                'father_name': request.form['father_name'],
+                'mother_name': request.form['mother_name'],
+                'father_profession': request.form['father_profession'],
+                'mother_profession': request.form['mother_profession'],
+                'address': request.form['address'],
+                'average_annual_salary': request.form['average_annual_salary'],
+                'rahbar_alumnus': 1 if request.form.get('rahbar_alumnus') else 0,
+                'rcc_name': request.form['rcc_name'],
+                'course_applied': request.form['course_applied'],
+                'father_mobile': father_mobile,
+                'mother_mobile': mother_mobile,
+                'student_mobile': student_mobile
+            }
+
+            # Insert into grantee_details
+            cursor.execute("""
+                INSERT INTO grantee_details 
+                (user_id, father_name, mother_name, father_profession, mother_profession, 
+                 address, average_annual_salary, rahbar_alumnus, rcc_name, course_applied,
+                 father_mobile, mother_mobile, student_mobile, created_at, updated_at)
+                VALUES (NULL, %(father_name)s, %(mother_name)s, %(father_profession)s, 
+                        %(mother_profession)s, %(address)s, %(average_annual_salary)s, 
+                        %(rahbar_alumnus)s, %(rcc_name)s, %(course_applied)s,
+                        %(father_mobile)s, %(mother_mobile)s, %(student_mobile)s, NOW(), NOW())
+            """, form_data)
+
+            grantee_detail_id = cursor.lastrowid
+
+            # Create initial application status
+            cursor.execute("""
+                INSERT INTO application_status (grantee_detail_id, status, comments, updated_by)
+                VALUES (%s, 'submitted', 'Application submitted', %s)
+            """, (grantee_detail_id, None))
+
+            conn.commit()
+            flash('Application submitted successfully!', 'success')
+            return redirect(url_for('admin.application_status', application_id=grantee_detail_id))
+
+        except mysql.connector.Error as err:
+            conn.rollback()
+            flash(f'Database error: {err.msg}', 'error')
+        except Exception as e:
+            conn.rollback()
+            flash(f'Error submitting application: {str(e)}', 'error')
+        finally:
+            cursor.close()
+            conn.close()
+
+    return render_template('public/apply.html',rcc_centers=rcc_centers,
+                         courses=courses)
+
+
+# Application Status Check
+@admin_bp.route('/application_status', methods=['GET', 'POST'])
+def check_application_status():
+    if request.method == 'POST':
+        mobile = request.form.get('mobile')
+
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Check if mobile exists in any of the contact numbers
+        cursor.execute("""
+            SELECT grantee_detail_id 
+            FROM grantee_details 
+            WHERE student_mobile = %s 
+               OR father_mobile = %s 
+               OR mother_mobile = %s
+        """, (mobile, mobile, mobile))
+
+        application = cursor.fetchone()
+        cursor.close()
+        conn.close()
+
+        if application:
+            return redirect(url_for('admin.application_status',
+                                    application_id=application['grantee_detail_id']))
+        else:
+            flash('No application found with this mobile number', 'error')
+            return redirect(url_for('admin.check_application_status'))
+
+    return render_template('public/check_status.html')
+
+
+@admin_bp.route('/application_status/<int:application_id>')
+def application_status(application_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT gd.*, s.status, s.comments, s.created_at as status_date
+        FROM grantee_details gd
+        LEFT JOIN application_status s ON gd.grantee_detail_id = s.grantee_detail_id
+        WHERE gd.grantee_detail_id = %s
+        ORDER BY s.created_at DESC
+    """, (application_id,))
+
+    application = cursor.fetchone()
+    cursor.close()
+    conn.close()
+
+    if not application:
+        flash('Invalid application ID', 'error')
+        return redirect(url_for('admin.check_application_status'))
+
+    return render_template('public/application_status.html', application=application)
+
+
+# Admin Management of Applications
+@admin_bp.route('/admin/manage_applications')
+@login_required
+def manage_applications():
+    if current_user.role_id not in [1, 2, 4]:  # Admin and Convenors
+        flash('Permission denied', 'error')
+        return redirect(url_for('auth.login'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Get applications with latest status
+    cursor.execute("""
+        SELECT gd.*, s.status, s.comments, s.created_at as status_date
+        FROM grantee_details gd
+        LEFT JOIN (
+            SELECT grantee_detail_id, MAX(created_at) as latest
+            FROM application_status
+            GROUP BY grantee_detail_id
+        ) latest_status ON gd.grantee_detail_id = latest_status.grantee_detail_id
+        LEFT JOIN application_status s ON s.grantee_detail_id = latest_status.grantee_detail_id 
+            AND s.created_at = latest_status.latest
+    """)
+
+    applications = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    return render_template('admin/manage_applications.html', applications=applications)
+
+
+# Update Application Status
+@admin_bp.route('/admin/update_application_status/<int:grantee_detail_id>', methods=['GET', 'POST'])
+@login_required
+def update_application_status(grantee_detail_id):
+    if current_user.role_id not in [1, 2, 4]:  # Admin and Convenors
+        flash('Permission denied', 'error')
+        return redirect(url_for('auth.login'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    if request.method == 'POST':
+        status = request.form['status']
+        comments = request.form['comments']
+
+        try:
+            cursor.execute("""
+                INSERT INTO application_status (grantee_detail_id, status, comments, updated_by)
+                VALUES (%s, %s, %s, %s)
+            """, (grantee_detail_id, status, comments, current_user.user_id))
+
+            conn.commit()
+            flash('Status updated successfully', 'success')
+        except Exception as e:
+            conn.rollback()
+            flash(f'Error updating status: {str(e)}', 'error')
+        finally:
+            cursor.close()
+            conn.close()
+
+        return redirect(url_for('admin.manage_applications'))
+
+    # GET request - load current status
+    cursor.execute("""
+        SELECT * FROM application_status 
+        WHERE grantee_detail_id = %s
+        ORDER BY created_at DESC LIMIT 1
+    """, (grantee_detail_id,))
+
+    current_status = cursor.fetchone()
+    cursor.close()
+    conn.close()
+
+    return render_template('admin/update_application_status.html',
+                           application_id=grantee_detail_id,
+                           current_status=current_status)

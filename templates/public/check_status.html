@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Check Application Status | Rahbar</title>
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/app.min.css') }}" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title text-center mb-4">Check Application Status</h3>
+
+                        {% with messages = get_flashed_messages() %}
+                            {% if messages %}
+                                <div class="alert alert-info">
+                                    {% for message in messages %}
+                                        {{ message }}<br>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        {% endwith %}
+
+                        <form method="POST">
+                            <div class="form-group">
+                                <label>Enter Registered Mobile Number</label>
+                                <input type="tel"
+                                       class="form-control"
+                                       name="mobile"
+                                       pattern="[0-9]{10}"
+                                       title="10 digit mobile number"
+                                       required>
+                                <small class="form-text text-muted">
+                                    Enter any of the registered mobile numbers (student/father/mother)
+                                </small>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">Check Status</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

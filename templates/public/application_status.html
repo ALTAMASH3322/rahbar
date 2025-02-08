@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Application Status | Rahbar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="Check Scholarship Application Status" name="description" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- App css -->
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/app.min.css') }}" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-8">
+                <div class="text-center mb-4">
+                    <a href="{{ url_for('main.homepage') }}" class="text-success">
+                        <span style="display: inline-block; background-color: grey; color: white; font-weight: bold; padding: 10px; border-radius: 4px;">
+                            APPLICATION STATUS
+                        </span>
+                    </a>
+                </div>
+
+                <!-- Status Card -->
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="header-title mb-4">Application #{{ application.grantee_detail_id }}</h4>
+
+                        <div class="verification-badge mb-4">
+    <i class="mdi mdi-cellphone-check"></i>
+    Verified Mobile: {{ application.student_mobile }}
+</div>
+
+<!-- Add security notice -->
+<div class="alert alert-info mt-3">
+    <h5>Security Notice</h5>
+    <p>This information is only accessible through verified mobile numbers associated with the application.</p>
+</div>
+
+                        <!-- Status Timeline -->
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge badge-{{ 'success' if application.status == 'accepted' else 'warning' }} p-2">
+                                    Current Status: {{ application.status|title }}
+                                </span>
+                                <small class="text-muted">{{ application.status_date.strftime('%d %b %Y') }}</small>
+                            </div>
+                            <p class="mt-2">{{ application.comments }}</p>
+                        </div>
+
+                        <!-- Contact Information -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Contact Details</h5>
+                                <dl class="row">
+                                    <dt class="col-sm-4">Student Mobile</dt>
+                                    <dd class="col-sm-8">{{ application.student_mobile }}</dd>
+
+                                    <dt class="col-sm-4">Father Mobile</dt>
+                                    <dd class="col-sm-8">{{ application.father_mobile }}</dd>
+
+                                    <dt class="col-sm-4">Mother Mobile</dt>
+                                    <dd class="col-sm-8">{{ application.mother_mobile }}</dd>
+                                </dl>
+                            </div>
+
+                            <div class="col-md-6">
+                                <h5>Program Details</h5>
+                                <dl class="row">
+                                    <dt class="col-sm-4">Course Applied</dt>
+                                    <dd class="col-sm-8">{{ application.course_applied }}</dd>
+
+                                    <dt class="col-sm-4">Application Date</dt>
+                                    <dd class="col-sm-8">{{ application.created_at.strftime('%d %b %Y') }}</dd>
+                                </dl>
+                            </div>
+                        </div>
+
+                        <!-- Navigation -->
+                        <div class="mt-4 text-center">
+                            <a href="{{ url_for('admin.public_application') }}" class="btn btn-outline-primary">
+                                Submit New Application
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vendor js -->
+    <script src="{{ url_for('static', filename='js/vendor.min.js') }}"></script>
+</body>
+</html>

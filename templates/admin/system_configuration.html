@@ -110,7 +110,7 @@
                     <div class="row">
                         <div class="col-12">
                             <div class="page-title-box">
-                                <h4 class="page-title">System Configuration</h4>
+                                <h4 class="page-title">Payment Schedule Configuration</h4>
                             </div>
                         </div>
                     </div>
@@ -121,38 +121,43 @@
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-body">
-                                    <h4 class="header-title mb-4">Update System Settings</h4>
+                                    <h4 class="header-title mb-4">Manage Payment Schedules</h4>
                                     <form method="POST" action="{{ url_for('admin.system_configuration') }}">
-                                        <!-- Fee Schedule Section -->
-                                        <div class="form-group mb-4">
-                                            <label for="fee_schedule">Fee Schedule (₹)</label>
-                                            <input type="number" class="form-control" id="fee_schedule"
-                                                   name="fee_schedule" step="0.01"
-                                                   value="{{ config.fee_schedule if config else '' }}" required>
-                                            <small class="form-text text-muted">Enter the application fee amount</small>
-                                        </div>
-
-                                        <!-- Deadlines Section -->
-                                        <div class="border-top pt-3 mt-4">
-                                            <h5 class="mb-3">Payment Deadlines</h5>
-
-                                            {% for freq in frequency_options %}
-                                            <div class="form-group row">
-                                                <label class="col-md-3 col-form-label">
-                                                    {{ freq|replace('-', ' ')|title }} Deadline
-                                                </label>
-                                                <div class="col-md-9">
-                                                    <input type="date" class="form-control"
-                                                           name="deadline_date"
-                                                           value="{{ deadlines[freq] if deadlines and deadlines[freq] else '' }}">
-                                                    <input type="hidden" name="deadline_type" value="{{ freq }}">
-                                                </div>
-                                            </div>
-                                            {% endfor %}
-
-                                            <small class="form-text text-muted">
-                                                Set deadlines for different payment frequencies
-                                            </small>
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered table-hover">
+                                                <thead class="thead-light">
+                                                    <tr>
+                                                        <th>Payment Frequency</th>
+                                                        <th>Fee Amount (₹)</th>
+                                                        <th>Deadline Date</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for item in payment_data %}
+                                                    <tr>
+                                                        <td>
+                                                            {{ item.frequency|replace('-', ' ')|title }}
+                                                        </td>
+                                                        <td>
+                                                            <input type="number"
+                                                                   class="form-control"
+                                                                   name="amount_{{ item.frequency }}"
+                                                                   step="0.01"
+                                                                   min="0"
+                                                                   value="{{ item.amount if item.amount else 0 }}"
+                                                                   required>
+                                                        </td>
+                                                        <td>
+                                                            <input type="date"
+                                                                   class="form-control"
+                                                                   name="deadline_{{ item.frequency }}"
+                                                                   value="{{ item.deadline if item.deadline else '' }}"
+                                                                   required>
+                                                        </td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
                                         </div>
 
                                         <div class="mt-4">
@@ -191,6 +196,22 @@
 
     <!-- App js -->
     <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
+
+    <style>
+    .table thead th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+    }
+    .table td {
+        vertical-align: middle;
+    }
+    .table input {
+        max-width: 200px;
+    }
+    .table-hover tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+    </style>
 </body>
 
 </html>

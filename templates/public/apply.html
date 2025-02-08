@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Apply for Scholarship | Rahbar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="Scholarship Application Form" name="description" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- App favicon -->
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+
+    <!-- App css -->
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/app.min.css') }}" rel="stylesheet">
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Application Header -->
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-8">
+                <div class="text-center mb-4">
+                    <a href="{{ url_for('main.homepage') }}" class="text-success">
+                        <span style="display: inline-block; background-color: grey; color: white; font-weight: bold; padding: 10px; border-radius: 4px;">
+                            RAHBAR SCHOLARSHIP APPLICATION
+                        </span>
+                    </a>
+                </div>
+
+                <!-- Application Form -->
+                <div class="card">
+                    <div class="card-body">
+                        {% with messages = get_flashed_messages() %}
+                            {% if messages %}
+                                <div class="alert alert-info">
+                                    {% for message in messages %}
+                                        {{ message }}<br>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        {% endwith %}
+
+                        <form method="POST" onsubmit="return validateMobileNumbers()">
+                            <!-- Personal Information -->
+                            <h4 class="header-title mb-3">Personal Information</h4>
+
+                            <div class="form-row">
+                                <!-- Father's Details -->
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Father's Name</label>
+                                        <input type="text" name="father_name" class="form-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Father's Profession</label>
+                                        <input type="text" name="father_profession" class="form-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Father's Mobile</label>
+                                        <input type="tel" name="father_mobile" class="form-control"
+                                               pattern="[0-9]{10}" title="10 digit number" required>
+                                    </div>
+                                </div>
+
+                                <!-- Mother's Details -->
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Mother's Name</label>
+                                        <input type="text" name="mother_name" class="form-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Mother's Profession</label>
+                                        <input type="text" name="mother_profession" class="form-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Mother's Mobile</label>
+                                        <input type="tel" name="mother_mobile" class="form-control"
+                                               pattern="[0-9]{10}" title="10 digit number" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Student Details -->
+                            <div class="form-row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Student's Mobile</label>
+                                        <input type="tel" name="student_mobile" class="form-control"
+                                               pattern="[0-9]{10}" title="10 digit number" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Annual Family Income (PKR)</label>
+                                        <input type="number" name="average_annual_salary" class="form-control"
+                                               min="0" step="1000" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Contact Information -->
+                            <h4 class="header-title mt-4 mb-3">Contact Details</h4>
+                            <div class="form-group">
+                                <label>Full Address</label>
+                                <textarea name="address" class="form-control" rows="3" required></textarea>
+                            </div>
+
+                            <!-- Program Details -->
+                            <h4 class="header-title mt-4 mb-3">Program Information</h4>
+                            <div class="form-row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Course Applied For</label>
+                                        <select name="course_applied" class="form-control" required>
+                                            <option value="">Select Course</option>
+                                            {% for course in courses %}
+                                            <option value="{{ course.course_name }}">{{ course.course_name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>RCC Center</label>
+                                        <select name="rcc_name" class="form-control" required>
+                                            <option value="">Select RCC Center</option>
+                                            {% for rcc in rcc_centers %}
+                                            <option value="{{ rcc.center_name }}">{{ rcc.center_name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Alumni Checkbox -->
+                            <div class="form-group form-check">
+                                <input type="checkbox" name="rahbar_alumnus" class="form-check-input" id="alumnus">
+                                <label class="form-check-label" for="alumnus">
+                                    Are you a Rahbar alumnus?
+                                </label>
+                            </div>
+
+                            <!-- Terms and Submission -->
+                            <div class="form-group form-check mt-4">
+                                <input type="checkbox" class="form-check-input" id="terms" required>
+                                <label class="form-check-label" for="terms">
+                                    I certify that all information provided is true and accurate
+                                </label>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-block">Submit Application</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Validation Script -->
+    <script>
+    function validateMobileNumbers() {
+        const numbers = [
+            document.getElementsByName('father_mobile')[0].value,
+            document.getElementsByName('mother_mobile')[0].value,
+            document.getElementsByName('student_mobile')[0].value
+        ];
+
+        // Check for duplicates
+        const uniqueNumbers = new Set(numbers);
+        if (uniqueNumbers.size !== 3) {
+            alert('All three mobile numbers must be different!');
+            return false;
+        }
+
+        // Check for valid 10-digit numbers
+        const valid = numbers.every(num => /^\d{10}$/.test(num));
+        if (!valid) {
+            alert('Please enter valid 10-digit mobile numbers');
+            return false;
+        }
+
+        return true;
+    }
+    </script>
+
+    <!-- Vendor js -->
+    <script src="{{ url_for('static', filename='js/vendor.min.js') }}"></script>
+</body>
+</html>

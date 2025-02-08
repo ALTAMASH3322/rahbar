@@ -269,7 +269,7 @@ def delete_user(user_id):
 @admin_bp.route('/system_configuration', methods=['GET', 'POST'])
 @login_required
 def system_configuration():
-    if current_user.role_id not in [1, 2]:  # Ensure only Admins can access this route
+    if current_user.role_id not in [1, 2]:
         flash('You do not have permission to access this page.', 'error')
         return redirect(url_for('auth.login'))
 
@@ -277,28 +277,60 @@ def system_configuration():
     cursor = conn.cursor(dictionary=True)
 
     if request.method == 'POST':
-        # Handle configuration updates
+        # Handle both fee schedule and deadline updates
         fee_schedule = request.form.get('fee_schedule')
-        deadline = request.form.get('deadline')
+        deadline_type = request.form.get('deadline_type')
+        deadline_date = request.form.get('deadline_date')
 
-        # Update system configuration (example)
-        cursor.execute("""
-            UPDATE system_config
-            SET fee_schedule = %s, deadline = %s
-            WHERE config_id = 1
-        """, (fee_schedule, deadline))
-        conn.commit()
-        flash('System configuration updated successfully!', 'success')
+        try:
+            # Update fee schedule in system_config
+            cursor.execute("""
+                UPDATE system_config
+                SET fee_schedule = %s
+                WHERE config_id = 1
+            """, (fee_schedule,))
+
+            # Insert or update deadline
+            if deadline_type and deadline_date:
+                cursor.execute("""
+                    INSERT INTO deadlines (frequency, deadline_date)
+                    VALUES (%s, %s)
+                    ON DUPLICATE KEY UPDATE deadline_date = VALUES(deadline_date)
+                """, (deadline_type, deadline_date))
+
+            conn.commit()
+            flash('Configuration updated successfully!', 'success')
+
+        except Exception as e:
+            conn.rollback()
+            flash(f'Error: {str(e)}', 'error')
+        finally:
+            cursor.close()
+            conn.close()
+
         return redirect(url_for('admin.system_configuration'))
 
+    # For GET requests
     # Fetch current system configuration
     cursor.execute("SELECT * FROM system_config WHERE config_id = 1")
     config = cursor.fetchone()
 
+    # Fetch all existing deadlines
+    cursor.execute("SELECT * FROM deadlines")
+    deadlines = cursor.fetchall()
+
     cursor.close()
     conn.close()
 
-    return render_template('admin/system_configuration.html', config=config)
+    # Create a dictionary of deadlines for easy access in template
+    deadline_dict = {d['frequency']: d['deadline_date'].strftime('%Y-%m-%d') for d in deadlines} if deadlines else {}
+
+    return render_template(
+        'admin/system_configuration.html',
+        config=config,
+        deadlines=deadline_dict,
+        frequency_options=['yearly', 'half-yearly', 'quarterly', 'monthly']
+    )
 
 # Generate Reports
 @admin_bp.route('/admin_generate_reports', methods=['GET', 'POST'])

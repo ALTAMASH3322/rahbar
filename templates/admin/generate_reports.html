@@ -79,7 +79,7 @@
                         </li>
                         <!-- Generate Reports -->
                         <li>
-                            <a href="{{ url_for('admin.generate_reports') }}" class="waves-effect waves-light">
+                            <a href="{{ url_for('admin.admin_generate_reports') }}" class="waves-effect waves-light">
                                 <i class="mdi mdi-chart-bar"></i>
                                 <span>Generate Reports</span>
                             </a>
@@ -122,7 +122,7 @@
                             <div class="card">
                                 <div class="card-body">
                                     <h4 class="header-title">Select Report Type</h4>
-                                    <form method="POST" action="{{ url_for('admin.generate_reports') }}">
+                                    <form method="POST" action="{{ url_for('admin.admin_generate_reports') }}">
                                         <div class="form-group">
                                             <label for="reportType">Report Type</label>
                                             <select class="form-control" id="reportType" name="reportType" required>

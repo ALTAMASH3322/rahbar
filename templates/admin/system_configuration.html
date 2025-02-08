@@ -79,7 +79,7 @@
                         </li>
                         <!-- Generate Reports -->
                         <li>
-                            <a href="{{ url_for('admin.generate_reports') }}" class="waves-effect waves-light">
+                            <a href="{{ url_for('admin.admin_generate_reports') }}" class="waves-effect waves-light">
                                 <i class="mdi mdi-chart-bar"></i>
                                 <span>Generate Reports</span>
                             </a>
@@ -121,17 +121,45 @@
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-body">
-                                    <h4 class="header-title">Update System Settings</h4>
+                                    <h4 class="header-title mb-4">Update System Settings</h4>
                                     <form method="POST" action="{{ url_for('admin.system_configuration') }}">
-                                        <div class="form-group">
-                                            <label for="fee_schedule">Fee Schedule</label>
-                                            <input type="text" class="form-control" id="fee_schedule" name="fee_schedule" value="{{ config.fee_schedule if config else '' }}" required>
+                                        <!-- Fee Schedule Section -->
+                                        <div class="form-group mb-4">
+                                            <label for="fee_schedule">Fee Schedule (₹)</label>
+                                            <input type="number" class="form-control" id="fee_schedule"
+                                                   name="fee_schedule" step="0.01"
+                                                   value="{{ config.fee_schedule if config else '' }}" required>
+                                            <small class="form-text text-muted">Enter the application fee amount</small>
                                         </div>
-                                        <div class="form-group">
-                                            <label for="deadline">Application Deadline</label>
-                                            <input type="date" class="form-control" id="deadline" name="deadline" value="{{ config.deadline if config else '' }}" required>
+
+                                        <!-- Deadlines Section -->
+                                        <div class="border-top pt-3 mt-4">
+                                            <h5 class="mb-3">Payment Deadlines</h5>
+
+                                            {% for freq in frequency_options %}
+                                            <div class="form-group row">
+                                                <label class="col-md-3 col-form-label">
+                                                    {{ freq|replace('-', ' ')|title }} Deadline
+                                                </label>
+                                                <div class="col-md-9">
+                                                    <input type="date" class="form-control"
+                                                           name="deadline_date"
+                                                           value="{{ deadlines[freq] if deadlines and deadlines[freq] else '' }}">
+                                                    <input type="hidden" name="deadline_type" value="{{ freq }}">
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+
+                                            <small class="form-text text-muted">
+                                                Set deadlines for different payment frequencies
+                                            </small>
                                         </div>
-                                        <button type="submit" class="btn btn-primary">Save Changes</button>
+
+                                        <div class="mt-4">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="mdi mdi-content-save mr-1"></i> Save All Changes
+                                            </button>
+                                        </div>
                                     </form>
                                 </div>
                             </div>

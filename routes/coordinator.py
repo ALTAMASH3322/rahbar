@@ -430,20 +430,20 @@ def monitor_payments_data():
     cursor = conn.cursor(dictionary=True)
 
     # Fetch DataTables parameters
-    draw = request.args.get('draw', default=1, type=int)  # Datatables draw counter
-    start = request.args.get('start', default=0, type=int)  # Pagination start index
-    length = request.args.get('length', default=10, type=int)  # Number of records per page
-    search_value = request.args.get('search[value]', default='', type=str)  # Search value
-    order_column = request.args.get('order[0][column]', default=0, type=int)  # Column to sort
-    order_dir = request.args.get('order[0][dir]', default='asc', type=str)  # Sort direction (asc/desc)
+    draw = request.args.get('draw', default=1, type=int)
+    start = request.args.get('start', default=0, type=int)
+    length = request.args.get('length', default=10, type=int)
+    search_value = request.args.get('search[value]', default='', type=str)
+    order_column = request.args.get('order[0][column]', default=0, type=int)
+    order_dir = request.args.get('order[0][dir]', default='asc', type=str)
 
-    # Map column index to column name
-    columns = ['payment_id', 'grantee_name', 'grantor_name', 'amount', 'status', 'receipt_url', 'comments']
+    # Map column index to column name (only required fields)
+    columns = ['grantee_name', 'grantor_name', 'amount', 'status', 'receipt_url']
     order_by = columns[order_column]  # Map the column index to column name
 
-    # Build the base SQL query
+    # Base SQL query
     base_query = """
-        SELECT p.*, u1.name AS grantee_name, u2.name AS grantor_name
+        SELECT u1.name AS grantee_name, u2.name AS grantor_name, p.amount, p.status, p.receipt_url
         FROM payments p
         JOIN users u1 ON p.grantee_id = u1.user_id
         JOIN users u2 ON p.grantor_id = u2.user_id
@@ -451,22 +451,28 @@ def monitor_payments_data():
 
     # Add search filter
     if search_value:
-        base_query += f" WHERE u1.name LIKE '%{search_value}%' OR u2.name LIKE '%{search_value}%' OR p.status LIKE '%{search_value}%'"
+        base_query += f" WHERE u1.name LIKE %s OR u2.name LIKE %s OR p.status LIKE %s"
+        search_param = f"%{search_value}%"
+        query_params = (search_param, search_param, search_param)
+    else:
+        query_params = ()
 
     # Add sorting
     base_query += f" ORDER BY {order_by} {order_dir}"
 
+    # Get total records count (before pagination)
+    count_query = f"SELECT COUNT(*) AS total FROM ({base_query}) AS subquery"
+    cursor.execute(count_query, query_params)
+    total_records = cursor.fetchone()['total']
+
     # Add pagination
-    paginated_query = base_query + f" LIMIT {start}, {length}"
+    paginated_query = base_query + " LIMIT %s, %s"
+    query_params += (start, length)
 
     try:
         # Fetch paginated data
-        cursor.execute(paginated_query)
+        cursor.execute(paginated_query, query_params)
         payments = cursor.fetchall()
-
-        # Get total number of records (without pagination)
-        cursor.execute(f"SELECT COUNT(*) AS total FROM ({base_query}) AS subquery")
-        total_records = cursor.fetchone()['total']
 
         # Prepare response for DataTables
         response = {
@@ -483,6 +489,7 @@ def monitor_payments_data():
     finally:
         cursor.close()
         conn.close()
+
 
 # View Uploaded File
 @coordinator_bp.route('/uploads/<filename>')

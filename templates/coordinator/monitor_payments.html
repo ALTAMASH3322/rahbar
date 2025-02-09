@@ -225,9 +225,9 @@
                       <table id="paymentsTable" class="table table-striped">
                         <thead>
                           <tr>
-                            <th>Payment ID</th>
-                            <th>Grantee</th>
-                            <th>Grantor</th>
+
+                            <th>Beneficiary</th>
+                            <th>Sponsor</th>
                             <th>Amount</th>
                             <th>Status</th>
                             <th>Receipt</th>
@@ -291,7 +291,7 @@
           dom: "Bfrtip",
           buttons: ["copy", "csv", "excel", "pdf", "print"],
           columns: [
-            { data: "payment_id" },
+
             { data: "grantee_name" },
             { data: "grantor_name" },
             { data: "amount" },
@@ -317,37 +317,8 @@
                   : "No Receipt";
               },
             },
-            { data: "comments" },
-            {
-              data: null,
-              render: function (data) {
-                return `
-                <form method="POST" action="{{ url_for('coordinator.monitor_payments_data') }}">
-                  <input type="hidden" name="payment_id" value="${
-                    data.payment_id
-                  }" />
-                  <select name="status" class="form-control form-control-sm">
-                    <option value="Paid" ${
-                      data.status === "Paid" ? "selected" : ""
-                    }>Paid</option>
-                    <option value="Pending" ${
-                      data.status === "Pending" ? "selected" : ""
-                    }>Pending</option>
-                    <option value="Approved" ${
-                      data.status === "Approved" ? "selected" : ""
-                    }>Approved</option>
-                    <option value="Rejected" ${
-                      data.status === "Rejected" ? "selected" : ""
-                    }>Rejected</option>
-                  </select>
-                  <textarea name="comments" class="form-control form-control-sm mt-2" placeholder="Add comments">${
-                    data.comments || ""
-                  }</textarea>
-                  <button type="submit" class="btn btn-sm btn-primary mt-2">Update</button>
-                </form>
-              `;
-              },
-            },
+
+
           ],
           responsive: true,
           language: {

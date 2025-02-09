@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Add Institution | Rahbar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="Add Institution for Rahbar Application" name="description" />
+    <meta content="Coderthemes" name="author" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- App favicon -->
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+
+    <!-- App css -->
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" id="bootstrap-stylesheet" />
+    <link href="{{ url_for('static', filename='css/icons.min.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ url_for('static', filename='css/app.min.css') }}" rel="stylesheet" type="text/css" id="app-stylesheet" />
+</head>
+
+<body>
+    <!-- Begin page -->
+    <div id="wrapper">
+
+        <!-- Topbar and Sidebar (same as manage_courses.html) -->
+        <!-- Copy the Topbar and Sidebar code from manage_courses.html here -->
+
+        <!-- ============================================================== -->
+        <!-- Start Page Content here -->
+        <!-- ============================================================== -->
+
+        <div class="content-page">
+            <div class="content">
+                <!-- Start Content-->
+                <div class="container-fluid">
+                    <!-- start page title -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="page-title-box">
+                                <h4 class="page-title">Add Institution</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- end page title -->
+
+                    <!-- Institution Form -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <form method="POST">
+                                        <div class="form-group">
+                                            <label for="institution_id">Institution ID</label>
+                                            <input type="text" class="form-control" id="institution_id" name="institution_id" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="institution_name">Institution Name</label>
+                                            <input type="text" class="form-control" id="institution_name" name="institution_name" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="address">Address</label>
+                                            <input type="text" class="form-control" id="address" name="address" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="contact_number">Contact Number</label>
+                                            <input type="text" class="form-control" id="contact_number" name="contact_number" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="email">Email</label>
+                                            <input type="email" class="form-control" id="email" name="email" required>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Save</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- end container-fluid -->
+            </div>
+            <!-- end content -->
+
+            <!-- Footer (same as manage_courses.html) -->
+            <!-- Copy the Footer code from manage_courses.html here -->
+        </div>
+        <!-- End Page content -->
+    </div>
+    <!-- END wrapper -->
+
+    <!-- Vendor js -->
+    <script src="{{ url_for('static', filename='js/vendor.min.js') }}"></script>
+
+    <!-- App js -->
+    <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
+</body>
+
+</html>

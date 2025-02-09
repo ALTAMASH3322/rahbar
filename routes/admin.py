@@ -692,9 +692,10 @@ def manage_rcc_centers():
 
 # Edit RCC Center
 @admin_bp.route('/edit_rcc_center/<int:rcc_center_id>', methods=['GET', 'POST'])
+@admin_bp.route('/edit_rcc_center', methods=['GET', 'POST'])  # Add this line to handle "Add New"
 @login_required
-def edit_rcc_center(rcc_center_id):
-    if current_user.role_id not in [1, 2]:  # Ensure only Admins can access this route
+def edit_rcc_center(rcc_center_id=None):  # Make rcc_center_id optional
+    if current_user.role_id not in [1, 2]:
         flash('You do not have permission to access this page.', 'error')
         return redirect(url_for('auth.login'))
 
@@ -702,20 +703,38 @@ def edit_rcc_center(rcc_center_id):
     cursor = conn.cursor(dictionary=True)
 
     if request.method == 'POST':
-        # Handle RCC center update
+        # Handle form submission
         center_name = request.form.get('center_name')
         incharge_name = request.form.get('incharge_name')
         contact_number = request.form.get('contact_number')
         location = request.form.get('location')
 
-        cursor.execute("""
-            UPDATE rcc_centers
-            SET center_name = %s, incharge_name = %s, contact_number = %s, location = %s
-            WHERE rcc_center_id = %s
-        """, (center_name, incharge_name, contact_number, location, rcc_center_id))
+        if rcc_center_id:  # Update existing RCC center
+            cursor.execute("""
+                UPDATE rcc_centers
+                SET center_name = %s, incharge_name = %s, contact_number = %s, location = %s
+                WHERE rcc_center_id = %s
+            """, (center_name, incharge_name, contact_number, location, rcc_center_id))
+        else:  # Create new RCC center
+            cursor.execute("""
+                INSERT INTO rcc_centers (center_name, incharge_name, contact_number, location)
+                VALUES (%s, %s, %s, %s)
+            """, (center_name, incharge_name, contact_number, location))
+
         conn.commit()
-        flash('RCC Center updated successfully!', 'success')
+        flash('RCC Center saved successfully!', 'success')
         return redirect(url_for('admin.manage_rcc_centers'))
+
+    # Fetch RCC center details (if editing)
+    rcc_center = None
+    if rcc_center_id:
+        cursor.execute("SELECT * FROM rcc_centers WHERE rcc_center_id = %s", (rcc_center_id,))
+        rcc_center = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+
+    return render_template('admin/edit_rcc_center.html', rcc_center=rcc_center)
 
     # Fetch RCC center details
     cursor.execute("SELECT * FROM rcc_centers WHERE rcc_center_id = %s", (rcc_center_id,))
@@ -806,9 +825,10 @@ def manage_courses():
 
 # Edit Course
 @admin_bp.route('/edit_course/<int:course_id>', methods=['GET', 'POST'])
+@admin_bp.route('/edit_course', methods=['GET', 'POST'])  # Add this line to handle "Add New"
 @login_required
-def edit_course(course_id):
-    if current_user.role_id not in [1, 2]:  # Ensure only Admins can access this route
+def edit_course(course_id=None):  # Make course_id optional
+    if current_user.role_id not in [1, 2]:
         flash('You do not have permission to access this page.', 'error')
         return redirect(url_for('auth.login'))
 
@@ -816,28 +836,37 @@ def edit_course(course_id):
     cursor = conn.cursor(dictionary=True)
 
     if request.method == 'POST':
-        # Handle course update
+        # Handle form submission
         institution_id = request.form.get('institution_id')
         course_name = request.form.get('course_name')
         course_description = request.form.get('course_description')
         fees_per_semester = request.form.get('fees_per_semester')
         number_of_semesters = request.form.get('number_of_semesters')
 
-        cursor.execute("""
-            UPDATE courses
-            SET institution_id = %s, course_name = %s, course_description = %s,
-                fees_per_semester = %s, number_of_semesters = %s
-            WHERE course_id = %s
-        """, (institution_id, course_name, course_description, fees_per_semester, number_of_semesters, course_id))
+        if course_id:  # Update existing course
+            cursor.execute("""
+                UPDATE courses
+                SET institution_id = %s, course_name = %s, course_description = %s,
+                    fees_per_semester = %s, number_of_semesters = %s
+                WHERE course_id = %s
+            """, (institution_id, course_name, course_description, fees_per_semester, number_of_semesters, course_id))
+        else:  # Create new course
+            cursor.execute("""
+                INSERT INTO courses (institution_id, course_name, course_description, fees_per_semester, number_of_semesters)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (institution_id, course_name, course_description, fees_per_semester, number_of_semesters))
+
         conn.commit()
-        flash('Course updated successfully!', 'success')
+        flash('Course saved successfully!', 'success')
         return redirect(url_for('admin.manage_courses'))
 
-    # Fetch course details
-    cursor.execute("SELECT * FROM courses WHERE course_id = %s", (course_id,))
-    course = cursor.fetchone()
+    # Fetch course details (if editing)
+    course = None
+    if course_id:
+        cursor.execute("SELECT * FROM courses WHERE course_id = %s", (course_id,))
+        course = cursor.fetchone()
 
-    # Fetch all institutions (if applicable)
+    # Fetch all institutions
     cursor.execute("SELECT * FROM institutions")
     institutions = cursor.fetchall()
 
@@ -871,3 +900,47 @@ def delete_course(course_id):
         conn.close()
 
     return redirect(url_for('admin.manage_courses'))
+
+
+# Add Institution Route
+@admin_bp.route('/add_institution', methods=['GET', 'POST'])
+@login_required
+def add_institution():
+    if current_user.role_id not in [1, 2]:  # Ensure only Admins can access this route
+        flash('You do not have permission to access this page.', 'error')
+        return redirect(url_for('auth.login'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    if request.method == 'POST':
+        try:
+            # Get form data
+            institution_id = request.form.get('institution_id')
+            institution_name = request.form.get('institution_name')
+            address = request.form.get('address')
+            contact_number = request.form.get('contact_number')
+            email = request.form.get('email')
+
+            # Insert into institutions table
+            cursor.execute("""
+                INSERT INTO institutions (institution_id, institution_name, address, contact_number, email)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (institution_id, institution_name, address, contact_number, email))
+
+            conn.commit()
+            flash('Institution added successfully!', 'success')
+            return redirect(url_for('admin.manage_courses'))
+
+        except mysql.connector.Error as err:
+            conn.rollback()
+            flash(f'Database error: {err.msg}', 'error')
+        except Exception as e:
+            conn.rollback()
+            flash(f'Error adding institution: {str(e)}', 'error')
+        finally:
+            cursor.close()
+            conn.close()
+
+    # For GET requests, render the form
+    return render_template('admin/add_institution.html')

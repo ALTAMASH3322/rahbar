@@ -20,34 +20,45 @@
 
 <body>
     <!-- Begin page -->
+     <!-- Begin page -->
     <div id="wrapper">
 
-        <!-- Topbar Start -->
-        <div class="navbar-custom">
-            <ul class="list-unstyled topnav-menu float-right mb-0">
-                <!-- User Dropdown -->
-                <li class="dropdown notification-list">
-                    <a class="nav-link dropdown-toggle nav-user mr-0 waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
-                        <img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" alt="user-image" class="rounded-circle">
-                        <span class="d-none d-sm-inline-block ml-1">{{ current_user.name }}</span>
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-right profile-dropdown">
-                        <a href="{{ url_for('auth.logout') }}" class="dropdown-item notify-item">
-                            <i class="mdi mdi-logout-variant"></i>
-                            <span>Logout</span>
-                        </a>
-                    </div>
-                </li>
-            </ul>
+       <!-- Topbar Start -->
+<!-- Topbar Start -->
+<div class="navbar-custom">
+    <div class="d-flex justify-content-between align-items-center w-100">
+        <!-- Left side - Admin Panel -->
+        <div>
+            <h6 class="page-title mb-0">Admin Panel</h6>
+        </div>
 
-            <!-- LOGO -->
+        <!-- Middle - Logo -->
+        <div>
             <a href="{{ url_for('main.homepage') }}" class="text-success">
                 <span style="display: inline-block; background-color: grey; color: white; font-weight: bold; padding: 10px; border-radius: 4px;">
                     RAHBAR
                 </span>
             </a>
         </div>
-        <!-- end Topbar -->
+
+        <!-- Right side - User Dropdown -->
+        <ul class="list-unstyled topnav-menu mb-0">
+            <li class="dropdown notification-list">
+                <a class="nav-link dropdown-toggle nav-user waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
+                    <img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" alt="user-image" class="rounded-circle">
+                    <span class="d-none d-sm-inline-block ml-1">{{ current_user.name }}</span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right profile-dropdown">
+                    <a href="{{ url_for('auth.logout') }}" class="dropdown-item notify-item">
+                        <i class="mdi mdi-logout-variant"></i>
+                        <span>Logout</span>
+                    </a>
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>
+<!-- end Topbar -->
 
         <!-- ========== Left Sidebar Start ========== -->
         <div class="left-side-menu">
@@ -70,20 +81,40 @@
                                 <span>Manage Users</span>
                             </a>
                         </li>
-                        <!-- Manage Courses -->
+                        <!-- System Configuration -->
                         <li>
-                            <a href="{{ url_for('admin.manage_courses') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-book-open"></i>
-                                <span>Manage Courses</span>
+                            <a href="{{ url_for('admin.system_configuration') }}" class="waves-effect waves-light">
+                                <i class="mdi mdi-settings"></i>
+                                <span>System Configuration</span>
                             </a>
                         </li>
-                        <!-- Manage RCC Centers -->
+                        <!-- Generate Reports -->
                         <li>
-                            <a href="{{ url_for('admin.manage_rcc_centers') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-bank"></i>
-                                <span>Manage RCC Centers</span>
+                            <a href="{{ url_for('admin.admin_generate_reports') }}" class="waves-effect waves-light">
+                                <i class="mdi mdi-chart-bar"></i>
+                                <span>Generate Reports</span>
                             </a>
                         </li>
+                        <!-- Application Period -->
+                        <li>
+                            <a href="{{ url_for('admin.manage_application_period') }}" class="waves-effect waves-light">
+                                <i class="mdi mdi-calendar"></i>
+                                <span>Application Period</span>
+                            </a>
+                        </li>
+                        <!-- In admin/dashboard.html -->
+<li>
+    <a href="{{ url_for('admin.manage_rcc_centers') }}" class="waves-effect waves-light">
+        <i class="mdi mdi-bank"></i>
+        <span>Manage RCC Centers</span>
+    </a>
+</li>
+<li>
+    <a href="{{ url_for('admin.manage_courses') }}" class="waves-effect waves-light">
+        <i class="mdi mdi-book-open"></i>
+        <span>Manage Courses</span>
+    </a>
+</li>
                     </ul>
                 </div>
                 <!-- End Sidebar -->
@@ -110,13 +141,16 @@
                     <!-- end page title -->
 
                     <!-- Add Course Button -->
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <a href="{{ url_for('admin.edit_course') }}" class="btn btn-primary">
-                                Add New Course
-                            </a>
-                        </div>
-                    </div>
+                   <div class="row mb-3">
+    <div class="col-12">
+        <a href="{{ url_for('admin.edit_course') }}" class="btn btn-primary">
+            Add New Course
+        </a>
+        <a href="{{ url_for('admin.add_institution') }}" class="btn btn-success">
+            Add New Institution
+        </a>
+    </div>
+</div>
 
                     <!-- Course Table -->
                     <div class="row">

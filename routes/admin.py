@@ -642,3 +642,232 @@ def update_application_status(grantee_detail_id):
     return render_template('admin/update_application_status.html',
                            application_id=grantee_detail_id,
                            current_status=current_status)
+
+
+
+# Manage RCC Centers
+@admin_bp.route('/manage_rcc_centers', methods=['GET', 'POST'])
+@login_required
+def manage_rcc_centers():
+    if current_user.role_id not in [1, 2]:  # Ensure only Admins can access this route
+        flash('You do not have permission to access this page.', 'error')
+        return redirect(url_for('auth.login'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    if request.method == 'POST':
+        # Handle RCC center creation or update
+        rcc_center_id = request.form.get('rcc_center_id')
+        center_name = request.form.get('center_name')
+        incharge_name = request.form.get('incharge_name')
+        contact_number = request.form.get('contact_number')
+        location = request.form.get('location')
+
+        if rcc_center_id:  # Update existing RCC center
+            cursor.execute("""
+                UPDATE rcc_centers
+                SET center_name = %s, incharge_name = %s, contact_number = %s, location = %s
+                WHERE rcc_center_id = %s
+            """, (center_name, incharge_name, contact_number, location, rcc_center_id))
+        else:  # Create new RCC center
+            cursor.execute("""
+                INSERT INTO rcc_centers (center_name, incharge_name, contact_number, location)
+                VALUES (%s, %s, %s, %s)
+            """, (center_name, incharge_name, contact_number, location))
+
+        conn.commit()
+        flash('RCC Center saved successfully!', 'success')
+        return redirect(url_for('admin.manage_rcc_centers'))
+
+    # Fetch all RCC centers
+    cursor.execute("SELECT * FROM rcc_centers")
+    rcc_centers = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return render_template('admin/manage_rcc_centers.html', rcc_centers=rcc_centers)
+
+
+# Edit RCC Center
+@admin_bp.route('/edit_rcc_center/<int:rcc_center_id>', methods=['GET', 'POST'])
+@login_required
+def edit_rcc_center(rcc_center_id):
+    if current_user.role_id not in [1, 2]:  # Ensure only Admins can access this route
+        flash('You do not have permission to access this page.', 'error')
+        return redirect(url_for('auth.login'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    if request.method == 'POST':
+        # Handle RCC center update
+        center_name = request.form.get('center_name')
+        incharge_name = request.form.get('incharge_name')
+        contact_number = request.form.get('contact_number')
+        location = request.form.get('location')
+
+        cursor.execute("""
+            UPDATE rcc_centers
+            SET center_name = %s, incharge_name = %s, contact_number = %s, location = %s
+            WHERE rcc_center_id = %s
+        """, (center_name, incharge_name, contact_number, location, rcc_center_id))
+        conn.commit()
+        flash('RCC Center updated successfully!', 'success')
+        return redirect(url_for('admin.manage_rcc_centers'))
+
+    # Fetch RCC center details
+    cursor.execute("SELECT * FROM rcc_centers WHERE rcc_center_id = %s", (rcc_center_id,))
+    rcc_center = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+
+    return render_template('admin/edit_rcc_center.html', rcc_center=rcc_center)
+
+
+# Delete RCC Center
+@admin_bp.route('/delete_rcc_center/<int:rcc_center_id>', methods=['GET'])
+@login_required
+def delete_rcc_center(rcc_center_id):
+    if current_user.role_id not in [1, 2]:  # Ensure only Admins can access this route
+        flash('You do not have permission to access this page.', 'error')
+        return redirect(url_for('auth.login'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    try:
+        # Delete RCC center
+        cursor.execute("DELETE FROM rcc_centers WHERE rcc_center_id = %s", (rcc_center_id,))
+        conn.commit()
+        flash('RCC Center deleted successfully!', 'success')
+    except Exception as e:
+        conn.rollback()
+        flash(f'An error occurred: {str(e)}', 'error')
+    finally:
+        cursor.close()
+        conn.close()
+
+    return redirect(url_for('admin.manage_rcc_centers'))
+
+
+# Manage Courses
+@admin_bp.route('/manage_courses', methods=['GET', 'POST'])
+@login_required
+def manage_courses():
+    if current_user.role_id not in [1, 2]:  # Ensure only Admins can access this route
+        flash('You do not have permission to access this page.', 'error')
+        return redirect(url_for('auth.login'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    if request.method == 'POST':
+        # Handle course creation or update
+        course_id = request.form.get('course_id')
+        institution_id = request.form.get('institution_id')
+        course_name = request.form.get('course_name')
+        course_description = request.form.get('course_description')
+        fees_per_semester = request.form.get('fees_per_semester')
+        number_of_semesters = request.form.get('number_of_semesters')
+
+        if course_id:  # Update existing course
+            cursor.execute("""
+                UPDATE courses
+                SET institution_id = %s, course_name = %s, course_description = %s,
+                    fees_per_semester = %s, number_of_semesters = %s
+                WHERE course_id = %s
+            """, (institution_id, course_name, course_description, fees_per_semester, number_of_semesters, course_id))
+        else:  # Create new course
+            cursor.execute("""
+                INSERT INTO courses (institution_id, course_name, course_description, fees_per_semester, number_of_semesters)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (institution_id, course_name, course_description, fees_per_semester, number_of_semesters))
+
+        conn.commit()
+        flash('Course saved successfully!', 'success')
+        return redirect(url_for('admin.manage_courses'))
+
+    # Fetch all courses
+    cursor.execute("SELECT * FROM courses")
+    courses = cursor.fetchall()
+
+    # Fetch all institutions (if applicable)
+    cursor.execute("SELECT * FROM institutions")
+    institutions = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return render_template('admin/manage_courses.html', courses=courses, institutions=institutions)
+
+
+# Edit Course
+@admin_bp.route('/edit_course/<int:course_id>', methods=['GET', 'POST'])
+@login_required
+def edit_course(course_id):
+    if current_user.role_id not in [1, 2]:  # Ensure only Admins can access this route
+        flash('You do not have permission to access this page.', 'error')
+        return redirect(url_for('auth.login'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    if request.method == 'POST':
+        # Handle course update
+        institution_id = request.form.get('institution_id')
+        course_name = request.form.get('course_name')
+        course_description = request.form.get('course_description')
+        fees_per_semester = request.form.get('fees_per_semester')
+        number_of_semesters = request.form.get('number_of_semesters')
+
+        cursor.execute("""
+            UPDATE courses
+            SET institution_id = %s, course_name = %s, course_description = %s,
+                fees_per_semester = %s, number_of_semesters = %s
+            WHERE course_id = %s
+        """, (institution_id, course_name, course_description, fees_per_semester, number_of_semesters, course_id))
+        conn.commit()
+        flash('Course updated successfully!', 'success')
+        return redirect(url_for('admin.manage_courses'))
+
+    # Fetch course details
+    cursor.execute("SELECT * FROM courses WHERE course_id = %s", (course_id,))
+    course = cursor.fetchone()
+
+    # Fetch all institutions (if applicable)
+    cursor.execute("SELECT * FROM institutions")
+    institutions = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return render_template('admin/edit_course.html', course=course, institutions=institutions)
+
+
+# Delete Course
+@admin_bp.route('/delete_course/<int:course_id>', methods=['GET'])
+@login_required
+def delete_course(course_id):
+    if current_user.role_id not in [1, 2]:  # Ensure only Admins can access this route
+        flash('You do not have permission to access this page.', 'error')
+        return redirect(url_for('auth.login'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    try:
+        # Delete course
+        cursor.execute("DELETE FROM courses WHERE course_id = %s", (course_id,))
+        conn.commit()
+        flash('Course deleted successfully!', 'success')
+    except Exception as e:
+        conn.rollback()
+        flash(f'An error occurred: {str(e)}', 'error')
+    finally:
+        cursor.close()
+        conn.close()
+
+    return redirect(url_for('admin.manage_courses'))

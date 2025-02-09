@@ -3,9 +3,9 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>Admin Dashboard | Rahbar</title>
+    <title>{% if course %}Edit{% else %}Add{% endif %} Course | Rahbar</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta content="Admin Dashboard for Rahbar Application" name="description" />
+    <meta content="Edit Course for Rahbar Application" name="description" />
     <meta content="Coderthemes" name="author" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
@@ -70,40 +70,20 @@
                                 <span>Manage Users</span>
                             </a>
                         </li>
-                        <!-- System Configuration -->
+                        <!-- Manage Courses -->
                         <li>
-                            <a href="{{ url_for('admin.system_configuration') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-settings"></i>
-                                <span>System Configuration</span>
+                            <a href="{{ url_for('admin.manage_courses') }}" class="waves-effect waves-light">
+                                <i class="mdi mdi-book-open"></i>
+                                <span>Manage Courses</span>
                             </a>
                         </li>
-                        <!-- Generate Reports -->
+                        <!-- Manage RCC Centers -->
                         <li>
-                            <a href="{{ url_for('admin.admin_generate_reports') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-chart-bar"></i>
-                                <span>Generate Reports</span>
+                            <a href="{{ url_for('admin.manage_rcc_centers') }}" class="waves-effect waves-light">
+                                <i class="mdi mdi-bank"></i>
+                                <span>Manage RCC Centers</span>
                             </a>
                         </li>
-                        <!-- Application Period -->
-                        <li>
-                            <a href="{{ url_for('admin.manage_application_period') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-calendar"></i>
-                                <span>Application Period</span>
-                            </a>
-                        </li>
-                        <!-- In admin/dashboard.html -->
-<li>
-    <a href="{{ url_for('admin.manage_rcc_centers') }}" class="waves-effect waves-light">
-        <i class="mdi mdi-bank"></i>
-        <span>Manage RCC Centers</span>
-    </a>
-</li>
-<li>
-    <a href="{{ url_for('admin.manage_courses') }}" class="waves-effect waves-light">
-        <i class="mdi mdi-book-open"></i>
-        <span>Manage Courses</span>
-    </a>
-</li>
                     </ul>
                 </div>
                 <!-- End Sidebar -->
@@ -123,55 +103,46 @@
                     <div class="row">
                         <div class="col-12">
                             <div class="page-title-box">
-                                <h4 class="page-title">Admin Dashboard</h4>
+                                <h4 class="page-title">{% if course %}Edit{% else %}Add{% endif %} Course</h4>
                             </div>
                         </div>
                     </div>
                     <!-- end page title -->
 
-                    <!-- Summary Cards -->
-                    <div class="row">
-                        <div class="col-md-6 col-xl-3">
-                            <div class="card-box">
-                                <h4 class="header-title mt-0 mb-3">Total Users</h4>
-                                <h2 class="text-primary">{{ users|length }}</h2>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-xl-3">
-                            <div class="card-box">
-                                <h4 class="header-title mt-0 mb-3">Total Applications</h4>
-                                <h2 class="text-success">{{ applications|length }}</h2>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-xl-3">
-                            <div class="card-box">
-                                <h4 class="header-title mt-0 mb-3">Total Payments</h4>
-                                <h2 class="text-info">{{ payments|length }}</h2>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-xl-3">
-                            <div class="card-box">
-                                <h4 class="header-title mt-0 mb-3">Active Sponsors</h4>
-                                <h2 class="text-warning">{{ sponsors_convenors|length }}</h2>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- End Summary Cards -->
-
-                    <!-- Application Period Status -->
+                    <!-- Course Form -->
                     <div class="row">
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-body">
-                                    <h4 class="header-title">Application Period Status</h4>
-                                    <p>
-                                        {% if application_period and application_period.is_active %}
-                                            <span class="badge badge-success">Active</span>
-                                            ({{ application_period.start_date }} to {{ application_period.end_date }})
-                                        {% else %}
-                                            <span class="badge badge-danger">Inactive</span>
-                                        {% endif %}
-                                    </p>
+                                    <form method="POST">
+                                        <div class="form-group">
+                                            <label for="institution_id">Institution</label>
+                                            <select class="form-control" id="institution_id" name="institution_id" required>
+                                                {% for institution in institutions %}
+                                                    <option value="{{ institution.institution_id }}" {% if course and course.institution_id == institution.institution_id %}selected{% endif %}>
+                                                        {{ institution.institution_name }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="course_name">Course Name</label>
+                                            <input type="text" class="form-control" id="course_name" name="course_name" value="{{ course.course_name if course }}" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="course_description">Course Description</label>
+                                            <textarea class="form-control" id="course_description" name="course_description" required>{{ course.course_description if course }}</textarea>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="fees_per_semester">Fees per Semester</label>
+                                            <input type="number" class="form-control" id="fees_per_semester" name="fees_per_semester" value="{{ course.fees_per_semester if course }}" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="number_of_semesters">Number of Semesters</label>
+                                            <input type="number" class="form-control" id="number_of_semesters" name="number_of_semesters" value="{{ course.number_of_semesters if course }}" required>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Save</button>
+                                    </form>
                                 </div>
                             </div>
                         </div>

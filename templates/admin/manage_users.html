@@ -155,6 +155,32 @@
                             <div class="card">
                                 <div class="card-body">
                                     <h4 class="header-title">User List</h4>
+                                <!-- Filters -->
+<div class="row mb-3">
+    <div class="col-md-3">
+        <input type="text" class="form-control" id="searchName" placeholder="Filter by Name">
+    </div>
+    <div class="col-md-3">
+        <input type="text" class="form-control" id="searchEmail" placeholder="Filter by Email">
+    </div>
+    <div class="col-md-3">
+        <select class="form-control" id="searchRole">
+            <option value="">Filter by Role</option>
+            {% for role in roles %}
+            <option value="{{ role.role_name }}">{{ role.role_name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-3">
+        <select class="form-control" id="searchStatus">
+            <option value="">Filter by Status</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+        </select>
+    </div>
+</div>
+
+
                                     <table class="table table-striped">
                                         <thead>
                                             <tr>
@@ -256,6 +282,54 @@
 
     <!-- App js -->
     <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const searchName = document.getElementById("searchName");
+    const searchEmail = document.getElementById("searchEmail");
+    const searchRole = document.getElementById("searchRole");
+    const searchStatus = document.getElementById("searchStatus");
+    const tableRows = document.querySelectorAll("table tbody tr");
+
+    function filterUsers() {
+        const nameFilter = searchName.value.toLowerCase();
+        const emailFilter = searchEmail.value.toLowerCase();
+        const roleFilter = searchRole.value.toLowerCase();
+        const statusFilter = searchStatus.value.toLowerCase();
+
+        tableRows.forEach(row => {
+            const name = row.cells[0].textContent.toLowerCase();
+            const email = row.cells[1].textContent.toLowerCase();
+            const role = row.cells[2].textContent.toLowerCase();
+            const status = row.cells[3].textContent.toLowerCase();
+
+            if (
+                (name.includes(nameFilter) || nameFilter === "") &&
+                (email.includes(emailFilter) || emailFilter === "") &&
+                (role.includes(roleFilter) || roleFilter === "") &&
+                (status.includes(statusFilter) || statusFilter === "")
+            ) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
+    }
+
+    searchName.addEventListener("keyup", filterUsers);
+    searchEmail.addEventListener("keyup", filterUsers);
+    searchRole.addEventListener("change", filterUsers);
+    searchStatus.addEventListener("change", filterUsers);
+});
+</script>
+
+
+
+
+
+
+
 </body>
 
 </html>

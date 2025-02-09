@@ -809,8 +809,12 @@ def manage_courses():
         flash('Course saved successfully!', 'success')
         return redirect(url_for('admin.manage_courses'))
 
-    # Fetch all courses
-    cursor.execute("SELECT * FROM courses")
+    # Fetch all courses with institution names
+    cursor.execute("""
+        SELECT c.*, i.institution_name 
+        FROM courses c
+        JOIN institutions i ON c.institution_id = i.institution_id
+    """)
     courses = cursor.fetchall()
 
     # Fetch all institutions (if applicable)
@@ -944,3 +948,76 @@ def add_institution():
 
     # For GET requests, render the form
     return render_template('admin/add_institution.html')
+
+
+# View Applications List
+@admin_bp.route('/applications', methods=['GET'])
+def view_applications():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT g.grantee_detail_id, g.father_name, g.mother_name, g.rcc_name, a.status 
+        FROM grantee_details g
+        LEFT JOIN application_status a ON g.grantee_detail_id = a.grantee_detail_id
+    """)
+    applications = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return render_template('applications.html', applications=applications)
+
+
+# View and Update Application
+@admin_bp.route('/application/<int:application_id>', methods=['GET', 'POST'])
+def view_application(application_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Fetch application details
+    cursor.execute("""
+        SELECT g.*, a.status, a.comments 
+        FROM grantee_details g
+        LEFT JOIN application_status a ON g.grantee_detail_id = a.grantee_detail_id
+        WHERE g.grantee_detail_id = %s
+    """, (application_id,))
+    application = cursor.fetchone()
+
+    if not application:
+        flash("Application not found!", "error")
+        return redirect(url_for('admin.view_applications'))
+
+    if request.method == 'POST':
+        try:
+            new_status = request.form['status']
+            comments = request.form['comments']
+
+            # Ensure valid status
+            valid_statuses = ['draft', 'submitted', 'interviewing', 'accepted', 'rejected']
+            if new_status not in valid_statuses:
+                flash("Invalid status selected!", "error")
+                return redirect(url_for('admin.view_application', application_id=application_id))
+
+            # Update application status
+            cursor.execute("""
+                INSERT INTO application_status (grantee_detail_id, status, comments, updated_by, created_at, updated_at)
+                VALUES (%s, %s, %s, %s, NOW(), NOW())
+                ON DUPLICATE KEY UPDATE status = VALUES(status), comments = VALUES(comments), updated_at = NOW()
+            """, (application_id, new_status, comments, None))  # Replace None with user ID if authentication exists
+
+            conn.commit()
+            flash("Application status updated successfully!", "success")
+            return redirect(url_for('admin.view_application', application_id=application_id))
+        except mysql.connector.Error as err:
+            conn.rollback()
+            flash(f'Database error: {err.msg}', 'error')
+        except Exception as e:
+            conn.rollback()
+            flash(f'Error updating application: {str(e)}', 'error')
+
+    cursor.close()
+    conn.close()
+
+    return render_template('application_details.html', application=application,
+                           statuses=['draft', 'submitted', 'interviewing', 'accepted', 'rejected'])

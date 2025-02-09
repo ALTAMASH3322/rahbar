@@ -58,7 +58,7 @@
                                     <td>{{ application.rcc_name }}</td>
                                     <td><span class="badge badge-info">{{ application.status }}</span></td>
                                     <td>
-                                        <a href="{{ url_for('admin.view_application_details', application_id=application.grantee_detail_id) }}" class="btn btn-primary btn-sm">
+                                        <a href="{{ url_for('admin.view_application', application_id=application.grantee_detail_id) }}" class="btn btn-primary btn-sm">
                                             View Details
                                         </a>
                                     </td>

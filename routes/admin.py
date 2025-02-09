@@ -982,6 +982,7 @@ def view_application(application_id):
         LEFT JOIN application_status a ON g.grantee_detail_id = a.grantee_detail_id
         WHERE g.grantee_detail_id = %s
     """, (application_id,))
+    print(application_id)
     application = cursor.fetchone()
 
     if not application:
@@ -1000,11 +1001,13 @@ def view_application(application_id):
                 return redirect(url_for('admin.view_application', application_id=application_id))
 
             # Update application status
+            #print(f"This is the issue in the code{application_id}")
             cursor.execute("""
-                INSERT INTO application_status (grantee_detail_id, status, comments, updated_by, created_at, updated_at)
-                VALUES (%s, %s, %s, %s, NOW(), NOW())
-                ON DUPLICATE KEY UPDATE status = VALUES(status), comments = VALUES(comments), updated_at = NOW()
-            """, (application_id, new_status, comments, None))  # Replace None with user ID if authentication exists
+                UPDATE application_status
+                SET status = %s, comments = %s, updated_at = NOW()
+                WHERE grantee_detail_id = %s
+            """, (new_status, comments, application_id))
+            # Replace None with user ID if authentication exists
 
             conn.commit()
             flash("Application status updated successfully!", "success")

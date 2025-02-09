@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Applications | Rahbar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="Scholarship Applications" name="description">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <!-- App favicon -->
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+
+    <!-- App css -->
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/app.min.css') }}" rel="stylesheet">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-10">
+                <div class="text-center mb-4">
+                    <a href="{{ url_for('main.homepage') }}" class="text-success">
+                        <span style="display: inline-block; background-color: grey; color: white; font-weight: bold; padding: 10px; border-radius: 4px;">
+                            RAHBAR SCHOLARSHIP APPLICATIONS
+                        </span>
+                    </a>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="header-title mb-3">Application List</h4>
+
+                        {% with messages = get_flashed_messages() %}
+                            {% if messages %}
+                                <div class="alert alert-info">
+                                    {% for message in messages %}
+                                        {{ message }}<br>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        {% endwith %}
+
+                        <table class="table table-bordered">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Applicant Name</th>
+                                    <th>RCC Center</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for application in applications %}
+                                <tr>
+                                    <td>{{ application.grantee_detail_id }}</td>
+                                    <td>{{ application.father_name }}'s Child</td>
+                                    <td>{{ application.rcc_name }}</td>
+                                    <td><span class="badge badge-info">{{ application.status }}</span></td>
+                                    <td>
+                                        <a href="{{ url_for('admin.view_application_details', application_id=application.grantee_detail_id) }}" class="btn btn-primary btn-sm">
+                                            View Details
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/vendor.min.js') }}"></script>
+</body>
+</html>

@@ -170,9 +170,9 @@ def manage_users():
             password = request.form.get('password')
             hashed_password = generate_password_hash(password)
             cursor.execute("""
-                INSERT INTO users (name, email, role_id, status, password_hash, created_at, updated_at)
+                INSERT INTO users (user_id, name, email, role_id, status, password_hash, created_at, updated_at)
                 VALUES (%s, %s, %s, %s, %s, NOW(), NOW())
-            """, (name, email, role_id, status, hashed_password))
+            """, (user_id, name, email, role_id, status, hashed_password))
 
         conn.commit()
         flash('User saved successfully!', 'success')
@@ -210,6 +210,7 @@ def edit_user(user_id):
 
     if request.method == 'POST':
         # Handle user update
+
         name = request.form.get('name')
         email = request.form.get('email')
         role_id = request.form.get('role_id')

@@ -156,23 +156,18 @@ def manage_users():
         # Handle user creation or update
         user_id = request.form.get('user_id')
         name = request.form.get('name')
+        contact = request.form.get('contact')
         email = request.form.get('email')
         role_id = request.form.get('role_id')
         status = request.form.get('status')
+        password = request.form.get('password')
+        hashed_password = generate_password_hash(password)
+        cursor.execute("""
+            INSERT INTO users (user_id, name, email,phone, role_id, status, password_hash, created_at, updated_at)
+            VALUES (%s, %s, %s, %s, %s,%s,%s, NOW(), NOW())
+        """, (user_id, name, email,contact, role_id, status, hashed_password))
 
-        if user_id:  # Update existing user
-            cursor.execute("""
-                UPDATE users
-                SET name = %s, email = %s, role_id = %s, status = %s
-                WHERE user_id = %s
-            """, (name, email, role_id, status, user_id))
-        else:  # Create new user
-            password = request.form.get('password')
-            hashed_password = generate_password_hash(password)
-            cursor.execute("""
-                INSERT INTO users (user_id, name, email, role_id, status, password_hash, created_at, updated_at)
-                VALUES (%s, %s, %s, %s, %s, NOW(), NOW())
-            """, (user_id, name, email, role_id, status, hashed_password))
+        print(user_id, name, email, role_id, status, hashed_password)
 
         conn.commit()
         flash('User saved successfully!', 'success')

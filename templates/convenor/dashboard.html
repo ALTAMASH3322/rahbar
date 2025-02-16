@@ -144,11 +144,11 @@
                                         <ul class="list-group">
                                             {% for grantee in grantees %}
                                                 <li class="list-group-item">
-                                                    <strong>{{ grantee.name }}</strong> - {{ grantee.email }}
-                                                    <a href="{{ url_for('convenor.view_student_progress', grantee_id=grantee.user_id) }}" class="btn btn-sm btn-primary float-right">
-                                                        View Progress
-                                                    </a>
-                                                </li>
+    <strong>{{ grantee.name }}</strong> - {{ grantee.email }} - {{ grantee.phone }} -
+    <span class="{% if status == 'paid' %}text-success{% else %}text-danger{% endif %}">
+        {{ status }}
+    </span>
+</li>
                                             {% endfor %}
                                         </ul>
                                     </div>

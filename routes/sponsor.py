@@ -153,7 +153,7 @@ def sponsor_payments():
         elif frequency == 4:
             # Check if payment_date is within the last month
             one_month_ago = current_date - timedelta(days=30)
-            if payments[0]["payment_date"] >= one_month_ago:
+            if payments[0]["payment_date"] >= one_month_ago   and payments[0]["payment_date"] >= payment_schedules[3]["updated_at"]:
                 status = "paid"
 
 

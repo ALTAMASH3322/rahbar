@@ -80,6 +80,8 @@ def convenor_dashboard():
         grantee = cursor.fetchone()
         grantees.append(grantee)
 
+    status = "unpaid"
+
     for gg in grantor_grantee:
         cursor.execute("SELECT * FROM users WHERE user_id = %s", (gg['grantee_id'],))
         grantee = cursor.fetchone()
@@ -94,7 +96,7 @@ def convenor_dashboard():
         cursor.execute("Select * from payment_schedules")
         payment_schedules = cursor.fetchall()
         frequency = 1
-        status = "pending"
+        status = "unpaid"
         print(payments, end=" ")
         print(payment_schedules)
         for i in payment_schedules:

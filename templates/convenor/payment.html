@@ -69,23 +69,36 @@
                         <li class="menu-title">Navigation</li>
                         <!-- Dashboard -->
                         <li>
-                            <a href="{{ url_for('sponsor.sponsor_dashboard') }}" class="waves-effect waves-light">
+                            <a href="{{ url_for('convenor.convenor_dashboard') }}" class="waves-effect waves-light">
                                 <i class="mdi mdi-view-dashboard"></i>
                                 <span>Dashboard</span>
                             </a>
                         </li>
-                        <!-- Payments -->
+                        <!-- Applications -->
                         <li>
-                            <a href="{{ url_for('sponsor.sponsor_payments') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-cash-multiple"></i>
-                                <span>Payments</span>
+                            <a href="{{ url_for('admin.view_applications') }}" class="waves-effect waves-light">
+                                <i class="mdi mdi-file-document"></i>
+                                <span>View Applications</span>
                             </a>
                         </li>
-                        <!-- Progress -->
+                        <!-- Sponsors -->
                         <li>
-                            <a href="{{ url_for('sponsor.sponsor_student_progress') }}" class="waves-effect waves-light">
+                            <a href="{{ url_for('convenor.manage_sponsors') }}" class="waves-effect waves-light">
+                                <i class="mdi mdi-account-multiple"></i>
+                                <span>Manage Sponsors</span>
+                            </a>
+                        </li>
+                        <!-- Student Progress -->
+                        <li>
+                            <a href="{{ url_for('convenor.view_student_progress') }}" class="waves-effect waves-light">
                                 <i class="mdi mdi-chart-line"></i>
                                 <span>Student Progress</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('convenor.convenor_payments') }}" class="waves-effect waves-light">
+                                <i class="mdi mdi-account-multiple"></i>
+                                <span>Payments</span>
                             </a>
                         </li>
                     </ul>

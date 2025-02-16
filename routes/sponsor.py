@@ -49,6 +49,9 @@ def sponsor_dashboard():
         grantee = cursor.fetchone()
         grantees.append(grantee)
 
+
+
+
     cursor.close()
     conn.close()
 
@@ -110,8 +113,50 @@ def sponsor_payments():
         cursor.execute("SELECT * FROM bank_details WHERE user_id = %s", (gg['grantee_id'],))
         bank_details = cursor.fetchone()
 
-        cursor.execute("SELECT * FROM payments WHERE grantee_id = %s", (gg['grantee_id'],))
+        cursor.execute("SELECT * FROM payments WHERE grantee_id = %s order by payment_date DESC LIMIT 1", (gg['grantee_id'],))
         payments = cursor.fetchall()
+
+        cursor.execute("Select * from payment_schedules")
+        payment_schedules = cursor.fetchall()
+        frequency = 1
+        status = "pending"
+        print(payments, end=" ")
+        print(payment_schedules)
+        for i in payment_schedules:
+            if payments[0]["amount"] == i["amount"]:
+                frequency = i["schedule_id"]
+
+        from datetime import datetime, timedelta
+
+        # Get the current date
+        current_date = datetime.now()
+
+        # Initialize status
+        status = "unpaid"
+
+        # Define the time periods based on frequency
+        if frequency == 1:
+            # Check if payment_date is within the last year
+            one_year_ago = current_date - timedelta(days=365)
+            if payments[0]["payment_date"] >= one_year_ago:
+                status = "paid"
+        elif frequency == 2:
+            # Check if payment_date is within the last 6 months
+            six_months_ago = current_date - timedelta(days=180)
+            if payments[0]["payment_date"] >= six_months_ago:
+                status = "paid"
+        elif frequency == 3:
+            # Check if payment_date is within the last 3 months
+            three_months_ago = current_date - timedelta(days=90)
+            if payments[0]["payment_date"] >= three_months_ago:
+                status = "paid"
+        elif frequency == 4:
+            # Check if payment_date is within the last month
+            one_month_ago = current_date - timedelta(days=30)
+            if payments[0]["payment_date"] >= one_month_ago:
+                status = "paid"
+
+
 
         cursor.execute("SELECT due_date FROM payments WHERE grantee_id = %s ORDER BY due_date DESC LIMIT 1", (gg['grantee_id'],))
         due_date = cursor.fetchone()
@@ -120,7 +165,7 @@ def sponsor_payments():
             "grantee": grantee,
             "bank_details": bank_details,
             "payments": payments,
-            "due_date": due_date['due_date'] if due_date else None
+            "due_date": status
         })
 
     # Fetch past payments

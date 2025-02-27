@@ -1,7 +1,8 @@
-from flask import Flask
+from flask import Flask, Response
 from flask_login import LoginManager, UserMixin
 import mysql.connector
 from config import Config as c  # Import your config
+from flask_talisman import Talisman  # Install with: pip install flask-talisman
 
 # Initialize Flask-Login
 login_manager = LoginManager()
@@ -25,7 +26,6 @@ class User(UserMixin):
     def get_id(self):
         return str(self.user_id)
 
-    # Flask-Login required methods
     @property
     def is_authenticated(self):
         return True
@@ -41,49 +41,56 @@ class User(UserMixin):
 # User loader function
 @login_manager.user_loader
 def load_user(user_id):
-    #print(f"Loading user with ID: {user_id}")  # Debugging
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-
-    # Fetch user from the database
+    
     cursor.execute("SELECT * FROM users WHERE user_id = %s", (user_id,))
     user_dict = cursor.fetchone()
 
     cursor.close()
     conn.close()
 
-    if user_dict:
-        #print(f"User found: {user_dict}")  # Debugging
-        return User(user_dict)
-    #print("User not found")  # Debugging
-    return None  # Return None if the user is not found
+    return User(user_dict) if user_dict else None  # Return User object if found
 
+# Function to create Flask app
 def create_app():
     app = Flask(__name__)
 
     # Load configuration
     app.config.from_object('config.Config')
 
-    # Set a secret key for session management
+    # Set a strong secret key for session management
     import os
+    app.secret_key = os.urandom(24).hex()  
 
-    app.secret_key = os.urandom(24).hex()  # Replace with a strong secret key
-
-    # Initialize extensions
+    # Initialize Flask-Login
     login_manager.init_app(app)
-
-    # Configure Flask-Login
     login_manager.login_view = 'auth.login'  # Redirect to login page if unauthorized
     login_manager.login_message = 'Please log in to access this page.'
     login_manager.login_message_category = 'error'
 
-    # Debugging: #print current_user for every request
-    @app.before_request
-    def before_request():
-        from flask_login import current_user
-        #print(f"Current User: {current_user}")  # Debugging
+    # Content Security Policy (CSP) Configuration
+    csp = {
+        'default-src': "'self'",
+        'script-src': [
+            "'self'",  # Allow scripts from the same origin
+            "https://cdn.datatables.net",  # Allow DataTables CDN
+            "https://code.jquery.com",  # Allow jQuery CDN
+            "https://cdnjs.cloudflare.com",  # Allow Bootstrap & FontAwesome
+            "'unsafe-inline'"  # Allow inline scripts (if needed)
+        ],
+        'style-src': [
+            "'self'",
+            "https://cdn.datatables.net",
+            "https://cdnjs.cloudflare.com",
+            "'unsafe-inline'"
+        ],
+    }
 
-    # Import and register Blue#prints
+    # Apply security policies with Talisman
+    Talisman(app, content_security_policy=csp)
+
+    # Import and register Blueprints
     from routes.auth import auth_bp
     from routes.main import main_bp
     from routes.convenor import convenor_bp

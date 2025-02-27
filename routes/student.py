@@ -55,6 +55,20 @@ def student_dashboard():
 
     return render_template('student/dashboard.html', student=student, sponsor=sponsor)
 
+def get_bank_details(user_id):
+    """Fetch bank details for a given user."""
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    cursor.execute("SELECT * FROM bank_details WHERE user_id = %s", (user_id,))
+    bank_details = cursor.fetchone()
+    
+    cursor.close()
+    conn.close()
+    
+    return bank_details if bank_details else {}
+
+
 # Student Payment History
 @student_bp.route('/student_payments', methods=['GET'])
 @login_required
@@ -74,7 +88,10 @@ def student_payments():
     cursor.close()
     conn.close()
 
-    return render_template('student/payment.html', payments=payments)
+    bank_details = get_bank_details(current_user.user_id)
+    
+
+    return render_template('student/payment.html', payments=payments , bank_details=bank_details)
 
 # Student Progress (Upload Marks and Files)
 from flask import send_from_directory
@@ -82,6 +99,61 @@ from flask import send_from_directory
 @student_bp.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory('uploads', filename)
+
+
+from flask import jsonify, request
+
+@student_bp.route('/edit_bank_details', methods=['GET', 'POST'])
+@login_required
+def edit_bank_details():
+    if current_user.role_id != 6:
+        return jsonify({'success': False, 'message': 'Unauthorized access'}), 403
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    if request.method == 'POST':
+        # Fetch form data
+        
+
+
+        bank_name = request.json.get('bank_name')
+        account_number = request.json.get('account_number')
+        ifsc_code = request.json.get('ifsc_code')
+        account_name = request.json.get('account_name')
+
+        try:
+            bank_details = get_bank_details(current_user.user_id)
+
+            if bank_details:
+                cursor.execute(
+                    "UPDATE bank_details SET bank_name = %s, account_number = %s, ifsc_code = %s, account_name = %s WHERE user_id = %s",
+                    (bank_name, account_number, ifsc_code, account_name, current_user.user_id)
+                )
+            else:
+                cursor.execute(
+                    "INSERT INTO bank_details (user_id, bank_name, account_number, ifsc_code, account_name) VALUES (%s, %s, %s, %s, %s)",
+                    (current_user.user_id, bank_name, account_number, ifsc_code, account_name)
+                )
+
+            conn.commit()
+            return jsonify({'success': True, 'message': 'Bank details updated successfully!'})
+
+        except Exception as e:
+            print(f"Database Error: {e}")
+            conn.rollback()
+            return jsonify({'success': False, 'message': 'An error occurred while updating bank details'})
+
+    else:
+        # Return bank details as JSON
+        bank_details = get_bank_details(current_user.user_id)
+        print(bank_details)
+        return jsonify(bank_details if bank_details else {})
+
+    
+
+            
+
 
 @student_bp.route('/student_progress', methods=['GET', 'POST'])
 @login_required

@@ -266,63 +266,74 @@
     <!-- Custom Script for DataTables -->
     <script>
       $(document).ready(function () {
-        var table = $("#paymentsTable").DataTable({
-          processing: true,
-          serverSide: true,
-          ajax: {
+    var table = $("#paymentsTable").DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
             url: "{{ url_for('coordinator.monitor_payments_data') }}",
             type: "GET",
-          },
-          dom: "Bfrtip",
-          buttons: ["copy", "csv", "excel", "pdf", "print"],
-          columns: [
-
+            dataSrc: function (json) {
+                console.log("DataTables API Response:", json);  // Debugging
+                if (json.error) {
+                    alert("Error: " + json.error);
+                    return [];
+                }
+                return json.data;
+            },
+            error: function (xhr, error, code) {
+                console.error("AJAX Error:", xhr.responseText);
+            },
+        },
+        dom: "Bfrtip",
+        buttons: ["copy", "csv", "excel", "pdf", "print"],
+        columns: [
             { data: "grantee_name" },
             { data: "grantor_name" },
             { data: "amount" },
             {
-              data: "status",
-              render: function (data) {
-                if (data === "Paid")
-                  return '<span class="badge badge-success">Paid</span>';
-                if (data === "Pending")
-                  return '<span class="badge badge-warning">Pending</span>';
-                if (data === "Approved")
-                  return '<span class="badge badge-primary">Approved</span>';
-                if (data === "Rejected")
-                  return '<span class="badge badge-danger">Rejected</span>';
-                return data;
-              },
+                data: "status",
+                render: function (data) {
+                    let statusClass = {
+                        "Paid": "badge-success",
+                        "Pending": "badge-warning",
+                        "Approved": "badge-primary",
+                        "Rejected": "badge-danger"
+                    };
+                    return `<span class="badge ${statusClass[data] || "badge-secondary"}">${data}</span>`;
+                },
             },
             {
-              data: "receipt_url",
-              render: function (data) {
-                return data
-                  ? `<a href="${data}" target="_blank" class="btn btn-sm btn-info">View Receipt</a>`
-                  : "No Receipt";
-              },
+                data: "receipt_url",
+                render: function (data) {
+                    return data
+                        ? `<a href="${data}" target="_blank" class="btn btn-sm btn-info">View Receipt</a>`
+                        : "No Receipt";
+                },
             },
+        ],
+        responsive: true,
+        language: {
+            processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i> Loading...',
+        },
+    });
 
+    // Debugging: Log DataTables response
+    table.on('xhr', function (e, settings, json) {
+        console.log("DataTables response:", json);
+    });
 
-          ],
-          responsive: true,
-          language: {
-            processing:
-              '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i> Loading...',
-          },
-        });
+    // Filter by Status
+    $("#statusFilter").on("change", function () {
+        table.column(3).search(this.value).draw(); // Column 3 = Status
+    });
 
-        // Filter by Status
-        $("#statusFilter").on("change", function () {
-          table.column(4).search(this.value).draw(); // Column 4 = Status
-        });
+    // Clear Filter
+    $("#clearFilter").on("click", function () {
+        $("#statusFilter").val(""); // Clear the dropdown
+        table.column(3).search("").draw(); // Clear the filter
+    });
+});
 
-        // Clear Filter
-        $("#clearFilter").on("click", function () {
-          $("#statusFilter").val(""); // Clear the dropdown
-          table.column(4).search("").draw(); // Clear the filter
-        });
-      });
     </script>
   </body>
 </html>

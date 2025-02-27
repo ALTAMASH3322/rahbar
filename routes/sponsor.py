@@ -141,7 +141,7 @@ def sponsor_payments():
                 cursor.execute(
                     """
                     INSERT INTO payments (grantor_id, grantee_id, amount, payment_date, receipt_url, status)
-                    VALUES (%s, %s, %s, NOW(), %s, 'pending')
+                    VALUES (%s, %s, %s, NOW(), %s, 'paid')
                     """,
                     (current_user.user_id, grantee_id, amount, filepath)
                 )

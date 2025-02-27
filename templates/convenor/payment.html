@@ -132,7 +132,7 @@
                             <div class="col-md-6">
                                 <div class="card">
                                     <div class="card-body">
-                                        <h4 class="header-title">Beneficiary: {{ payment.grantee.name }}</h4>
+                                        <h4 class="header-title">Beneficiary: {{ payment.bank_details.account_name }}</h4>
                                         <div class="mt-3">
                                             <p><strong>Bank Details:</strong> {{ payment.bank_details.bank_name }} ({{ payment.bank_details.account_number }})</p>
                                             <p><strong>Last Payment:</strong> {{ payment.payments[0].amount if payment.payments else 'No payments yet' }}</p>

@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8" />
     <title>Payments | Rahbar</title>
@@ -13,9 +12,9 @@
     <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
 
     <!-- App css -->
-    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" id="bootstrap-stylesheet" />
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ url_for('static', filename='css/icons.min.css') }}" rel="stylesheet" type="text/css" />
-    <link href="{{ url_for('static', filename='css/app.min.css') }}" rel="stylesheet" type="text/css" id="app-stylesheet" />
+    <link href="{{ url_for('static', filename='css/app.min.css') }}" rel="stylesheet" type="text/css" />
 </head>
 
 <body>
@@ -25,14 +24,12 @@
         <!-- Topbar Start -->
         <div class="navbar-custom">
             <ul class="list-unstyled topnav-menu float-right mb-0">
-                <!-- User Dropdown -->
                 <li class="dropdown notification-list">
-                    <a class="nav-link dropdown-toggle nav-user mr-0 waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle nav-user mr-0 waves-effect" data-toggle="dropdown" href="#" role="button">
                         <img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" alt="user-image" class="rounded-circle">
                         <span class="d-none d-sm-inline-block ml-1">{{ current_user.name }}</span>
                     </a>
                     <div class="dropdown-menu dropdown-menu-right profile-dropdown">
-                        <!-- User menu items here -->
                         <a href="{{ url_for('auth.logout') }}" class="dropdown-item notify-item">
                             <i class="mdi mdi-logout-variant"></i>
                             <span>Logout</span>
@@ -43,59 +40,34 @@
 
             <!-- LOGO -->
             <div class="logo-box">
-                 <a href="{{ url_for('main.homepage') }}" class="text-success">
-                                    <span style="display: inline-block; background-color: grey; color: white; font-weight: bold; padding: 10px; border-radius: 4px;">
-    RAHBAR
-</span>
-                                </a>
+                <a href="{{ url_for('main.homepage') }}" class="text-success">
+                    <span style="display: inline-block; background-color: grey; color: white; font-weight: bold; padding: 10px; border-radius: 4px;">
+                        RAHBAR
+                    </span>
+                </a>
             </div>
         </div>
         <!-- end Topbar -->
 
-        <!-- ========== Left Sidebar Start ========== -->
+        <!-- Left Sidebar Start -->
         <div class="left-side-menu">
             <div class="slimscroll-menu">
-                <!--- Sidemenu -->
                 <div id="sidebar-menu">
                     <ul class="metismenu" id="side-menu">
                         <li class="menu-title">Navigation</li>
-                        <!-- Dashboard -->
-                        <li>
-                            <a href="{{ url_for('student.student_dashboard') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-view-dashboard"></i>
-                                <span>Dashboard</span>
-                            </a>
-                        </li>
-                        <!-- Payments -->
-                        <li>
-                            <a href="{{ url_for('student.student_payments') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-cash-multiple"></i>
-                                <span>Payments</span>
-                            </a>
-                        </li>
-                        <!-- Progress -->
-                        <li>
-                            <a href="{{ url_for('student.student_progress') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-chart-line"></i>
-                                <span>Progress</span>
-                            </a>
-                        </li>
+                        <li><a href="{{ url_for('student.student_dashboard') }}"><i class="mdi mdi-view-dashboard"></i> Dashboard</a></li>
+                        <li><a href="{{ url_for('student.student_payments') }}"><i class="mdi mdi-cash-multiple"></i> Payments</a></li>
+                        <li><a href="{{ url_for('student.student_progress') }}"><i class="mdi mdi-chart-line"></i> Progress</a></li>
                     </ul>
                 </div>
-                <!-- End Sidebar -->
             </div>
         </div>
         <!-- Left Sidebar End -->
 
-        <!-- ============================================================== -->
-        <!-- Start Page Content here -->
-        <!-- ============================================================== -->
-
+        <!-- Start Page Content -->
         <div class="content-page">
             <div class="content">
-                <!-- Start Content-->
                 <div class="container-fluid">
-                    <!-- start page title -->
                     <div class="row">
                         <div class="col-12">
                             <div class="page-title-box">
@@ -103,7 +75,6 @@
                             </div>
                         </div>
                     </div>
-                    <!-- end page title -->
 
                     <!-- Main Content -->
                     <div class="row">
@@ -113,63 +84,100 @@
                                     <h4 class="header-title">Payment History</h4>
                                     <p class="text-muted">Here you can view your payment history.</p>
 
+                                    <!-- Bank Details -->
+                                    <div class="text-right mb-3">
+                                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#bankDetailsModal">
+                                            <i class="mdi mdi-bank"></i> Edit Bank Details
+                                        </button>
+                                    </div>
+
                                     <!-- Payment Table -->
                                     <div class="table-responsive">
                                         <table class="table table-centered mb-0">
                                             <thead>
-                                                <tr>
-                                                    <th>Payment ID</th>
-                                                    <th>Amount</th>
-                                                    <th>Date</th>
-                                                    <th>Status</th>
-                                                </tr>
+                                                <tr><th>Payment ID</th><th>Amount</th><th>Date</th><th>Status</th></tr>
                                             </thead>
                                             <tbody>
                                                 {% for payment in payments %}
-                                                <tr>
-                                                    <td>{{ payment.payment_id }}</td>
-                                                    <td>{{ payment.amount }}</td>
-                                                    <td>{{ payment.payment_date }}</td>
-                                                    <td>{{ payment.status }}</td>
-                                                </tr>
+                                                    <tr><td>{{ payment.payment_id }}</td><td>{{ payment.amount }}</td><td>{{ payment.payment_date }}</td><td>{{ payment.status }}</td></tr>
                                                 {% else %}
-                                                <tr>
-                                                    <td colspan="4" class="text-center">No payments found.</td>
-                                                </tr>
+                                                    <tr><td colspan="4" class="text-center">No payments found.</td></tr>
                                                 {% endfor %}
                                             </tbody>
                                         </table>
                                     </div>
                                 </div>
+
+                                <!-- Bank Details Modal -->
+                                <div class="modal fade" id="bankDetailsModal" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Edit Bank Details</h5>
+                                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form id="bankDetailsForm">
+                                                    <div class="form-group"><label>Bank Name</label><input type="text" class="form-control" id="bank_name"></div>
+                                                    <div class="form-group"><label>Account Number</label><input type="text" class="form-control" id="account_number"></div>
+                                                    <div class="form-group"><label>Account Holder Name</label><input type="text" class="form-control" id="account_name"></div>
+                                                    <div class="form-group"><label>IFSC Code</label><input type="text" class="form-control" id="ifsc_code"></div>
+                                                </form>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                <button class="btn btn-primary" onclick="saveBankDetails()">Save Changes</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <!-- End Main Content -->
                 </div>
-                <!-- end container-fluid -->
             </div>
-            <!-- end content -->
-
-            <!-- Footer Start -->
-            <footer class="footer">
-                <div class="container-fluid">
-                    <div class="row">
-                        <div class="col-md-12">
-                            2024 &copy; Rahbar
-                        </div>
-                    </div>
-                </div>
-            </footer>
-            <!-- end Footer -->
         </div>
-        <!-- End Page content -->
     </div>
-    <!-- END wrapper -->
 
-    <!-- Vendor js -->
+    <!-- JavaScript -->
     <script src="{{ url_for('static', filename='js/vendor.min.js') }}"></script>
-
-    <!-- App js -->
     <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            $('#bankDetailsModal').on('show.bs.modal', function () {
+                loadBankDetails();
+            });
+        });
+
+        function loadBankDetails() {
+            document.getElementById("bank_name").value = "{{ bank_details.bank_name or '' }}";
+            document.getElementById("account_number").value = "{{ bank_details.account_number or '' }}";
+            document.getElementById("account_name").value = "{{ bank_details.account_name or '' }}";
+            document.getElementById("ifsc_code").value = "{{ bank_details.ifsc_code or '' }}";
+        }
+
+        function saveBankDetails() {
+            var formData = {
+                bank_name: document.getElementById("bank_name").value.trim(),
+                account_number: document.getElementById("account_number").value.trim(),
+                account_name: document.getElementById("account_name").value.trim(),
+                ifsc_code: document.getElementById("ifsc_code").value.trim()
+            };
+
+            fetch("{{ url_for('student.edit_bank_details') }}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                if (data.success) location.reload();
+            })
+            .catch(error => console.error("Error updating bank details:", error));
+        }
+    </script>
+
 </body>
 </html>

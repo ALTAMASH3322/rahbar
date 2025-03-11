@@ -33,7 +33,7 @@
                         <table class="table table-striped">
                             <tr>
                                 <th>Applicant Name</th>
-                                <td>{{ application.father_name }}'s Child</td>
+                                <td>{{ application.name }}</td>
                             </tr>
                             <tr>
                                 <th>Father's Name</th>
@@ -70,6 +70,9 @@
                                     <option value="submitted" {% if application.status == 'submitted' %}selected{% endif %}>Submitted</option>
                                     <option value="interviewing" {% if application.status == 'interviewing' %}selected{% endif %}>Interviewing</option>
                                     <option value="accepted" {% if application.status == 'accepted' %}selected{% endif %}>Accepted</option>
+                                    <option value="on hold" {% if application.status == 'on hold' %}selected{% endif %}>on hold</option>
+                                    <option value="provisional admission letter" {% if application.status == 'provisional admission letter' %}selected{% endif %}>provisional admission letter Issued</option>
+                                    <option value="admitted" {% if application.status == 'admitted' %}selected{% endif %}>admitted</option>
                                     <option value="rejected" {% if application.status == 'rejected' %}selected{% endif %}>Rejected</option>
                                 </select>
                             </div>
@@ -89,6 +92,27 @@
             </div>
         </div>
     </div>
+    <!-- Footer -->
+        <!-- Footer -->
+        <footer class="footer">
+            <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
+        </footer>
+    
+        <style>
+            .footer {
+                position: fixed;
+                bottom: 0;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 100%;
+                background-color: #f8f9fa;
+                padding: 10px 0;
+                text-align: center;
+                font-size: 14px;
+                color: #6c757d;
+                border-top: 1px solid #ddd;
+            }
+        </style>
 
     <script src="{{ url_for('static', filename='js/vendor.min.js') }}"></script>
 </body>

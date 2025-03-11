@@ -160,14 +160,15 @@ def manage_users():
         email = request.form.get('email')
         role_id = request.form.get('role_id')
         status = request.form.get('status')
+        region = request.form.get('region')
         password = request.form.get('password')
         hashed_password = generate_password_hash(password)
         cursor.execute("""
-            INSERT INTO users (user_id, name, email,phone, role_id, status, password_hash, created_at, updated_at)
-            VALUES (%s, %s, %s, %s, %s,%s,%s, NOW(), NOW())
-        """, (user_id, name, email,contact, role_id, status, hashed_password))
+            INSERT INTO users (user_id, name, email,phone, role_id, status, password_hash, created_at, updated_at, region)
+            VALUES (%s, %s, %s,%s, %s, %s,%s, NOW(), NOW(),%s)
+        """, (user_id, name, email,contact, role_id, status, hashed_password,region))
 
-        print(user_id, name, email, role_id, status, hashed_password)
+        print(user_id, name, email, role_id, status, hashed_password, region)
 
         conn.commit()
         flash('User saved successfully!', 'success')
@@ -464,16 +465,17 @@ def public_application():
                 'course_applied': request.form['course_applied'],
                 'father_mobile': father_mobile,
                 'mother_mobile': mother_mobile,
-                'student_mobile': student_mobile
+                'student_mobile': student_mobile,
+                'name': request.form['name']
             }
 
             # Insert into grantee_details
             cursor.execute("""
                 INSERT INTO grantee_details 
-                (user_id, father_name, mother_name, father_profession, mother_profession, 
+                (user_id,name, father_name, mother_name, father_profession, mother_profession, 
                  address, average_annual_salary, rahbar_alumnus, rcc_name, course_applied,
                  father_mobile, mother_mobile, student_mobile, created_at, updated_at)
-                VALUES (NULL, %(father_name)s, %(mother_name)s, %(father_profession)s, 
+                VALUES (NULL, %(name)s , %(father_name)s, %(mother_name)s, %(father_profession)s, 
                         %(mother_profession)s, %(address)s, %(average_annual_salary)s, 
                         %(rahbar_alumnus)s, %(rcc_name)s, %(course_applied)s,
                         %(father_mobile)s, %(mother_mobile)s, %(student_mobile)s, NOW(), NOW())
@@ -953,7 +955,7 @@ def view_applications():
     cursor = conn.cursor(dictionary=True)
 
     cursor.execute("""
-        SELECT g.grantee_detail_id, g.father_name, g.mother_name, g.rcc_name, a.status 
+        SELECT g.grantee_detail_id,g.name, g.father_name, g.mother_name, g.rcc_name, a.status 
         FROM grantee_details g
         LEFT JOIN application_status a ON g.grantee_detail_id = a.grantee_detail_id
     """)
@@ -991,7 +993,7 @@ def view_application(application_id):
             comments = request.form['comments']
 
             # Ensure valid status
-            valid_statuses = ['draft', 'submitted', 'interviewing', 'accepted', 'rejected']
+            valid_statuses = ['draft', 'submitted', 'interviewing', 'accepted', 'rejected','on hold', 'provisional admission letter', 'admitted']
             if new_status not in valid_statuses:
                 flash("Invalid status selected!", "error")
                 return redirect(url_for('admin.view_application', application_id=application_id))

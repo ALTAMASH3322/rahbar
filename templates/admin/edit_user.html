@@ -144,6 +144,10 @@
                                             <select class="form-control" id="status" name="status" required>
                                                 <option value="Active" {% if user.status == 'Active' %}selected{% endif %}>Active</option>
                                                 <option value="Inactive" {% if user.status == 'Inactive' %}selected{% endif %}>Inactive</option>
+                                                <option value="registered" {% if user.status == 'registered' %}selected{% endif %}>Registered</option>
+                                                <option value="recognised" {% if user.status == 'recognised' %}selected{% endif %}>Recognised</option>
+
+
                                             </select>
                                         </div>
                                         <button type="submit" class="btn btn-primary">Save Changes</button>

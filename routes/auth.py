@@ -113,13 +113,22 @@ def login():
 
         if user_dict:
             # Check if the user is active
-            if user_dict['status'] != 'Active':
+            
+                
+            if user_dict['status'] == 'Inactive':
                 flash('Your account is inactive. Please contact the administrator.', 'error')
             elif check_password_hash(user_dict['password_hash'], password):
                 user = User(user_dict)
                 print(f"User logged in: {user.user_id}, Role: {user.role_id}")  # Debugging
                 login_user(user)
                 flash('Login successful!', 'success')
+                if user_dict['status'] == 'registered':
+                    flash('Your account is not yet activated. Please wait for approval.', 'error')
+                    print(f"User status: {user_dict['status']}")  # Debugging
+                elif user_dict['status'] == 'recognised':
+
+                    return redirect(url_for('admin.public_application'))
+                
 
                 # Redirect based on user role
                 if user.role_id == 1:  # Super Admin
@@ -190,16 +199,20 @@ def reset_password():
     return render_template('auth/reset_password.html')
 
 # Registration route
-@auth_bp.route('/register', methods=['GET', 'POST'])
+@auth_bp.route('/register', methods=['GET', 'POST'])   
 def register():
     if request.method == 'POST':
         name = request.form.get('name')
+        print(name)
         email = request.form.get('email')
+        print(email)
+        role_id = request.form.get('role')
+        print(role_id)
         sex = request.form.get('sex')
+        print(sex)
         password = request.form.get('password')
-        confirm_password = request.form.get('confirm_password')
-        phone = request.form.get('phone')
-        role_id = request.form.get('role_id')
+        phone = request.form.get('contact')
+        
 
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -210,13 +223,11 @@ def register():
 
         if user:
             flash('Email address already exists', 'error')
-        elif password != confirm_password:
-            flash('Passwords do not match', 'error')
         else:
             # Create new user
             hashed_password = generate_password_hash(password)
             cursor.execute(
-                "INSERT INTO users (name, email, sex, password_hash, phone, role_id, status, created_at, updated_at) VALUES (%s, %s, %s, %s, %s, %s, 'Active', NOW(), NOW())",
+                "INSERT INTO users (name, email, sex, password_hash, phone, role_id, status, created_at, updated_at) VALUES (%s, %s, %s, %s, %s, %s, 'registered', NOW(), NOW())",
                 (name, email, sex, hashed_password, phone, role_id)
             )
             conn.commit()

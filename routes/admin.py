@@ -194,7 +194,7 @@ def manage_users():
 
 
 # Edit User
-@admin_bp.route('/edit_user/<int:user_id>', methods=['GET', 'POST'])
+@admin_bp.route('/edit_user/<user_id>', methods=['GET', 'POST'])
 @login_required
 def edit_user(user_id):
     if current_user.role_id not in [1, 2]:  # Ensure only Admins can access this route
@@ -238,7 +238,7 @@ def edit_user(user_id):
 
 
 # Delete User
-@admin_bp.route('/delete_user/<int:user_id>', methods=['GET'])
+@admin_bp.route('/delete_user/<user_id>', methods=['GET'])
 @login_required
 def delete_user(user_id):
     if current_user.role_id not in [1, 2]:  # Ensure only Admins can access this route
@@ -413,8 +413,11 @@ def uploaded_file(filename):
 
 
 # Public Application Form
+
 @admin_bp.route('/apply', methods=['GET', 'POST'])
+@login_required
 def public_application():
+    print(current_user.user_id )
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 

@@ -37,11 +37,7 @@ def coordinator_dashboard():
     coordinator = cursor.fetchone()
 
     # Fetch all applications
-    cursor.execute("""
-        SELECT gd.*, u.name AS applicant_name
-        FROM grantee_details gd
-        JOIN users u ON gd.user_id = u.user_id
-    """)
+    cursor.execute("SELECT * FROM grantee_details")
     applications = cursor.fetchall()
 
     # Fetch all sponsors and convenors

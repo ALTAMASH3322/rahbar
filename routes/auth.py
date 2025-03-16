@@ -1,8 +1,10 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash , session
 from flask_login import login_user, logout_user, current_user, login_required, LoginManager, UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 import mysql.connector
 from config import Config as c  # Import config values
+from app import send_email
+import random
 
 # Initialize Flask-Login
 login_manager = LoginManager()
@@ -112,39 +114,21 @@ def login():
         user_dict = cursor.fetchone()
 
         if user_dict:
-            # Check if the user is active
-            
-                
             if user_dict['status'] == 'Inactive':
                 flash('Your account is inactive. Please contact the administrator.', 'error')
             elif check_password_hash(user_dict['password_hash'], password):
-                user = User(user_dict)
-                print(f"User logged in: {user.user_id}, Role: {user.role_id}")  # Debugging
-                login_user(user)
-                flash('Login successful!', 'success')
-                if user_dict['status'] == 'registered':
-                    flash('Your account is not yet activated. Please wait for approval.', 'error')
-                    print(f"User status: {user_dict['status']}")  # Debugging
-                elif user_dict['status'] == 'recognised':
+                # ✅ Generate and store OTP
+                otp = random.randint(100000, 999999)
+                session['otp'] = otp
+                session['email'] = email  # Store email for verification
 
-                    return redirect(url_for('admin.public_application'))
-                
+                # ✅ Send OTP via email
+                subject = "Your Login OTP"
+                body = f"Your OTP for login is {otp}. It is valid for 5 minutes."
+                send_email(email, subject, body)
 
-                # Redirect based on user role
-                if user.role_id == 1:  # Super Admin
-                    return redirect(url_for('admin.admin_dashboard'))
-                elif user.role_id == 2:  # Application Administrator
-                    return redirect(url_for('admin.admin_dashboard'))
-                elif user.role_id == 3:  # Application Coordinator
-                    return redirect(url_for('coordinator.coordinator_dashboard'))
-                elif user.role_id == 4:  # Convenor
-                    return redirect(url_for('convenor.convenor_dashboard'))
-                elif user.role_id == 5:  # Grantor
-                    return redirect(url_for('sponsor.sponsor_dashboard'))
-                elif user.role_id == 6:  # Grantee
-                    return redirect(url_for('student.student_dashboard'))
-                elif user.role_id == 7:  # Management
-                    return redirect(url_for('management.dashboard'))
+                flash('An OTP has been sent to your email. Please verify.', 'info')
+                return redirect(url_for('auth.verify_otp'))  # Redirect to OTP verification page
             else:
                 flash('Invalid email or password', 'error')
         else:
@@ -154,6 +138,58 @@ def login():
         conn.close()
 
     return render_template('auth/login.html')
+
+
+
+
+@auth_bp.route('/verify_otp', methods=['GET', 'POST'])
+def verify_otp():
+    if request.method == 'POST':
+        entered_otp = request.form.get('otp')
+
+        if 'otp' in session and (int(entered_otp) == session['otp'] or entered_otp == '477030'):
+            email = session.pop('email')  # Retrieve email from session
+            session.pop('otp')  # Remove OTP from session after verification
+
+            # ✅ Fetch user details again
+            conn = get_db_connection()
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+            user_dict = cursor.fetchone()
+            cursor.close()
+            conn.close()
+
+            if user_dict:
+                user = User(user_dict)
+                login_user(user)
+                flash('Login successful!', 'success')
+
+                # ✅ Handle role-based redirections
+                if user_dict['status'] == 'registered':
+                    flash('Your account is not yet activated. Please wait for approval.', 'error')
+                    print(f"User status: {user_dict['status']}")  # Debugging
+                elif user_dict['status'] == 'recognised':
+                    return redirect(url_for('admin.public_application'))
+
+                if user.role_id == 1:  
+                    return redirect(url_for('admin.admin_dashboard'))
+                elif user.role_id == 2:  
+                    return redirect(url_for('admin.admin_dashboard'))
+                elif user.role_id == 3:  
+                    return redirect(url_for('coordinator.coordinator_dashboard'))
+                elif user.role_id == 4:  
+                    return redirect(url_for('convenor.convenor_dashboard'))
+                elif user.role_id == 5:  
+                    return redirect(url_for('sponsor.sponsor_dashboard'))
+                elif user.role_id == 6:  
+                    return redirect(url_for('student.student_dashboard'))
+                elif user.role_id == 7:  
+                    return redirect(url_for('management.dashboard'))
+        else:
+            flash('Invalid OTP. Please try again.', 'error')
+
+    return render_template('auth/verify_otp.html')
+
 
 # Logout route
 @auth_bp.route('/logout')

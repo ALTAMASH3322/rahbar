@@ -1,11 +1,16 @@
-from flask import Flask, Response
+from flask import Flask
 from flask_login import LoginManager, UserMixin
 import mysql.connector
-from config import Config as c  # Import your config
 from flask_talisman import Talisman  # Install with: pip install flask-talisman
+from flask_mail import Mail, Message  # ✅ Import Flask-Mail
+import os
+from config import Config as c  # Import your config
 
 # Initialize Flask-Login
 login_manager = LoginManager()
+
+# Initialize Flask-Mail
+mail = Mail()
 
 # Helper function to get a database connection
 def get_db_connection():
@@ -52,6 +57,17 @@ def load_user(user_id):
 
     return User(user_dict) if user_dict else None  # Return User object if found
 
+# ✅ Function to send emails
+def send_email(recipient, subject, body):
+    """Sends an email using Flask-Mail"""
+    try:
+        msg = Message(subject=subject, recipients=[recipient], body=body)
+        mail.send(msg)
+        return True  # Email sent successfully
+    except Exception as e:
+        print(f"❌ Error sending email: {e}")
+        return False  # Email sending failed
+
 # Function to create Flask app
 def create_app():
     app = Flask(__name__)
@@ -60,8 +76,18 @@ def create_app():
     app.config.from_object('config.Config')
 
     # Set a strong secret key for session management
-    import os
     app.secret_key = os.urandom(24).hex()  
+
+    # ✅ Configure Flask-Mail
+    app.config["MAIL_SERVER"] = "smtp.gmail.com"
+    app.config["MAIL_PORT"] = 587
+    app.config["MAIL_USE_TLS"] = True
+    app.config["MAIL_USERNAME"] = "themajesticesports@gmail.com"  # Change this
+    app.config["MAIL_PASSWORD"] = "daxhwrbnzrmynyvr"  # Change this
+    app.config["MAIL_DEFAULT_SENDER"] = "themajesticesports@gmail.com"
+
+    # Initialize Mail
+    mail.init_app(app)
 
     # Initialize Flask-Login
     login_manager.init_app(app)

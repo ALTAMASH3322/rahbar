@@ -165,13 +165,15 @@ def verify_otp():
                 flash('Login successful!', 'success')
 
                 # ✅ Handle role-based redirections
+
+                print(user)
                 if user_dict['status'] == 'registered':
                     flash('Your account is not yet activated. Please wait for approval.', 'error')
                     print(f"User status: {user_dict['status']}")  # Debugging
                 elif user_dict['status'] == 'recognised':
                     return redirect(url_for('admin.public_application'))
 
-                if user.role_id == 1:  
+                elif user.role_id == 1:  
                     return redirect(url_for('admin.admin_dashboard'))
                 elif user.role_id == 2:  
                     return redirect(url_for('admin.admin_dashboard'))

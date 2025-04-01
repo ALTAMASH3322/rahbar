@@ -29,7 +29,8 @@ if not os.path.exists(UPLOAD_FOLDER):
 @sponsor_bp.route('/sponsor_dashboard', methods=['GET'])
 @login_required
 def sponsor_dashboard():
-    if current_user.role_id != 5:  # Ensure only sponsors can access this route
+    # Only allow sponsors (role_id 5) to access this route.
+    if current_user.role_id != 5:
         return render_template('sponsor/error.html', error="You do not have permission to access this page."), 403
 
     conn = get_db_connection()
@@ -39,76 +40,44 @@ def sponsor_dashboard():
     cursor.execute("SELECT * FROM users WHERE user_id = %s", (current_user.user_id,))
     sponsor = cursor.fetchone()
 
-    # Fetch assigned grantees (students)
+    # Fetch assigned grantees (students) for the sponsor
     cursor.execute("SELECT * FROM grantor_grantees WHERE grantor_id = %s", (current_user.user_id,))
-    grantor_grantee = cursor.fetchall()
+    grantor_grantees = cursor.fetchall()
 
     grantees = []
-    for gg in grantor_grantee:
-        cursor.execute("SELECT * FROM users WHERE user_id = %s", (gg['grantee_id'],))
-        grantee = cursor.fetchone()
-        grantees.append(grantee)
+    # Loop through each assigned grantee and fetch all related details
+    for gg in grantor_grantees:
+        grantee_id = gg['grantee_id']
 
-    for gg in grantor_grantee:
-        cursor.execute("SELECT * FROM users WHERE user_id = %s", (gg['grantee_id'],))
+        # Get grantee details from the users table
+        cursor.execute("SELECT * FROM users WHERE user_id = %s", (grantee_id,))
         grantee = cursor.fetchone()
 
-        cursor.execute("SELECT * FROM bank_details WHERE user_id = %s", (gg['grantee_id'],))
+        # Get bank details for the grantee
+        cursor.execute("SELECT * FROM bank_details WHERE user_id = %s", (grantee_id,))
         bank_details = cursor.fetchone()
 
-        cursor.execute("SELECT * FROM payments WHERE grantee_id = %s order by payment_date DESC LIMIT 1", (gg['grantee_id'],))
-        payments = cursor.fetchall()
+        # Get the latest payment record for the grantee based on created_at timestamp
+        cursor.execute(
+            "SELECT * FROM payments WHERE grantee_id = %s ORDER BY created_at DESC LIMIT 1", 
+            (grantee_id,)
+        )
+        latest_payment = cursor.fetchone()
 
-        cursor.execute("Select * from payment_schedules")
-        payment_schedules = cursor.fetchall()
-        frequency = 1
-        status = "pending"
-        print(payments, end=" ")
-        print(payment_schedules)
-        for i in payment_schedules:
-            if payments[0]["amount"] == i["amount"]:
-                frequency = i["schedule_id"]
-
-        from datetime import datetime, timedelta
-
-        # Get the current date
-        current_date = datetime.now()
-
-        # Initialize status
-        status = "unpaid"
-
-        # Define the time periods based on frequency
-        if frequency == 1:
-            # Check if payment_date is within the last year
-            one_year_ago = current_date - timedelta(days=365)
-            if payments[0]["payment_date"] >= one_year_ago:
-                status = "paid"
-        elif frequency == 2:
-            # Check if payment_date is within the last 6 months
-            six_months_ago = current_date - timedelta(days=180)
-            if payments[0]["payment_date"] >= six_months_ago:
-                status = "paid"
-        elif frequency == 3:
-            # Check if payment_date is within the last 3 months
-            three_months_ago = current_date - timedelta(days=90)
-            if payments[0]["payment_date"] >= three_months_ago:
-                status = "paid"
-        elif frequency == 4:
-            # Check if payment_date is within the last month
-            one_month_ago = current_date - timedelta(days=30)
-            if payments[0]["payment_date"] >= one_month_ago   and payments[0]["payment_date"] >= payment_schedules[3]["updated_at"]:
-                status = "paid"
-
-
-
-
-
-
+        # Combine all details into one dictionary
+        grantee_details = {
+            'user': grantee,
+            'bank_details': bank_details,
+            'latest_payment': latest_payment
+        }
+        grantees.append(grantee_details)
 
     cursor.close()
     conn.close()
 
-    return render_template('sponsor/dashboard.html', sponsor=sponsor, grantees=grantees, status=status)
+    # Pass the sponsor and grantees data to the template
+    return render_template('sponsor/dashboard.html', sponsor=sponsor, grantees=grantees)
+
 
 # Sponsor Payments
 @sponsor_bp.route('/payments', methods=['GET', 'POST'])
@@ -154,80 +123,82 @@ def sponsor_payments():
 
         return redirect(url_for('sponsor.sponsor_payments'))
 
-    # Fetch assigned grantees and payment details
+    # ----------------------
+    # GET method processing
+    # ----------------------
+
+    # Get all payment schedules once
+    cursor.execute("SELECT * FROM payment_schedules")
+    payment_schedules = cursor.fetchall()
+
+    # Fetch assigned grantees for the current sponsor
     cursor.execute("SELECT * FROM grantor_grantees WHERE grantor_id = %s", (current_user.user_id,))
-    grantor_grantee = cursor.fetchall()
+    grantor_grantees = cursor.fetchall()
 
     payment_details = []
-    for gg in grantor_grantee:
+    from datetime import datetime, timedelta
+    current_date = datetime.now()
+
+    for gg in grantor_grantees:
+        # Get grantee user details
         cursor.execute("SELECT * FROM users WHERE user_id = %s", (gg['grantee_id'],))
         grantee = cursor.fetchone()
 
+        # Get grantee bank details
         cursor.execute("SELECT * FROM bank_details WHERE user_id = %s", (gg['grantee_id'],))
         bank_details = cursor.fetchone()
 
-        cursor.execute("SELECT * FROM payments WHERE grantee_id = %s order by payment_date DESC LIMIT 1", (gg['grantee_id'],))
-        payments = cursor.fetchall()
+        # Get the latest payment record (if any)
+        cursor.execute(
+            "SELECT * FROM payments WHERE grantee_id = %s ORDER BY payment_date DESC LIMIT 1", 
+            (gg['grantee_id'],)
+        )
+        payment_record = cursor.fetchone()
 
-        cursor.execute("Select * from payment_schedules")
-        payment_schedules = cursor.fetchall()
-        frequency = 1
-        status = "pending"
-        print(payments, end=" ")
-        print(payment_schedules)
-        for i in payment_schedules:
-            if payments[0]["amount"] == i["amount"]:
-                frequency = i["schedule_id"]
-
-        from datetime import datetime, timedelta
-
-        # Get the current date
-        current_date = datetime.now()
-
-        # Initialize status
+        # Determine payment frequency and status (default is unpaid)
         status = "unpaid"
+        frequency = 1  # default frequency
+        if payment_record:
+            # Find the matching payment schedule based on amount
+            for schedule in payment_schedules:
+                if payment_record["amount"] == schedule["amount"]:
+                    frequency = schedule["schedule_id"]
+                    break
 
-        # Define the time periods based on frequency
-        if frequency == 1:
-            # Check if payment_date is within the last year
-            one_year_ago = current_date - timedelta(days=365)
-            if payments[0]["payment_date"] >= one_year_ago:
-                status = "paid"
-        elif frequency == 2:
-            # Check if payment_date is within the last 6 months
-            six_months_ago = current_date - timedelta(days=180)
-            if payments[0]["payment_date"] >= six_months_ago:
-                status = "paid"
-        elif frequency == 3:
-            # Check if payment_date is within the last 3 months
-            three_months_ago = current_date - timedelta(days=90)
-            if payments[0]["payment_date"] >= three_months_ago:
-                status = "paid"
-        elif frequency == 4:
-            # Check if payment_date is within the last month
-            one_month_ago = current_date - timedelta(days=30)
-            if payments[0]["payment_date"] >= one_month_ago   and payments[0]["payment_date"] >= payment_schedules[3]["updated_at"]:
-                status = "paid"
+            # Compute status based on frequency
+            if frequency == 1:
+                one_year_ago = current_date - timedelta(days=365)
+                if payment_record["payment_date"] >= one_year_ago:
+                    status = "paid"
+            elif frequency == 2:
+                six_months_ago = current_date - timedelta(days=180)
+                if payment_record["payment_date"] >= six_months_ago:
+                    status = "paid"
+            elif frequency == 3:
+                three_months_ago = current_date - timedelta(days=90)
+                if payment_record["payment_date"] >= three_months_ago:
+                    status = "paid"
+            elif frequency == 4:
+                one_month_ago = current_date - timedelta(days=30)
+                # Assuming payment_schedules[3] exists; adjust accordingly if not
+                if payment_record["payment_date"] >= one_month_ago and payment_record["payment_date"] >= payment_schedules[3].get("updated_at", one_month_ago):
+                    status = "paid"
 
-
-
-        cursor.execute("SELECT due_date FROM payments WHERE grantee_id = %s ORDER BY due_date DESC LIMIT 1", (gg['grantee_id'],))
-        due_date = cursor.fetchone()
-
+        # Build the payment details dictionary
         payment_details.append({
             "grantee": grantee,
             "bank_details": bank_details,
-            "payments": payments,
-            "due_date": status
+            "payments": [payment_record] if payment_record else [],
+            "due_date": status  # used as current status in template
         })
 
-    # Fetch past payments
+    # Fetch past payments for display
     cursor.execute("""
         SELECT p.*, u.name AS grantee_name
         FROM payments p
         JOIN users u ON p.grantee_id = u.user_id
         WHERE p.grantee_id IN (
-            SELECT grantee_id FROM grantor_grantees WHERE grantor_id = %s
+            SELECT grantee_id FROM grantor_grantees WHERE grantor_id = %s and p.status = 'paid'
         )
     """, (current_user.user_id,))
     past_payments = cursor.fetchall()
@@ -236,6 +207,7 @@ def sponsor_payments():
     conn.close()
 
     return render_template('sponsor/payment.html', payment_details=payment_details, past_payments=past_payments)
+
 
 # Sponsor Student Progress
 @sponsor_bp.route('/sponsor_student_progress', methods=['GET'])

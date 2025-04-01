@@ -1025,3 +1025,113 @@ def view_application(application_id):
 
     return render_template('application_details.html', application=application,
                            statuses=['draft', 'submitted', 'interviewing', 'accepted', 'rejected'])
+
+
+
+
+@admin_bp.route('/manage_students', methods=['GET', 'POST'])
+@login_required
+def manage_students():
+    if current_user.role_id not in [1, 2]:  # Only Admins
+        flash('Permission denied', 'error')
+        return redirect(url_for('auth.login'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Fetch all active students with their sponsors and current assignments
+    cursor.execute("""
+        SELECT 
+            u.user_id, 
+            u.name AS student_name,
+            u.email AS student_email,
+            u.region,
+            sponsor.name AS sponsor_name,
+            inst.institution_name,
+            c.course_name,
+            sic.institution_id,
+            sic.course_id
+        FROM users u
+        LEFT JOIN grantor_grantees gg ON u.user_id = gg.grantee_id
+        LEFT JOIN users sponsor ON gg.grantor_id = sponsor.user_id
+        LEFT JOIN student_institution_courses sic ON u.user_id = sic.user_id
+        LEFT JOIN institutions inst ON sic.institution_id = inst.institution_id
+        LEFT JOIN courses c ON sic.course_id = c.course_id
+        WHERE u.role_id = 6 AND u.status = 'active'
+    """)
+    students = cursor.fetchall()
+
+    # Fetch all institutions for dropdown
+    cursor.execute("SELECT * FROM institutions")
+    institutions = cursor.fetchall()
+
+    # Fetch all courses for dropdown
+
+    cursor.execute("SELECT * FROM courses")
+    courses = cursor.fetchall()
+
+    if request.method == 'POST':
+        try:
+            user_id = request.form['user_id']
+            institution_id = request.form['institution_id']
+            course_id = request.form['course_id']
+
+            # Validate course belongs to institution
+            cursor.execute("""
+                SELECT course_id 
+                FROM courses 
+                WHERE institution_id = %s AND course_id = %s
+            """, (institution_id, course_id))
+            if not cursor.fetchone():
+                flash('Invalid course-institution combination', 'error')
+                return redirect(url_for('admin.manage_students'))
+
+            # Insert or update assignment
+            cursor.execute("""
+                INSERT INTO student_institution_courses 
+                    (user_id, institution_id, course_id, assigned_by)
+                VALUES (%s, %s, %s, %s)
+                ON DUPLICATE KEY UPDATE
+                    institution_id = VALUES(institution_id),
+                    course_id = VALUES(course_id),
+                    assigned_by = VALUES(assigned_by),
+                    assigned_at = NOW()
+            """, (user_id, institution_id, course_id, current_user.user_id))
+
+            conn.commit()
+            flash('Assignment updated successfully!', 'success')
+
+        except Exception as e:
+            conn.rollback()
+            flash(f'Error: {str(e)}', 'error')
+        finally:
+            cursor.close()
+            conn.close()
+
+        return redirect(url_for('admin.manage_students'))
+    
+    
+
+    cursor.close()
+    conn.close()
+
+    return render_template('admin/manage_students.html',students=students,institutions=institutions, courses=courses)
+
+
+@admin_bp.route('/get_courses/<int:institution_id>')
+@login_required
+def get_courses(institution_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    cursor.execute("""
+        SELECT course_id, course_name 
+        FROM courses 
+        WHERE institution_id = %s
+    """, (institution_id,))
+    
+    courses = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    
+    return jsonify(courses)

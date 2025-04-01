@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Manage Students | Rahbar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="Manage Students" name="description" />
+    <meta content="Coderthemes" name="author" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- App favicon -->
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+
+    <!-- App css -->
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" id="bootstrap-stylesheet" />
+    <link href="{{ url_for('static', filename='css/icons.min.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ url_for('static', filename='css/app.min.css') }}" rel="stylesheet" type="text/css" id="app-stylesheet" />
+</head>
+
+<body>
+    <!-- Begin page -->
+    <div id="wrapper">
+
+        <!-- Topbar Start -->
+        <div class="navbar-custom">
+            <div class="d-flex justify-content-between align-items-center w-100">
+                <!-- Left side - Admin Panel -->
+                <div>
+                    <h6 class="page-title mb-0">Admin Panel</h6>
+                </div>
+
+                <!-- Middle - Logo -->
+                <div>
+                    <a href="{{ url_for('main.homepage') }}" class="text-success">
+                        <img src="{{ url_for('static', filename='images/logo_ba1.png') }}" 
+                            alt="Logo" 
+                            style="width: 100%; height: 60px; background-color: grey; color: white; font-weight: bold; padding: 0px; border-radius: 1px;">
+                    </a>
+                </div>
+
+                <!-- Right side - User Dropdown -->
+                <ul class="list-unstyled topnav-menu mb-0">
+                    <li class="dropdown notification-list">
+                        <a class="nav-link dropdown-toggle nav-user waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
+                            <img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" alt="user-image" class="rounded-circle">
+                            <span class="d-none d-sm-inline-block ml-1">{{ current_user.name }}</span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right profile-dropdown">
+                            <a href="{{ url_for('auth.logout') }}" class="dropdown-item notify-item">
+                                <i class="mdi mdi-logout-variant"></i>
+                                <span>Logout</span>
+                            </a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <!-- end Topbar -->
+
+        <!-- ========== Left Sidebar Start ========== -->
+        <div class="left-side-menu">
+            <div class="slimscroll-menu">
+                <!--- Sidemenu -->
+                <div id="sidebar-menu">
+                    <ul class="metismenu" id="side-menu">
+                        <li class="menu-title">Navigation</li>
+                        <!-- Dashboard -->
+                        <li>
+                            <a href="{{ url_for('admin.admin_dashboard') }}" class="waves-effect waves-light">
+                                <i class="mdi mdi-view-dashboard"></i>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <!-- Manage Students Link -->
+                        <li>
+                            <a href="{{ url_for('admin.manage_students') }}" class="waves-effect waves-light">
+                                <i class="mdi mdi-account-school"></i>
+                                <span>Manage Students</span>
+                            </a>
+                        </li>
+                        <!-- Other navigation items as before -->
+                    </ul>
+                </div>
+                <!-- End Sidebar -->
+            </div>
+        </div>
+        <!-- Left Sidebar End -->
+
+        <!-- ============================================================== -->
+        <!-- Start Page Content here -->
+        <!-- ============================================================== -->
+
+        <div class="content-page">
+            <div class="content">
+                <!-- Start Content-->
+                <div class="container-fluid">
+                    <!-- start page title -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="page-title-box">
+                                <h4 class="page-title">Manage Students</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- end page title -->
+
+                    <!-- Filter Section -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h4 class="header-title">Filters</h4>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label>Institution</label>
+                                                <select id="filterInstitution" class="form-control">
+                                                    <option value="">All Institutions</option>
+                                                    {% for inst in institutions %}
+                                                    <option value="{{ inst.institution_id }}">{{ inst.institution_name }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label>Course</label>
+                                                <select id="filterCourse" class="form-control">
+                                                    <option value="">All Courses</option>
+                                                    {% for course in courses %}
+                                                    <option value="{{ course.course_id }}">{{ course.course_name }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group" style="margin-top: 28px;">
+                                                <button class="btn btn-primary" onclick="applyFilters()">Apply</button>
+                                                <button class="btn btn-secondary" onclick="resetFilters()">Reset</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Student Table -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-centered table-striped mb-0" id="studentsTable">
+                                            <thead>
+                                                <tr>
+                                                    <th>Student Name</th>
+                                                    <th>Email</th>
+                                                    <th>Region</th>
+                                                    <th>Sponsor</th>
+                                                    <th>Institution</th>
+                                                    <th>Course</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for student in students %}
+                                                <tr data-institution="{{ student.institution_id }}" data-course="{{ student.course_id }}">
+                                                    <td>{{ student.student_name }}</td>
+                                                    <td>{{ student.student_email }}</td>
+                                                    <td>{{ student.region }}</td>
+                                                    <td>{{ student.sponsor_name or 'Unassigned' }}</td>
+                                                    <td>{{ student.institution_name or 'Unassigned' }}</td>
+                                                    <td>{{ student.course_name or 'Unassigned' }}</td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-xs btn-primary" 
+                                                                data-toggle="modal" 
+                                                                data-target="#assignModal{{ student.user_id }}">
+                                                            <i class="mdi mdi-pencil"></i> Assign
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modals -->
+            {% for student in students %}
+            <div class="modal fade" id="assignModal{{ student.user_id }}" tabindex="-1" role="dialog" 
+                aria-labelledby="assignModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h4 class="modal-title">Assign Institution & Course</h4>
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                        </div>
+                        <form method="POST">
+                            <div class="modal-body">
+                                <input type="hidden" name="user_id" value="{{ student.user_id }}">
+                                <div class="form-group">
+                                    <label>Institution</label>
+                                    <select name="institution_id" class="form-control institution-select" 
+                                            data-user="{{ student.user_id }}">
+                                        <option value="">Select Institution</option>
+                                        {% for inst in institutions %}
+                                        <option value="{{ inst.institution_id }}" 
+                                            {% if student.institution_id == inst.institution_id %}selected{% endif %}>
+                                            {{ inst.institution_name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Course</label>
+                                    <select name="course_id" class="form-control course-select" 
+                                            data-user="{{ student.user_id }}">
+                                        {% if student.course_id %}
+                                        <option value="{{ student.course_id }}" selected>
+                                            {{ student.course_name }}
+                                        </option>
+                                        {% endif %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-light" data-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            <!-- Footer -->
+            <footer class="footer">
+                <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Vendor js -->
+    <script src="{{ url_for('static', filename='js/vendor.min.js') }}"></script>
+    <!-- App js -->
+    <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
+
+    <!-- Custom Script -->
+    <script>
+    // Initialize data
+    const allStudents = Array.from(document.querySelectorAll('#studentsTable tbody tr'));
+    const institutions = {{ institutions|tojson|safe }};
+    const courses = {{ courses|tojson|safe if courses else '[]' }};
+
+    // Filter functions
+    function applyFilters() {
+        const institutionId = document.getElementById('filterInstitution').value;
+        const courseId = document.getElementById('filterCourse').value;
+
+        allStudents.forEach(row => {
+            const rowInstitution = row.dataset.institution;
+            const rowCourse = row.dataset.course;
+            
+            const institutionMatch = !institutionId || rowInstitution === institutionId;
+            const courseMatch = !courseId || rowCourse === courseId;
+            
+            row.style.display = (institutionMatch && courseMatch) ? '' : 'none';
+        });
+    }
+
+    function resetFilters() {
+        document.getElementById('filterInstitution').value = '';
+        document.getElementById('filterCourse').value = '';
+        allStudents.forEach(row => row.style.display = '');
+    }
+
+    // Modal course loading
+    document.querySelectorAll('.institution-select').forEach(select => {
+        select.addEventListener('change', function() {
+            const institutionId = this.value;
+            const userId = this.dataset.user;
+            const courseSelect = document.querySelector(`.course-select[data-user="${userId}"]`);
+            
+            courseSelect.innerHTML = '<option value="">Select Course</option>';
+            
+            if (!institutionId) return;
+            
+            const filteredCourses = courses.filter(c => c.institution_id == institutionId);
+            filteredCourses.forEach(course => {
+                const option = document.createElement('option');
+                option.value = course.course_id;
+                option.textContent = course.course_name;
+                courseSelect.appendChild(option);
+            });
+        });
+    });
+    </script>
+</body>
+</html>

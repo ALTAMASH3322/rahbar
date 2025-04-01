@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8" />
     <title>Sponsor Dashboard | Rahbar</title>
@@ -12,137 +11,101 @@
     <!-- App favicon -->
     <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
 
-    <!-- App css -->
-    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" id="bootstrap-stylesheet" />
-    <link href="{{ url_for('static', filename='css/icons.min.css') }}" rel="stylesheet" type="text/css" />
-    <link href="{{ url_for('static', filename='css/app.min.css') }}" rel="stylesheet" type="text/css" id="app-stylesheet" />
+    <!-- App CSS -->
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" />
+    <link href="{{ url_for('static', filename='css/icons.min.css') }}" rel="stylesheet" />
+    <link href="{{ url_for('static', filename='css/app.min.css') }}" rel="stylesheet" />
     <link href="{{ url_for('static', filename='libs/bootstrap-daterangepicker/daterangepicker.css') }}" rel="stylesheet" />
+
+    <style>
+        /* Container style: if more than 3 beneficiaries exist, scrollbar appears */
+        #beneficiaryContainer {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
 </head>
 
 <body>
-    <!-- Begin page -->
     <div id="wrapper">
-
-        <!-- Topbar Start -->
-        <div id="wrapper">
-            <!-- Topbar Start -->
-            <div class="navbar-custom">
-              <div class="d-flex justify-content-between align-items-center w-100">
-                  <!-- Left side - Admin Panel -->
-                  <div>
-                      <h6 class="page-title mb-0">Sponsor Panel</h6>
-                  </div>
-          
-                  <!-- Middle - Logo -->
-                  <div>
-                    <a href="{{ url_for('main.homepage') }}" class="text-success">
-                        <img src="{{ url_for('static', filename='images/logo_ba1.png') }}" 
-                             alt="Logo" 
-                             style="width: 200px; height: 60px; background-color: grey; color: white; font-weight: bold; padding: 0px; border-radius: 1px;">
-                    </a>
-                  </div>
-          
-                  <!-- Right side - User Dropdown -->
-                  <ul class="list-unstyled topnav-menu mb-0">
-                      <li class="dropdown notification-list">
-                          <a class="nav-link dropdown-toggle nav-user waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
-                              <img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" alt="user-image" class="rounded-circle">
-                              <span class="d-none d-sm-inline-block ml-1">{{ current_user.name }}</span>
-                          </a>
-                          <div class="dropdown-menu dropdown-menu-right profile-dropdown">
-                              <a href="{{ url_for('auth.logout') }}" class="dropdown-item notify-item">
-                                  <i class="mdi mdi-logout-variant"></i>
-                                  <span>Logout</span>
-                              </a>
-                          </div>
-                      </li>
-                  </ul>
-              </div>
-          </div>
-        <!-- end Topbar -->
-
-        <!-- ========== Left Sidebar Start ========== -->
-        <div class="left-side-menu">
-            <div class="slimscroll-menu">
-                <!--- Sidemenu -->
-                <div id="sidebar-menu">
-                    <ul class="metismenu" id="side-menu">
-                        <li class="menu-title">Navigation</li>
-                        <!-- Dashboard -->
-                        <li>
-                            <a href="{{ url_for('sponsor.sponsor_dashboard') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-view-dashboard"></i>
-                                <span>Dashboard</span>
+        <!-- Topbar -->
+        <div class="navbar-custom">
+            <div class="d-flex justify-content-between align-items-center w-100">
+                <h6 class="page-title mb-0">Sponsor Panel</h6>
+                <a href="{{ url_for('main.homepage') }}">
+                    <img src="{{ url_for('static', filename='images/logo_ba1.png') }}" 
+                         alt="Logo" style="width: 200px; height: 60px;">
+                </a>
+                <ul class="list-unstyled topnav-menu mb-0">
+                    <li class="dropdown notification-list">
+                        <a class="nav-link dropdown-toggle nav-user waves-effect" data-toggle="dropdown">
+                            <img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" class="rounded-circle">
+                            <span class="d-none d-sm-inline-block ml-1">{{ current_user.name }}</span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right">
+                            <a href="{{ url_for('auth.logout') }}" class="dropdown-item notify-item">
+                                <i class="mdi mdi-logout-variant"></i> Logout
                             </a>
-                        </li>
-                        <!-- Payments -->
-                        <li>
-                            <a href="{{ url_for('sponsor.sponsor_payments') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-cash-multiple"></i>
-                                <span>Payments</span>
-                            </a>
-                        </li>
-                        <!-- Progress -->
-                        <li>
-                            <a href="{{ url_for('sponsor.sponsor_student_progress') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-chart-line"></i>
-                                <span>Student Progress</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-                <!-- End Sidebar -->
+                        </div>
+                    </li>
+                </ul>
             </div>
         </div>
-        <!-- Left Sidebar End -->
+        <!-- End Topbar -->
 
-        <!-- ============================================================== -->
-        <!-- Start Page Content here -->
-        <!-- ============================================================== -->
+        <!-- Left Sidebar -->
+        <div class="left-side-menu">
+            <div class="slimscroll-menu">
+                <div id="sidebar-menu">
+                    <ul class="metismenu">
+                        <li class="menu-title">Navigation</li>
+                        <li><a href="{{ url_for('sponsor.sponsor_dashboard') }}"><i class="mdi mdi-view-dashboard"></i> Dashboard</a></li>
+                        <li><a href="{{ url_for('sponsor.sponsor_payments') }}"><i class="mdi mdi-cash-multiple"></i> Payments</a></li>
+                        <li><a href="{{ url_for('sponsor.sponsor_student_progress') }}"><i class="mdi mdi-chart-line"></i> Student Progress</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!-- End Sidebar -->
 
         <div class="content-page">
             <div class="content">
-                <!-- Start Content-->
                 <div class="container-fluid">
-                    <!-- start page title -->
+                    <!-- Page Title -->
                     <div class="row">
                         <div class="col-12">
-                            <div class="page-title-box">
-                                <h4 class="page-title">Sponsor Dashboard</h4>
-                            </div>
+                            <h4 class="page-title">Sponsor Dashboard</h4>
                         </div>
                     </div>
-                    <!-- end page title -->
 
-                    <!-- Sponsor Details -->
+                    <!-- Sponsor Details & Beneficiary List -->
                     <div class="row">
                         <div class="col-md-6">
                             <div class="card">
                                 <div class="card-body">
                                     <h4 class="header-title">Sponsor Details</h4>
-                                    <div class="mt-3">
-                                        <p><strong>Name:</strong> {{ sponsor.name }}</p>
-                                        <p><strong>Email:</strong> {{ sponsor.email }}</p>
-                                        <p><strong>Phone:</strong> {{ sponsor.phone }}</p>
-                                    </div>
+                                    <p><strong>Name:</strong> {{ sponsor.name }}</p>
+                                    <p><strong>Email:</strong> {{ sponsor.email }}</p>
+                                    <p><strong>Phone:</strong> {{ sponsor.phone }}</p>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Grantees List -->
+                        <!-- Beneficiary List with Search & Scroll -->
                         <div class="col-md-6">
                             <div class="card">
                                 <div class="card-body">
                                     <h4 class="header-title">Assigned Beneficiary</h4>
-                                    <div class="mt-3">
-                                        <ul class="list-group">
+                                    <input type="text" id="searchBox" class="form-control mb-2" placeholder="Search beneficiary..." onkeyup="updateBeneficiaryList()">
+                                    <div id="beneficiaryContainer">
+                                        <ul class="list-group" id="beneficiaryList">
                                             {% for grantee in grantees %}
-                                               <li class="list-group-item">
-    <strong>{{ grantee.name }}</strong> - {{ grantee.email }} - {{ grantee.phone }} -
-    <span class="{% if status == 'paid' %}text-success{% else %}text-danger{% endif %}">
-        {{ status }}
-    </span>
-</li>
+                                                <li class="list-group-item beneficiary">
+                                                    <strong>{{ grantee.user.name }}</strong> - {{ grantee.user.email }} - {{ grantee.user.phone }} -
+                                                    <span class="{% if grantee.latest_payment and grantee.latest_payment.status == 'paid' %}text-success{% else %}text-danger{% endif %}">
+                                                        {{ grantee.latest_payment.status if grantee.latest_payment else 'No Payment' }}
+                                                    </span>
+                                                </li>
                                             {% endfor %}
                                         </ul>
                                     </div>
@@ -150,143 +113,106 @@
                             </div>
                         </div>
                     </div>
-                    <!-- End Sponsor Details -->
 
                     <!-- Charts Section -->
                     <div class="row">
-                        <!-- Total Revenue Chart -->
                         <div class="col-xl-6">
                             <div class="card-box">
-                                <h4 class="header-title mb-4">Marks comparison between grantors</h4>
-                                <div id="website-stats" style="height: 320px;" class="flot-chart"></div>
+                                <h4 class="header-title">Marks Comparison Between Grantors</h4>
+                                <div id="website-stats" class="flot-chart" style="height: 320px;"></div>
                             </div>
                         </div>
 
-                        <!-- Sales Analytics Chart -->
                         <div class="col-xl-6">
                             <div class="card-box">
-                                <h4 class="header-title mb-4">Marks Distribution</h4>
-                                <div class="float-right">
-                                    <div id="reportrange" class="form-control form-control-sm">
-                                        <i class="far fa-calendar-alt mr-1"></i>
-                                        <span></span>
-                                    </div>
-                                </div>
-                                <div class="clearfix"></div>
-                                <div id="donut-chart">
-                                    <div id="donut-chart-container" class="flot-chart" style="height: 246px;"></div>
-                                </div>
-                                <p class="text-muted mb-0 mt-3 text-truncate">Pie chart showing marks distribution on various exam type</p>
+                                <h4 class="header-title">Marks Distribution</h4>
+                                <div id="donut-chart-container" class="flot-chart" style="height: 246px;"></div>
+                                <p class="text-muted mt-3">Pie chart showing marks distribution on various exam types</p>
                             </div>
                         </div>
                     </div>
-                    <!-- End Charts Section -->
                 </div>
-                <!-- end container-fluid -->
             </div>
-            <!-- end content -->
 
-            <!-- Footer Start -->
-            <!-- Footer -->
-        <!-- Footer -->
-        <footer class="footer">
-            <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
-        </footer>
-    
-        <style>
-            .footer {
-                position: fixed;
-                bottom: 0;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 100%;
-                background-color: #f8f9fa;
-                padding: 10px 0;
-                text-align: center;
-                font-size: 14px;
-                color: #6c757d;
-                border-top: 1px solid #ddd;
-            }
-        </style>
-            <!-- end Footer -->
+            <footer class="footer">
+                <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
+            </footer>
         </div>
-        <!-- End Page content -->
     </div>
-    <!-- END wrapper -->
 
-    <!-- Vendor js -->
+    <!-- Vendor JS -->
     <script src="{{ url_for('static', filename='js/vendor.min.js') }}"></script>
-
-    <!-- Add these lines for chart functionality -->
     <script src="{{ url_for('static', filename='libs/flot-charts/jquery.flot.js') }}"></script>
-    <script src="{{ url_for('static', filename='libs/flot-charts/jquery.flot.time.js') }}"></script>
-    <script src="{{ url_for('static', filename='libs/flot-charts/jquery.flot.tooltip.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='libs/flot-charts/jquery.flot.resize.js') }}"></script>
     <script src="{{ url_for('static', filename='libs/flot-charts/jquery.flot.pie.js') }}"></script>
-    <script src="{{ url_for('static', filename='libs/flot-charts/jquery.flot.crosshair.js') }}"></script>
-    <script src="{{ url_for('static', filename='libs/flot-charts/jquery.flot.selection.js') }}"></script>
     <script src="{{ url_for('static', filename='libs/moment/moment.min.js') }}"></script>
     <script src="{{ url_for('static', filename='libs/bootstrap-daterangepicker/daterangepicker.js') }}"></script>
-
-    <!-- App js -->
     <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
 
-    <!-- Initialize the charts -->
+    <!-- Initialize Flot Charts and Beneficiary Search -->
     <script>
-        $(document).ready(function() {
-            // Example data for the charts
-            var data1 = [
-                [0, 10],
-                [1, 20],
-                [2, 30],
-                [3, 40],
-                [4, 50]
-            ];
-
-            var data2 = [
-                { label: "Internal", data: 30 },
-                { label: "External", data: 20 },
-                { label: "viva", data: 50 }
-            ];
-
-            // Total Revenue Chart
-            $.plot("#website-stats", [data1], {
-                series: {
-                    lines: { show: true, fill: true },
-                    points: { show: true }
-                },
-                grid: { hoverable: true, clickable: true },
-                colors: ["#3bafda"]
+        document.addEventListener("DOMContentLoaded", function() {
+            // Initialize beneficiary list to ensure proper display
+            updateBeneficiaryList();
+            // Initialize charts
+            initializeCharts();
+        });
+        
+        function updateBeneficiaryList() {
+            var input = document.getElementById("searchBox").value.toLowerCase();
+            var beneficiaries = document.querySelectorAll(".beneficiary");
+            
+            beneficiaries.forEach(function(item) {
+                var text = item.textContent.toLowerCase();
+                if (text.indexOf(input) > -1) {
+                    item.style.display = "block";
+                } else {
+                    item.style.display = "none";
+                }
             });
-
-            // Sales Analytics Donut Chart
-            $.plot("#donut-chart-container", data2, {
+        }
+        
+        function initializeCharts() {
+            // Sample data for donut chart (Marks Distribution)
+            var donutData = [
+                { label: "Exam A", data: 20 },
+                { label: "Exam B", data: 30 },
+                { label: "Exam C", data: 50 }
+            ];
+            $.plot('#donut-chart-container', donutData, {
                 series: {
                     pie: {
-                        show: true,
-                        innerRadius: 0.5
+                        innerRadius: 0.5,
+                        show: true
                     }
                 },
-                colors: ["#3bafda", "#1abc9c", "#f7b84b"]
-            });
-
-            // Date Range Picker
-            $('#reportrange').daterangepicker({
-                startDate: moment().subtract(29, 'days'),
-                endDate: moment(),
-                ranges: {
-                    'Today': [moment(), moment()],
-                    'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-                    'This Month': [moment().startOf('month'), moment().endOf('month')],
-                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                legend: {
+                    show: true
                 }
-            }, function(start, end) {
-                $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
             });
-        });
+        
+            // Sample data for line chart (Marks Comparison)
+            var lineData = [
+                [0, 5],
+                [1, 10],
+                [2, 8],
+                [3, 12],
+                [4, 7]
+            ];
+            $.plot('#website-stats', [lineData], {
+                series: {
+                    lines: { show: true },
+                    points: { show: true }
+                },
+                grid: {
+                    hoverable: true,
+                    clickable: true
+                },
+                xaxis: {
+                    tickDecimals: 0
+                }
+            });
+        }
     </script>
+        
 </body>
-
 </html>

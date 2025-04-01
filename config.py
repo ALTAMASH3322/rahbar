@@ -6,8 +6,8 @@ class Config:
 
     # Database configuration
     MYSQL_USER = 'root'
-    MYSQL_PASSWORD = ''
-    MYSQL_HOST = '127.0.0.1'
+    MYSQL_PASSWORD = 'Spidey@321654'
+    MYSQL_HOST = '139.59.3.48'
     MYSQL_DB = 'rahbar'
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or f'mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}/{MYSQL_DB}'
     SQLALCHEMY_TRACK_MODIFICATIONS = False

@@ -114,7 +114,9 @@ def create_app():
     }
 
     # Apply security policies with Talisman
-    Talisman(app, content_security_policy=csp)
+    # Apply security policies with Talisman
+    Talisman(app, content_security_policy=csp, force_https=False)
+
 
     # Import and register Blueprints
     from routes.auth import auth_bp

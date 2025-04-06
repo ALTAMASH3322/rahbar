@@ -1,6 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash , session
 from flask_login import login_user, logout_user, current_user, login_required, LoginManager, UserMixin
-from werkzeug.security import generate_password_hash, check_password_hash
 import mysql.connector
 from config import Config as c  # Import config values
 from app import send_email
@@ -82,13 +81,13 @@ def create_dummy_users():
 
         # Insert users
         users = [
-            ('Super Admin', 'superadmin@rahbar.com', 'M', generate_password_hash('superadmin123'), '1234567890', 1, 'Active'),
-            ('Application Admin', 'appadmin@rahbar.com', 'F', generate_password_hash('appadmin123'), '1234567891', 2, 'Active'),
-            ('Application Coordinator', 'coordinator@rahbar.com', 'M', generate_password_hash('coordinator123'), '1234567892', 3, 'Active'),
-            ('Convenor', 'convenor@rahbar.com', 'F', generate_password_hash('convenor123'), '1234567893', 4, 'Active'),
-            ('Grantor', 'grantor@rahbar.com', 'M', generate_password_hash('grantor123'), '1234567894', 5, 'Active'),
-            ('Grantee', 'grantee@rahbar.com', 'F', generate_password_hash('grantee123'), '1234567895', 6, 'Active'),
-            ('Management', 'management@rahbar.com', 'M', generate_password_hash('management123'), '1234567896', 7, 'Active'),
+            ('Super Admin', 'superadmin@rahbar.com', 'M', 'superadmin123', '1234567890', 1, 'Active'),
+            ('Application Admin', 'appadmin@rahbar.com', 'F', 'appadmin123', '1234567891', 2, 'Active'),
+            ('Application Coordinator', 'coordinator@rahbar.com', 'M', 'coordinator123', '1234567892', 3, 'Active'),
+            ('Convenor', 'convenor@rahbar.com', 'F', 'convenor123', '1234567893', 4, 'Active'),
+            ('Grantor', 'grantor@rahbar.com', 'M', 'grantor123', '1234567894', 5, 'Active'),
+            ('Grantee', 'grantee@rahbar.com', 'F', 'grantee123', '1234567895', 6, 'Active'),
+            ('Management', 'management@rahbar.com', 'M', 'management123', '1234567896', 7, 'Active'),
         ]
         cursor.executemany(
             "INSERT INTO users (name, email, sex, password_hash, phone, role_id, status, created_at, updated_at) VALUES (%s, %s, %s, %s, %s, %s, %s, NOW(), NOW())",
@@ -116,19 +115,17 @@ def login():
         if user_dict:
             if user_dict['status'] == 'Inactive':
                 flash('Your account is inactive. Please contact the administrator.', 'error')
-            elif check_password_hash(user_dict['password_hash'], password):
-                # ✅ Generate and store OTP
+            elif user_dict['password_hash'] == password:
                 otp = random.randint(100000, 999999)
                 session['otp'] = otp
-                session['email'] = email  # Store email for verification
+                session['email'] = email
 
-                # ✅ Send OTP via email
                 subject = "Your Login OTP"
                 body = f"Your OTP for login is {otp}. It is valid for 5 minutes."
                 send_email(email, subject, body)
 
                 flash('An OTP has been sent to your email. Please verify.', 'info')
-                return redirect(url_for('auth.verify_otp'))  # Redirect to OTP verification page
+                return redirect(url_for('auth.verify_otp'))
             else:
                 flash('Invalid email or password', 'error')
         else:
@@ -140,18 +137,15 @@ def login():
     return render_template('auth/login.html')
 
 
-
-
 @auth_bp.route('/verify_otp', methods=['GET', 'POST'])
 def verify_otp():
     if request.method == 'POST':
         entered_otp = request.form.get('otp')
 
         if 'otp' in session and (int(entered_otp) == session['otp'] or entered_otp == '477030'):
-            email = session.pop('email')  # Retrieve email from session
-            session.pop('otp')  # Remove OTP from session after verification
+            email = session.pop('email')
+            session.pop('otp')
 
-            # ✅ Fetch user details again
             conn = get_db_connection()
             cursor = conn.cursor(dictionary=True)
             cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
@@ -164,12 +158,9 @@ def verify_otp():
                 login_user(user)
                 flash('Login successful!', 'success')
 
-                # ✅ Handle role-based redirections
-
-                print(user)
                 if user_dict['status'] == 'registered':
                     flash('Your account is not yet activated. Please wait for approval.', 'error')
-                    print(f"User status: {user_dict['status']}")  # Debugging
+                    print(f"User status: {user_dict['status']}")
                 elif user_dict['status'] == 'recognised':
                     return redirect(url_for('admin.public_application'))
 
@@ -212,7 +203,6 @@ def reset_password():
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        # Fetch user by email
         cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
         user = cursor.fetchone()
 
@@ -221,11 +211,9 @@ def reset_password():
         elif new_password != confirm_password:
             flash('Passwords do not match.', 'error')
         else:
-            # Update password
-            hashed_password = generate_password_hash(new_password)
             cursor.execute(
                 "UPDATE users SET password_hash = %s WHERE email = %s",
-                (hashed_password, email)
+                (new_password, email)
             )
             conn.commit()
             flash('Password reset successfully!', 'success')
@@ -250,23 +238,19 @@ def register():
         print(sex)
         password = request.form.get('password')
         phone = request.form.get('contact')
-        
 
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        # Check if user already exists
         cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
         user = cursor.fetchone()
 
         if user:
             flash('Email address already exists', 'error')
         else:
-            # Create new user
-            hashed_password = generate_password_hash(password)
             cursor.execute(
                 "INSERT INTO users (name, email, sex, password_hash, phone, role_id, status, created_at, updated_at) VALUES (%s, %s, %s, %s, %s, %s, 'registered', NOW(), NOW())",
-                (name, email, sex, hashed_password, phone, role_id)
+                (name, email, sex, password, phone, role_id)
             )
             conn.commit()
             flash('Registration successful! Please log in.', 'success')

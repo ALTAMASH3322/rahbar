@@ -3,6 +3,8 @@ from flask_login import login_user, logout_user, current_user, login_required, L
 import mysql.connector
 from config import Config as c  # Import config values
 from app import send_email
+import threading
+
 import random
 
 # Initialize Flask-Login
@@ -98,6 +100,11 @@ def create_dummy_users():
     cursor.close()
     conn.close()
 
+def send_email_async(email, subject, body):
+    thread = threading.Thread(target=send_email, args=(email, subject, body))
+    thread.start()
+
+
 # Login route
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -122,7 +129,8 @@ def login():
 
                 subject = "Your Login OTP"
                 body = f"Your OTP for login is {otp}. It is valid for 5 minutes."
-                send_email(email, subject, body)
+                send_email_async(email, subject, body)
+
 
                 flash('An OTP has been sent to your email. Please verify.', 'info')
                 return redirect(url_for('auth.verify_otp'))

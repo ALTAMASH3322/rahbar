@@ -28,10 +28,13 @@ def get_db_connection():
 # User class for Flask-Login
 class User(UserMixin):
     def __init__(self, user_dict):
+        self.id = user_dict['user_id']
+        self.name = user_dict['name']
         self.user_id = user_dict['user_id']
         self.email = user_dict['email']
         self.role_id = user_dict['role_id']
         print(f"User initialized with Role ID: {self.role_id}")  # Debugging
+        print(f"User initialized with User ID: {self.name}")  # Debugging
 
     def get_id(self):
         return str(self.user_id)

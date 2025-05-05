@@ -1,224 +1,280 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
+  <head>
     <meta charset="utf-8" />
     <title>Admin Dashboard | Rahbar</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta content="Admin Dashboard for Rahbar Application" name="description" />
     <meta content="Coderthemes" name="author" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
     <!-- App favicon -->
-    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <link
+      rel="shortcut icon"
+      href="{{ url_for('static', filename='images/favicon.ico') }}"
+    />
 
     <!-- App css -->
-    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" id="bootstrap-stylesheet" />
-    <link href="{{ url_for('static', filename='css/icons.min.css') }}" rel="stylesheet" type="text/css" />
-    <link href="{{ url_for('static', filename='css/app.min.css') }}" rel="stylesheet" type="text/css" id="app-stylesheet" />
-</head>
+    <link
+      href="{{ url_for('static', filename='css/bootstrap.min.css') }}"
+      rel="stylesheet"
+      type="text/css"
+      id="bootstrap-stylesheet"
+    />
+    <link
+      href="{{ url_for('static', filename='css/icons.min.css') }}"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="{{ url_for('static', filename='css/app.min.css') }}"
+      rel="stylesheet"
+      type="text/css"
+      id="app-stylesheet"
+    />
+  </head>
 
-<body>
+  <body>
     <!-- Begin page -->
     <div id="wrapper">
-
-       <!-- Topbar Start -->
-<!-- Topbar Start -->
-<div class="navbar-custom">
-    <div class="d-flex justify-content-between align-items-center w-100">
-        <!-- Left side - Admin Panel -->
-        <div>
+      <!-- Topbar Start -->
+      <!-- Topbar Start -->
+      <div class="navbar-custom">
+        <div class="d-flex justify-content-between align-items-center w-100">
+          <!-- Left side - Admin Panel -->
+          <div>
             <h6 class="page-title mb-0">Admin Panel</h6>
-        </div>
+          </div>
 
-        <!-- Middle - Logo -->
-        <div>
+          <!-- Middle - Logo -->
+          <div>
             <a href="{{ url_for('main.homepage') }}" class="text-success">
-                <h4>Rahbar Scholarship Information Management System</h4>
-                </a>
-        </div>
+              <h4>Rahbar Scholarship Information Management System</h4>
+            </a>
+          </div>
 
-        <!-- Right side - User Dropdown -->
-        <ul class="list-unstyled topnav-menu mb-0">
+          <!-- Right side - User Dropdown -->
+          <ul class="list-unstyled topnav-menu mb-0">
             <li class="dropdown notification-list">
-                <a class="nav-link dropdown-toggle nav-user waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
-                    <img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" alt="user-image" class="rounded-circle">
-                    <span class="d-none d-sm-inline-block ml-1">{{ current_user.name }}</span>
+              <a
+                class="nav-link dropdown-toggle nav-user waves-effect"
+                data-toggle="dropdown"
+                href="#"
+                role="button"
+                aria-haspopup="false"
+                aria-expanded="false"
+              >
+                <img
+                  src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}"
+                  alt="user-image"
+                  class="rounded-circle"
+                />
+                <span class="d-none d-sm-inline-block ml-1"
+                  >{{ admin.name }}</span
+                >
+              </a>
+              <div class="dropdown-menu dropdown-menu-right profile-dropdown">
+                <a
+                  href="{{ url_for('auth.logout') }}"
+                  class="dropdown-item notify-item"
+                >
+                  <i class="mdi mdi-logout-variant"></i>
+                  <span>Logout</span>
                 </a>
-                <div class="dropdown-menu dropdown-menu-right profile-dropdown">
-                    <a href="{{ url_for('auth.logout') }}" class="dropdown-item notify-item">
-                        <i class="mdi mdi-logout-variant"></i>
-                        <span>Logout</span>
-                    </a>
-                </div>
+              </div>
             </li>
-        </ul>
-    </div>
-</div>
-<!-- end Topbar -->
-
-        <!-- ========== Left Sidebar Start ========== -->
-        <div class="left-side-menu">
-            <div class="slimscroll-menu">
-                <!--- Sidemenu -->
-                <div id="sidebar-menu">
-                    <ul class="metismenu" id="side-menu">
-                        <li class="menu-title">Navigation</li>
-                        <!-- Dashboard -->
-                        <li>
-                            <a href="{{ url_for('admin.admin_dashboard') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-view-dashboard"></i>
-                                <span>Dashboard</span>
-                            </a>
-                        </li>
-                        <!-- Manage Users -->
-                        <li>
-                            <a href="{{ url_for('admin.manage_users') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-account-multiple"></i>
-                                <span>Manage Users</span>
-                            </a>
-                        </li>
-                        <!-- System Configuration -->
-                        <li>
-                            <a href="{{ url_for('admin.system_configuration') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-settings"></i>
-                                <span>System Configuration</span>
-                            </a>
-                        </li>
-                        <!-- Generate Reports -->
-                        <li>
-                            <a href="{{ url_for('admin.admin_generate_reports') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-chart-bar"></i>
-                                <span>Generate Reports</span>
-                            </a>
-                        </li>
-                        <!-- Application Period -->
-                        <li>
-                            <a href="{{ url_for('admin.manage_application_period') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-calendar"></i>
-                                <span>Application Period</span>
-                            </a>
-                        </li>
-                        <!-- In admin/dashboard.html -->
-<li>
-    <a href="{{ url_for('admin.manage_rcc_centers') }}" class="waves-effect waves-light">
-        <i class="mdi mdi-bank"></i>
-        <span>Manage RCC Centers</span>
-    </a>
-</li>
-<li>
-    <a href="{{ url_for('admin.manage_courses') }}" class="waves-effect waves-light">
-        <i class="mdi mdi-book-open"></i>
-        <span>Manage Courses</span>
-    </a>
-</li>
-<li>
-    <a href="{{ url_for('admin.manage_students') }}" class="waves-effect waves-light">
-        <i class="mdi mdi-account-school"></i>
-        <span>Manage Students</span>
-    </a>
-</li>
-                    </ul>
-                </div>
-                <!-- End Sidebar -->
-            </div>
+          </ul>
         </div>
-        <!-- Left Sidebar End -->
+      </div>
+      <!-- end Topbar -->
 
-        <!-- ============================================================== -->
-        <!-- Start Page Content here -->
-        <!-- ============================================================== -->
+      <!-- ========== Left Sidebar Start ========== -->
+      <div class="left-side-menu">
+        <div class="slimscroll-menu">
+          <!--- Sidemenu -->
+          <div id="sidebar-menu">
+            <ul class="metismenu" id="side-menu">
+              <li class="menu-title">Navigation</li>
+              <!-- Dashboard -->
+              <li>
+                <a
+                  href="{{ url_for('admin.admin_dashboard') }}"
+                  class="waves-effect waves-light"
+                >
+                  <i class="mdi mdi-view-dashboard"></i>
+                  <span>Dashboard</span>
+                </a>
+              </li>
+              <!-- Manage Users -->
+              <li>
+                <a
+                  href="{{ url_for('admin.manage_users') }}"
+                  class="waves-effect waves-light"
+                >
+                  <i class="mdi mdi-account-multiple"></i>
+                  <span>Manage Users</span>
+                </a>
+              </li>
+              <!-- System Configuration -->
+              <li>
+                <a
+                  href="{{ url_for('admin.system_configuration') }}"
+                  class="waves-effect waves-light"
+                >
+                  <i class="mdi mdi-settings"></i>
+                  <span>System Configuration</span>
+                </a>
+              </li>
+              <!-- Generate Reports -->
+              <li>
+                <a
+                  href="{{ url_for('admin.admin_generate_reports') }}"
+                  class="waves-effect waves-light"
+                >
+                  <i class="mdi mdi-chart-bar"></i>
+                  <span>Generate Reports</span>
+                </a>
+              </li>
+              <!-- Application Period -->
+              <li>
+                <a
+                  href="{{ url_for('admin.manage_application_period') }}"
+                  class="waves-effect waves-light"
+                >
+                  <i class="mdi mdi-calendar"></i>
+                  <span>Application Period</span>
+                </a>
+              </li>
+              <!-- In admin/dashboard.html -->
+              <li>
+                <a
+                  href="{{ url_for('admin.manage_rcc_centers') }}"
+                  class="waves-effect waves-light"
+                >
+                  <i class="mdi mdi-bank"></i>
+                  <span>Manage RCC Centers</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="{{ url_for('admin.manage_courses') }}"
+                  class="waves-effect waves-light"
+                >
+                  <i class="mdi mdi-book-open"></i>
+                  <span>Manage Courses</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="{{ url_for('admin.manage_students') }}"
+                  class="waves-effect waves-light"
+                >
+                  <i class="mdi mdi-account-school"></i>
+                  <span>Manage Students</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+          <!-- End Sidebar -->
+        </div>
+      </div>
+      <!-- Left Sidebar End -->
 
-        <div class="content-page">
-            <div class="content">
-                <!-- Start Content-->
-                <div class="container-fluid">
-                    <!-- start page title -->
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="page-title-box">
-                                <h4 class="page-title">Admin Dashboard</h4>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- end page title -->
+      <!-- ============================================================== -->
+      <!-- Start Page Content here -->
+      <!-- ============================================================== -->
 
-                    <!-- Summary Cards -->
-                    <div class="row">
-                        <div class="col-md-6 col-xl-3">
-                            <div class="card-box">
-                                <h4 class="header-title mt-0 mb-3">Total Users</h4>
-                                <h2 class="text-primary">{{ users|length }}</h2>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-xl-3">
-                            <div class="card-box">
-                                <h4 class="header-title mt-0 mb-3">Total Applications</h4>
-                                <h2 class="text-success">{{ applications|length }}</h2>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-xl-3">
-                            <div class="card-box">
-                                <h4 class="header-title mt-0 mb-3">Total Payments</h4>
-                                <h2 class="text-info">{{ payments|length }}</h2>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-xl-3">
-                            <div class="card-box">
-                                <h4 class="header-title mt-0 mb-3">Active Sponsors</h4>
-                                <h2 class="text-warning">{{ sponsors_convenors|length }}</h2>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- End Summary Cards -->
-
-                    <!-- Application Period Status -->
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h4 class="header-title">Application Period Status</h4>
-                                    <p>
-                                        {% if application_period and application_period.is_active %}
-                                            <span class="badge badge-success">Active</span>
-                                            ({{ application_period.start_date }} to {{ application_period.end_date }})
-                                        {% else %}
-                                            <span class="badge badge-danger">Inactive</span>
-                                        {% endif %}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+      <div class="content-page">
+        <div class="content">
+          <!-- Start Content-->
+          <div class="container-fluid">
+            <!-- start page title -->
+            <div class="row">
+              <div class="col-12">
+                <div class="page-title-box">
+                  <h4 class="page-title">Admin Dashboard</h4>
                 </div>
-                <!-- end container-fluid -->
+              </div>
             </div>
-            <!-- end content -->
+            <!-- end page title -->
 
-           <!-- Footer -->
+            <!-- Summary Cards -->
+            <div class="row">
+              <div class="col-md-6 col-xl-3">
+                <div class="card-box">
+                  <h4 class="header-title mt-0 mb-3">Total Users</h4>
+                  <h2 class="text-primary">{{ users|length }}</h2>
+                </div>
+              </div>
+              <div class="col-md-6 col-xl-3">
+                <div class="card-box">
+                  <h4 class="header-title mt-0 mb-3">Total Applications</h4>
+                  <h2 class="text-success">{{ applications|length }}</h2>
+                </div>
+              </div>
+              <div class="col-md-6 col-xl-3">
+                <div class="card-box">
+                  <h4 class="header-title mt-0 mb-3">Total Payments</h4>
+                  <h2 class="text-info">{{ payments|length }}</h2>
+                </div>
+              </div>
+              <div class="col-md-6 col-xl-3">
+                <div class="card-box">
+                  <h4 class="header-title mt-0 mb-3">Active Sponsors</h4>
+                  <h2 class="text-warning">{{ sponsors_convenors|length }}</h2>
+                </div>
+              </div>
+            </div>
+            <!-- End Summary Cards -->
+
+            <!-- Application Period Status -->
+            <div class="row">
+              <div class="col-12">
+                <div class="card">
+                  <div class="card-body">
+                    <h4 class="header-title">Application Period Status</h4>
+                    <p>
+                      {% if application_period and application_period.is_active
+                      %}
+                      <span class="badge badge-success">Active</span>
+                      ({{ application_period.start_date }} to {{
+                      application_period.end_date }}) {% else %}
+                      <span class="badge badge-danger">Inactive</span>
+                      {% endif %}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- end container-fluid -->
+        </div>
+        <!-- end content -->
+
+        <!-- Footer -->
         <!-- Footer -->
         <footer class="footer">
-            <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
+          <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
         </footer>
-    
+
         <style>
-            .footer {
-                position: fixed;
-                bottom: 0;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 100%;
-                background-color: #f8f9fa;
-                padding: 10px 0;
-                text-align: center;
-                font-size: 14px;
-                color: #6c757d;
-                border-top: 1px solid #ddd;
-            }
+          .footer {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            background-color: #f8f9fa;
+            padding: 10px 0;
+            text-align: center;
+            font-size: 14px;
+            color: #6c757d;
+            border-top: 1px solid #ddd;
+          }
         </style>
-            <!-- end Footer -->
-        </div>
-        <!-- End Page content -->
+        <!-- end Footer -->
+      </div>
+      <!-- End Page content -->
     </div>
     <!-- END wrapper -->
 
@@ -227,6 +283,5 @@
 
     <!-- App js -->
     <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
-</body>
-
+  </body>
 </html>

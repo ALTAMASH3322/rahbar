@@ -39,6 +39,7 @@ def admin_dashboard():
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
+    #print(f"Current User ID: {current_user.name}")  # Debugging
 
     # Fetch admin details
     cursor.execute("SELECT * FROM users WHERE user_id = %s", (current_user.user_id,))

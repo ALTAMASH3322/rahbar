@@ -1,142 +1,205 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="utf-8" />
     <title>Sponsor Dashboard | Rahbar</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta content="Sponsor Dashboard for Rahbar Application" name="description" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      content="Sponsor Dashboard for Rahbar Application"
+      name="description"
+    />
     <meta content="Coderthemes" name="author" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
     <!-- App favicon -->
-    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <link
+      rel="shortcut icon"
+      href="{{ url_for('static', filename='images/favicon.ico') }}"
+    />
 
     <!-- App CSS -->
-    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" />
-    <link href="{{ url_for('static', filename='css/icons.min.css') }}" rel="stylesheet" />
-    <link href="{{ url_for('static', filename='css/app.min.css') }}" rel="stylesheet" />
-    <link href="{{ url_for('static', filename='libs/bootstrap-daterangepicker/daterangepicker.css') }}" rel="stylesheet" />
+    <link
+      href="{{ url_for('static', filename='css/bootstrap.min.css') }}"
+      rel="stylesheet"
+    />
+    <link
+      href="{{ url_for('static', filename='css/icons.min.css') }}"
+      rel="stylesheet"
+    />
+    <link
+      href="{{ url_for('static', filename='css/app.min.css') }}"
+      rel="stylesheet"
+    />
+    <link
+      href="{{ url_for('static', filename='libs/bootstrap-daterangepicker/daterangepicker.css') }}"
+      rel="stylesheet"
+    />
 
     <style>
-        /* Container style: if more than 3 beneficiaries exist, scrollbar appears */
-        #beneficiaryContainer {
-            max-height: 200px;
-            overflow-y: auto;
-        }
+      /* Container style: if more than 3 beneficiaries exist, scrollbar appears */
+      #beneficiaryContainer {
+        max-height: 200px;
+        overflow-y: auto;
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <div id="wrapper">
-        <!-- Topbar -->
-        <div class="navbar-custom">
-            <div class="d-flex justify-content-between align-items-center w-100">
-                <h6 class="page-title mb-0">Sponsor Panel</h6>
-                <a href="{{ url_for('main.homepage') }}" class="text-success">
-                    <h4>Rahbar Scholarship Information Management System</h4>
-                    </a>
-                <ul class="list-unstyled topnav-menu mb-0">
-                    <li class="dropdown notification-list">
-                        <a class="nav-link dropdown-toggle nav-user waves-effect" data-toggle="dropdown">
-                            <img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" class="rounded-circle">
-                            <span class="d-none d-sm-inline-block ml-1">{{ current_user.name }}</span>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-right">
-                            <a href="{{ url_for('auth.logout') }}" class="dropdown-item notify-item">
-                                <i class="mdi mdi-logout-variant"></i> Logout
-                            </a>
-                        </div>
-                    </li>
-                </ul>
-            </div>
+      <!-- Topbar -->
+      <div class="navbar-custom">
+        <div class="d-flex justify-content-between align-items-center w-100">
+          <h6 class="page-title mb-0">Sponsor Panel</h6>
+          <a href="{{ url_for('main.homepage') }}" class="text-success">
+            <h4>Rahbar Scholarship Information Management System</h4>
+          </a>
+          <ul class="list-unstyled topnav-menu mb-0">
+            <li class="dropdown notification-list">
+              <a
+                class="nav-link dropdown-toggle nav-user waves-effect"
+                data-toggle="dropdown"
+              >
+                <img
+                  src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}"
+                  class="rounded-circle"
+                />
+                <span class="d-none d-sm-inline-block ml-1"
+                  >{{ sponsor.name }}</span
+                >
+              </a>
+              <div class="dropdown-menu dropdown-menu-right">
+                <a
+                  href="{{ url_for('auth.logout') }}"
+                  class="dropdown-item notify-item"
+                >
+                  <i class="mdi mdi-logout-variant"></i> Logout
+                </a>
+              </div>
+            </li>
+          </ul>
         </div>
-        <!-- End Topbar -->
+      </div>
+      <!-- End Topbar -->
 
-        <!-- Left Sidebar -->
-        <div class="left-side-menu">
-            <div class="slimscroll-menu">
-                <div id="sidebar-menu">
-                    <ul class="metismenu">
-                        <li class="menu-title">Navigation</li>
-                        <li><a href="{{ url_for('sponsor.sponsor_dashboard') }}"><i class="mdi mdi-view-dashboard"></i> Dashboard</a></li>
-                        <li><a href="{{ url_for('sponsor.sponsor_payments') }}"><i class="mdi mdi-cash-multiple"></i> Payments</a></li>
-                        <li><a href="{{ url_for('sponsor.sponsor_student_progress') }}"><i class="mdi mdi-chart-line"></i> Student Progress</a></li>
-                    </ul>
+      <!-- Left Sidebar -->
+      <div class="left-side-menu">
+        <div class="slimscroll-menu">
+          <div id="sidebar-menu">
+            <ul class="metismenu">
+              <li class="menu-title">Navigation</li>
+              <li>
+                <a href="{{ url_for('sponsor.sponsor_dashboard') }}"
+                  ><i class="mdi mdi-view-dashboard"></i> Dashboard</a
+                >
+              </li>
+              <li>
+                <a href="{{ url_for('sponsor.sponsor_payments') }}"
+                  ><i class="mdi mdi-cash-multiple"></i> Payments</a
+                >
+              </li>
+              <li>
+                <a href="{{ url_for('sponsor.sponsor_student_progress') }}"
+                  ><i class="mdi mdi-chart-line"></i> Student Progress</a
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <!-- End Sidebar -->
+
+      <div class="content-page">
+        <div class="content">
+          <div class="container-fluid">
+            <!-- Page Title -->
+            <div class="row">
+              <div class="col-12">
+                <h4 class="page-title">Sponsor Dashboard</h4>
+              </div>
+            </div>
+
+            <!-- Sponsor Details & Beneficiary List -->
+            <div class="row">
+              <div class="col-md-6">
+                <div class="card">
+                  <div class="card-body">
+                    <h4 class="header-title">Sponsor Details</h4>
+                    <p><strong>Name:</strong> {{ sponsor.name }}</p>
+                    <p><strong>Email:</strong> {{ sponsor.email }}</p>
+                    <p><strong>Phone:</strong> {{ sponsor.phone }}</p>
+                  </div>
                 </div>
-            </div>
-        </div>
-        <!-- End Sidebar -->
+              </div>
 
-        <div class="content-page">
-            <div class="content">
-                <div class="container-fluid">
-                    <!-- Page Title -->
-                    <div class="row">
-                        <div class="col-12">
-                            <h4 class="page-title">Sponsor Dashboard</h4>
-                        </div>
+              <!-- Beneficiary List with Search & Scroll -->
+              <div class="col-md-6">
+                <div class="card">
+                  <div class="card-body">
+                    <h4 class="header-title">Assigned Beneficiary</h4>
+                    <input
+                      type="text"
+                      id="searchBox"
+                      class="form-control mb-2"
+                      placeholder="Search beneficiary..."
+                      onkeyup="updateBeneficiaryList()"
+                    />
+                    <div id="beneficiaryContainer">
+                      <ul class="list-group" id="beneficiaryList">
+                        {% for grantee in grantees %}
+                        <li class="list-group-item beneficiary">
+                          <strong>{{ grantee.user.name }}</strong> - {{
+                          grantee.user.email }} - {{ grantee.user.phone }} -
+                          <span
+                            class="{% if grantee.latest_payment and grantee.latest_payment.status == 'paid' %}text-success{% else %}text-danger{% endif %}"
+                          >
+                            {{ grantee.latest_payment.status if
+                            grantee.latest_payment else 'No Payment' }}
+                          </span>
+                        </li>
+                        {% endfor %}
+                      </ul>
                     </div>
-
-                    <!-- Sponsor Details & Beneficiary List -->
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h4 class="header-title">Sponsor Details</h4>
-                                    <p><strong>Name:</strong> {{ sponsor.name }}</p>
-                                    <p><strong>Email:</strong> {{ sponsor.email }}</p>
-                                    <p><strong>Phone:</strong> {{ sponsor.phone }}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Beneficiary List with Search & Scroll -->
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h4 class="header-title">Assigned Beneficiary</h4>
-                                    <input type="text" id="searchBox" class="form-control mb-2" placeholder="Search beneficiary..." onkeyup="updateBeneficiaryList()">
-                                    <div id="beneficiaryContainer">
-                                        <ul class="list-group" id="beneficiaryList">
-                                            {% for grantee in grantees %}
-                                                <li class="list-group-item beneficiary">
-                                                    <strong>{{ grantee.user.name }}</strong> - {{ grantee.user.email }} - {{ grantee.user.phone }} -
-                                                    <span class="{% if grantee.latest_payment and grantee.latest_payment.status == 'paid' %}text-success{% else %}text-danger{% endif %}">
-                                                        {{ grantee.latest_payment.status if grantee.latest_payment else 'No Payment' }}
-                                                    </span>
-                                                </li>
-                                            {% endfor %}
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Charts Section -->
-                    <div class="row">
-                        <div class="col-xl-6">
-                            <div class="card-box">
-                                <h4 class="header-title">Marks Comparison Between Grantors</h4>
-                                <div id="website-stats" class="flot-chart" style="height: 320px;"></div>
-                            </div>
-                        </div>
-
-                        <div class="col-xl-6">
-                            <div class="card-box">
-                                <h4 class="header-title">Marks Distribution</h4>
-                                <div id="donut-chart-container" class="flot-chart" style="height: 246px;"></div>
-                                <p class="text-muted mt-3">Pie chart showing marks distribution on various exam types</p>
-                            </div>
-                        </div>
-                    </div>
+                  </div>
                 </div>
+              </div>
             </div>
 
-            <footer class="footer">
-                <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
-            </footer>
+            <!-- Charts Section -->
+            <div class="row">
+              <div class="col-xl-6">
+                <div class="card-box">
+                  <h4 class="header-title">
+                    Marks Comparison Between Grantors
+                  </h4>
+                  <div
+                    id="website-stats"
+                    class="flot-chart"
+                    style="height: 320px"
+                  ></div>
+                </div>
+              </div>
+
+              <div class="col-xl-6">
+                <div class="card-box">
+                  <h4 class="header-title">Marks Distribution</h4>
+                  <div
+                    id="donut-chart-container"
+                    class="flot-chart"
+                    style="height: 246px"
+                  ></div>
+                  <p class="text-muted mt-3">
+                    Pie chart showing marks distribution on various exam types
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <footer class="footer">
+          <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
+        </footer>
+      </div>
     </div>
 
     <!-- Vendor JS -->
@@ -149,69 +212,68 @@
 
     <!-- Initialize Flot Charts and Beneficiary Search -->
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            // Initialize beneficiary list to ensure proper display
-            updateBeneficiaryList();
-            // Initialize charts
-            initializeCharts();
+      document.addEventListener("DOMContentLoaded", function () {
+        // Initialize beneficiary list to ensure proper display
+        updateBeneficiaryList();
+        // Initialize charts
+        initializeCharts();
+      });
+
+      function updateBeneficiaryList() {
+        var input = document.getElementById("searchBox").value.toLowerCase();
+        var beneficiaries = document.querySelectorAll(".beneficiary");
+
+        beneficiaries.forEach(function (item) {
+          var text = item.textContent.toLowerCase();
+          if (text.indexOf(input) > -1) {
+            item.style.display = "block";
+          } else {
+            item.style.display = "none";
+          }
         });
-        
-        function updateBeneficiaryList() {
-            var input = document.getElementById("searchBox").value.toLowerCase();
-            var beneficiaries = document.querySelectorAll(".beneficiary");
-            
-            beneficiaries.forEach(function(item) {
-                var text = item.textContent.toLowerCase();
-                if (text.indexOf(input) > -1) {
-                    item.style.display = "block";
-                } else {
-                    item.style.display = "none";
-                }
-            });
-        }
-        
-        function initializeCharts() {
-            // Sample data for donut chart (Marks Distribution)
-            var donutData = [
-                { label: "Exam A", data: 20 },
-                { label: "Exam B", data: 30 },
-                { label: "Exam C", data: 50 }
-            ];
-            $.plot('#donut-chart-container', donutData, {
-                series: {
-                    pie: {
-                        innerRadius: 0.5,
-                        show: true
-                    }
-                },
-                legend: {
-                    show: true
-                }
-            });
-        
-            // Sample data for line chart (Marks Comparison)
-            var lineData = [
-                [0, 5],
-                [1, 10],
-                [2, 8],
-                [3, 12],
-                [4, 7]
-            ];
-            $.plot('#website-stats', [lineData], {
-                series: {
-                    lines: { show: true },
-                    points: { show: true }
-                },
-                grid: {
-                    hoverable: true,
-                    clickable: true
-                },
-                xaxis: {
-                    tickDecimals: 0
-                }
-            });
-        }
+      }
+
+      function initializeCharts() {
+        // Sample data for donut chart (Marks Distribution)
+        var donutData = [
+          { label: "Exam A", data: 20 },
+          { label: "Exam B", data: 30 },
+          { label: "Exam C", data: 50 },
+        ];
+        $.plot("#donut-chart-container", donutData, {
+          series: {
+            pie: {
+              innerRadius: 0.5,
+              show: true,
+            },
+          },
+          legend: {
+            show: true,
+          },
+        });
+
+        // Sample data for line chart (Marks Comparison)
+        var lineData = [
+          [0, 5],
+          [1, 10],
+          [2, 8],
+          [3, 12],
+          [4, 7],
+        ];
+        $.plot("#website-stats", [lineData], {
+          series: {
+            lines: { show: true },
+            points: { show: true },
+          },
+          grid: {
+            hoverable: true,
+            clickable: true,
+          },
+          xaxis: {
+            tickDecimals: 0,
+          },
+        });
+      }
     </script>
-        
-</body>
+  </body>
 </html>

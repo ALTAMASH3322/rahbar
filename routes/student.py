@@ -1,3 +1,4 @@
+import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 import mysql.connector
@@ -85,13 +86,17 @@ def student_payments():
     cursor.execute("SELECT * FROM payments WHERE grantee_id = %s", (current_user.user_id,))
     payments = cursor.fetchall()
 
+    # Fetch student details
+    cursor.execute("SELECT * FROM users WHERE user_id = %s", (current_user.user_id,))
+    student = cursor.fetchone()
+
     cursor.close()
     conn.close()
 
     bank_details = get_bank_details(current_user.user_id)
     
 
-    return render_template('student/payment.html', payments=payments , bank_details=bank_details)
+    return render_template('student/payment.html', payments=payments , bank_details=bank_details , student=student)
 
 # Student Progress (Upload Marks and Files)
 from flask import send_from_directory
@@ -169,26 +174,40 @@ def student_progress():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
+    # Fetch student details
+    cursor.execute("SELECT * FROM users WHERE user_id = %s", (current_user.user_id,))
+    student = cursor.fetchone()
+
     if request.method == 'POST':
         # Handle file upload and marks submission
         marks = request.form.get('marks')
         file = request.files.get('file')
+        year = request.form.get('year')
+        session = request.form.get('session')
 
         if not marks or not file:
             flash('Marks and file are required.', 'error')
-            return redirect(url_for('student.student_progress'))
+            return redirect(url_for('student.student_progress', student=student))
+        
+
+        original_filename = secure_filename(file.filename)
+        file_ext = os.path.splitext(original_filename)[1]  # Get file extension
+        timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+
+        custom_filename = f"{student['user_id']}_session{session}_year{year}_{timestamp}{file_ext}"
+
 
         # Save the file
-        filename = secure_filename(file.filename)
-        file_path = os.path.join('uploads', filename)
+        #filename = secure_filename(file.custom_filename)
+        file_path = os.path.join('uploads', custom_filename)
         print(f"Saving file to: {file_path}")  # Debug
         file.save(file_path)
 
         # Insert progress data into the database
         try:
             cursor.execute(
-                "INSERT INTO student_progress (grantee_id, marks, file_path, created_at) VALUES (%s, %s, %s, NOW())",
-                (current_user.user_id, marks, file_path)
+                "INSERT INTO student_progress (grantee_id, marks, file_path, created_at, updated_at, session, year, updated_by  ) VALUES (%s, %s, %s, NOW(), NOW(), %s,%s,%s)",
+                (current_user.user_id, marks, file_path, session, year, current_user.user_id)
             )
             conn.commit()
             flash('Progress submitted successfully!', 'success')
@@ -197,7 +216,7 @@ def student_progress():
             conn.rollback()
             flash('An error occurred while submitting progress.', 'error')
 
-        return redirect(url_for('student.student_progress'))
+        return redirect(url_for('student.student_progress', student=student))
 
     else:
         # Fetch progress data for the student
@@ -207,4 +226,4 @@ def student_progress():
         cursor.close()
         conn.close()
 
-        return render_template('student/student_progress.html', progress_data=progress_data)
+        return render_template('student/student_progress.html', progress_data=progress_data , student=student)

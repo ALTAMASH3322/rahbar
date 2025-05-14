@@ -89,6 +89,9 @@ def sponsor_payments():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
+    cursor.execute("SELECT * FROM users WHERE user_id = %s", (current_user.user_id,))
+    sponsor = cursor.fetchone()
+
     if request.method == 'POST':
         action = request.form.get('action')
         grantee_id = request.form.get('grantee_id')
@@ -98,7 +101,7 @@ def sponsor_payments():
         if action == 'pay':
             if not grantee_id or not amount or not receipt:
                 flash('Grantee ID, amount, and receipt are required.', 'error')
-                return redirect(url_for('sponsor.sponsor_payments'))
+                return redirect(url_for('sponsor.sponsor_payments',sponsor=sponsor))
 
             # Save the receipt file
             filename = secure_filename(receipt.filename)
@@ -139,6 +142,9 @@ def sponsor_payments():
     from datetime import datetime, timedelta
     current_date = datetime.now()
 
+    cursor.execute("select * from payment_schedules where status = 1")
+    payment_schedules = cursor.fetchall()
+
     for gg in grantor_grantees:
         # Get grantee user details
         cursor.execute("SELECT * FROM users WHERE user_id = %s", (gg['grantee_id'],))
@@ -155,34 +161,42 @@ def sponsor_payments():
         )
         payment_record = cursor.fetchone()
 
+
         # Determine payment frequency and status (default is unpaid)
         status = "unpaid"
         frequency = 1  # default frequency
-        if payment_record:
-            # Find the matching payment schedule based on amount
-            for schedule in payment_schedules:
-                if payment_record["amount"] == schedule["amount"]:
-                    frequency = schedule["schedule_id"]
-                    break
 
-            # Compute status based on frequency
-            if frequency == 1:
-                one_year_ago = current_date - timedelta(days=365)
-                if payment_record["payment_date"] >= one_year_ago:
-                    status = "paid"
-            elif frequency == 2:
-                six_months_ago = current_date - timedelta(days=180)
-                if payment_record["payment_date"] >= six_months_ago:
-                    status = "paid"
-            elif frequency == 3:
-                three_months_ago = current_date - timedelta(days=90)
-                if payment_record["payment_date"] >= three_months_ago:
-                    status = "paid"
-            elif frequency == 4:
-                one_month_ago = current_date - timedelta(days=30)
-                # Assuming payment_schedules[3] exists; adjust accordingly if not
-                if payment_record["payment_date"] >= one_month_ago and payment_record["payment_date"] >= payment_schedules[3].get("updated_at", one_month_ago):
-                    status = "paid"
+        if payment_record:
+            three_months_ago = current_date - timedelta(days=90)
+            if payment_record["payment_date"] >= three_months_ago:
+                status = "paid"
+            
+            
+        #if payment_record:
+            # Find the matching payment schedule based on amount
+            #for schedule in payment_schedules:
+            #    if payment_record["amount"] == schedule["amount"]:
+            #        frequency = schedule["schedule_id"]
+            #        break
+#
+            ## Compute status based on frequency
+            #if frequency == 1:
+            #    one_year_ago = current_date - timedelta(days=365)
+            #    if payment_record["payment_date"] >= one_year_ago:
+            #        status = "paid"
+            #elif frequency == 2:
+            #    six_months_ago = current_date - timedelta(days=180)
+            #    if payment_record["payment_date"] >= six_months_ago:
+            #        status = "paid"
+           # if frequency == 3:
+           #     three_months_ago = current_date - timedelta(days=90)
+           #     if payment_record["payment_date"] >= three_months_ago:
+           #         status = "paid"
+           # #elif frequency == 4:
+            #    one_month_ago = current_date - timedelta(days=30)
+            #    # Assuming payment_schedules[3] exists; adjust accordingly if not
+            #    if payment_record["payment_date"] >= one_month_ago and payment_record["payment_date"] >= payment_schedules[3].get("updated_at", one_month_ago):
+            #        status = "paid"
 
         # Build the payment details dictionary
         payment_details.append({
@@ -203,10 +217,13 @@ def sponsor_payments():
     """, (current_user.user_id,))
     past_payments = cursor.fetchall()
 
+    cursor.execute("select * from payment_schedules where status = 1")
+    payment_schedules = cursor.fetchall()
+
     cursor.close()
     conn.close()
 
-    return render_template('sponsor/payment.html', payment_details=payment_details, past_payments=past_payments)
+    return render_template('sponsor/payment.html', payment_details=payment_details, past_payments=past_payments,sponsor=sponsor , payment_schedules=payment_schedules)
 
 
 # Sponsor Student Progress
@@ -218,6 +235,8 @@ def sponsor_student_progress():
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM users WHERE user_id = %s", (current_user.user_id,))
+    sponsor = cursor.fetchone()
 
     # Fetch progress data for all grantees
     cursor.execute("""
@@ -233,7 +252,7 @@ def sponsor_student_progress():
     cursor.close()
     conn.close()
 
-    return render_template('sponsor/student_progress.html', progress_data=progress_data)
+    return render_template('sponsor/student_progress.html', progress_data=progress_data, sponsor=sponsor)
 
 # Serve uploaded files
 @sponsor_bp.route('/uploads/<filename>')

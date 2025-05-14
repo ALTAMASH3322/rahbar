@@ -23,24 +23,19 @@
     <!-- Topbar Start -->
     <div class="navbar-custom">
       <div class="d-flex justify-content-between align-items-center w-100">
-        <!-- Left side - Sponsor Panel -->
         <div>
           <h6 class="page-title mb-0">Sponsor Panel</h6>
         </div>
-
-        <!-- Middle - Logo -->
         <div>
           <a href="{{ url_for('main.homepage') }}" class="text-success">
             <h4>Rahbar Scholarship Information Management System</h4>
-            </a>
+          </a>
         </div>
-
-        <!-- Right side - User Dropdown -->
         <ul class="list-unstyled topnav-menu mb-0">
           <li class="dropdown notification-list">
             <a class="nav-link dropdown-toggle nav-user waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
               <img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" alt="user-image" class="rounded-circle">
-              <span class="d-none d-sm-inline-block ml-1">{{ current_user.name }}</span>
+              <span class="d-none d-sm-inline-block ml-1">{{ sponsor.name }}</span>
             </a>
             <div class="dropdown-menu dropdown-menu-right profile-dropdown">
               <a href="{{ url_for('auth.logout') }}" class="dropdown-item notify-item">
@@ -57,7 +52,6 @@
     <!-- Left Sidebar Start -->
     <div class="left-side-menu">
       <div class="slimscroll-menu">
-        <!-- Sidemenu -->
         <div id="sidebar-menu">
           <ul class="metismenu" id="side-menu">
             <li class="menu-title">Navigation</li>
@@ -81,7 +75,6 @@
             </li>
           </ul>
         </div>
-        <!-- End Sidebar -->
       </div>
     </div>
     <!-- Left Sidebar End -->
@@ -90,7 +83,6 @@
     <div class="content-page">
       <div class="content">
         <div class="container-fluid">
-          <!-- Page Title -->
           <div class="row">
             <div class="col-12">
               <div class="page-title-box">
@@ -98,53 +90,52 @@
               </div>
             </div>
           </div>
-          <!-- end page title -->
 
-          <!-- Payment Details Card with Dropdown -->
           <div class="row">
             <div class="col-md-12">
               <div class="card" id="paymentCard">
                 <div class="card-body">
                   <h4 class="header-title">Make a Payment</h4>
-                  <!-- Dropdown to select beneficiary -->
                   <div class="form-group">
                     <label for="studentSelect">Select Beneficiary</label>
                     <select class="form-control" id="studentSelect" onchange="updateStudentDetails()">
                       <option value="">-- Select a Beneficiary --</option>
-                      {% for payment in payment_details %}
-                        <option value="{{ payment.grantee.user_id }}">
-                          {{ payment.grantee.name }}
+                      {% for payment_detail_item in payment_details %}
+                        <option value="{{ payment_detail_item.grantee.user_id }}">
+                          {{ payment_detail_item.grantee.name }}
+                          {# Attempt to display year if available, otherwise N/A #}
+                          (Year: {{ payment_detail_item.grantee.year if payment_detail_item.grantee.year is defined else 'N/A' }})
                         </option>
                       {% endfor %}
                     </select>
                   </div>
-                  <!-- Student details will be shown here -->
+                  
                   <div id="studentDetails" style="display:none;">
                     <h5 id="beneficiaryName"></h5>
+                    <p>Grantee Academic Year: <span id="granteeYearDisplay"></span></p>
                     <p id="bankInfo"></p>
                     <p id="ifscInfo"></p>
-                    <p id="lastPayment"></p>
+                    <p id="lastPaymentInfo"></p>
                     <p id="currentStatus"></p>
                     
-                    <!-- Payment Form -->
                     <form method="POST" enctype="multipart/form-data" id="paymentForm">
-                      <input type="hidden" name="grantee_id" id="grantee_id" value="">
-                      <div class="form-group">
-                        <label for="amount">Amount</label>
-                        <input type="number" class="form-control" id="amount" name="amount" required>
+                      <input type="hidden" name="grantee_id" id="grantee_id_hidden" value="">
+                      
+                      <div class="form-group" id="paymentScheduleSection">
+                        <!-- Content will be populated by JavaScript -->
                       </div>
-                      <div class="form-group">
+                      
+                      <div class="form-group" id="receiptUploadSection" style="display:none;">
                         <label for="receipt">Upload Receipt</label>
                         <input type="file" class="form-control-file" id="receipt" name="receipt" required>
                       </div>
-                      <button type="submit" class="btn btn-primary" name="action" value="pay">Pay</button>
+                      <button type="submit" class="btn btn-primary" name="action" value="pay" id="payButton" style="display:none;">Record Payment</button>
                     </form>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <!-- End Payment Details Card -->
 
           <!-- Past Payments Table -->
           <div class="row">
@@ -167,7 +158,10 @@
                           <tr>
                             <td>{{ payment.grantee_name }}</td>
                             <td>{{ payment.amount }}</td>
-                            <td>{{ payment.payment_date }}</td>
+                            <td>
+                                {# Attempt to display payment_date, handle if it's not a valid date object for JS later #}
+                                {{ payment.payment_date }}
+                            </td>
                             <td>
                               {% if payment.receipt_url %}
                                 <a href="{{ url_for('sponsor.uploaded_file', filename=payment.receipt_url.split('/')[-1]) }}" target="_blank">View Receipt</a>
@@ -188,79 +182,198 @@
               </div>
             </div>
           </div>
-          <!-- End Past Payments Table -->
         </div>
-        <!-- end container-fluid -->
       </div>
-      <!-- end content -->
 
-      <!-- Footer Start -->
       <footer class="footer">
         <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
       </footer>
       <style>
         .footer {
-          position: fixed;
-          bottom: 0;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 100%;
-          background-color: #f8f9fa;
-          padding: 10px 0;
-          text-align: center;
-          font-size: 14px;
-          color: #6c757d;
-          border-top: 1px solid #ddd;
+          position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+          width: 100%; background-color: #f8f9fa; padding: 10px 0;
+          text-align: center; font-size: 14px; color: #6c757d; border-top: 1px solid #ddd;
         }
       </style>
-      <!-- end Footer -->
     </div>
-    <!-- End Page content -->
   </div>
-  <!-- END wrapper -->
 
-  <!-- Vendor js -->
   <script src="{{ url_for('static', filename='js/vendor.min.js') }}"></script>
-
-  <!-- App js -->
   <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
 
-  <!-- JavaScript for Dropdown Handling -->
   <script>
-    // Expose payment details as a JavaScript object.
-    var paymentDetails = {{ payment_details|tojson }};
+    // Data passed from Flask
+    var paymentDetailsFromFlask = {{ payment_details|tojson }}; 
+    var allPaymentSchedulesFromFlask = {{ payment_schedules|tojson }}; // Global list of schedules
 
     function updateStudentDetails() {
-      var selectedId = document.getElementById("studentSelect").value;
+      var studentSelect = document.getElementById("studentSelect");
+      var selectedGranteeId = studentSelect.value;
       var detailsDiv = document.getElementById("studentDetails");
-      
-      if (!selectedId) {
+      var paymentScheduleSection = document.getElementById("paymentScheduleSection");
+      var receiptUploadSection = document.getElementById("receiptUploadSection");
+      var payButton = document.getElementById("payButton");
+
+      // Clear previous content and hide sections
+      paymentScheduleSection.innerHTML = ""; 
+      receiptUploadSection.style.display = "none";
+      payButton.style.display = "none";
+      document.getElementById("granteeYearDisplay").innerText = "N/A";
+
+
+      if (!selectedGranteeId) {
         detailsDiv.style.display = "none";
         return;
       }
       
-      // Find the payment object for the selected beneficiary.
-      var selectedPayment = paymentDetails.find(function(payment) {
-        return payment.grantee.user_id == selectedId;
+      var selectedGranteeData = paymentDetailsFromFlask.find(function(pd) {
+        return pd.grantee && pd.grantee.user_id == selectedGranteeId;
       });
       
-      if (selectedPayment) {
-        // Update the fields.
-        document.getElementById("beneficiaryName").innerText = "Beneficiary: " + selectedPayment.grantee.name;
-        var bank = selectedPayment.bank_details;
-        document.getElementById("bankInfo").innerText = "Bank: " + bank.bank_name + " (Acc: " + bank.account_number + ")";
-        document.getElementById("ifscInfo").innerText = "IFSC: " + (bank.ifsc_code || "N/A");
-        // Display last payment amount if available.
-        var lastPayment = (selectedPayment.payments && selectedPayment.payments.length > 0) ? selectedPayment.payments[0].amount : "No payments yet";
-        document.getElementById("lastPayment").innerText = "Last Payment: " + lastPayment;
-        // Current payment status.
-        document.getElementById("currentStatus").innerText = "Payment Status: " + selectedPayment.due_date;
-        // Set the hidden grantee_id.
-        document.getElementById("grantee_id").value = selectedPayment.grantee.user_id;
+      if (selectedGranteeData && selectedGranteeData.grantee) {
+        var grantee = selectedGranteeData.grantee;
+        document.getElementById("beneficiaryName").innerText = "Beneficiary: " + (grantee.name || "N/A");
         
-        // Show the details.
+        var granteeCurrentAcademicYear = grantee.year; // This might be undefined if not sent from backend
+        document.getElementById("granteeYearDisplay").innerText = granteeCurrentAcademicYear || "Not Specified";
+        
+        var bank = selectedGranteeData.bank_details;
+        if (bank) {
+            document.getElementById("bankInfo").innerText = "Bank: " + (bank.bank_name || "N/A") + " (Acc: " + (bank.account_number || "N/A") + ")";
+            document.getElementById("ifscInfo").innerText = "IFSC: " + (bank.ifsc_code || "N/A");
+        } else {
+            document.getElementById("bankInfo").innerText = "Bank: Not Available";
+            document.getElementById("ifscInfo").innerText = "IFSC: Not Available";
+        }
+        
+        var lastPaymentDisplay = "No payments yet";
+        if (selectedGranteeData.payments && selectedGranteeData.payments.length > 0 && selectedGranteeData.payments[0]) {
+            let payment = selectedGranteeData.payments[0];
+            let paymentDateStr = payment.payment_date; // This is likely a string from MySQL
+            let formattedDate = "Date N/A";
+            if (paymentDateStr) {
+                try {
+                    // Attempt to parse the date string. MySQL DATETIME format "YYYY-MM-DD HH:MM:SS"
+                    let dateObj = new Date(paymentDateStr.replace(" ", "T")); // Make it ISO-like for better parsing
+                    if (!isNaN(dateObj)) {
+                       formattedDate = dateObj.toLocaleDateString();
+                    } else {
+                        // If parsing fails, display the raw string or a placeholder
+                        console.warn("Could not parse date string:", paymentDateStr);
+                        formattedDate = paymentDateStr; // Show raw string if parsing failed
+                    }
+                } catch (e) {
+                    console.error("Error parsing date:", e, "Original date:", paymentDateStr);
+                    formattedDate = paymentDateStr; // Fallback
+                }
+            }
+            lastPaymentDisplay = (payment.amount || "N/A") + " on " + formattedDate;
+        }
+        document.getElementById("lastPaymentInfo").innerText = "Last Payment: " + lastPaymentDisplay;
+        document.getElementById("currentStatus").innerText = "Payment Status: " + (selectedGranteeData.due_date || "N/A");
+        document.getElementById("grantee_id_hidden").value = grantee.user_id;
+
+        // --- Handle Payment Schedules ---
+        var relevantSchedules = [];
+        if (granteeCurrentAcademicYear && allPaymentSchedulesFromFlask && allPaymentSchedulesFromFlask.length > 0) {
+            relevantSchedules = allPaymentSchedulesFromFlask.filter(function(schedule) {
+                // Ensure schedule.year and granteeCurrentAcademicYear are comparable (e.g., both strings or numbers)
+                return String(schedule.year) == String(granteeCurrentAcademicYear);
+            });
+        } else if (allPaymentSchedulesFromFlask && allPaymentSchedulesFromFlask.length > 0 && !granteeCurrentAcademicYear) {
+            // If grantee year is not specified, maybe show all schedules or schedules for a default year?
+            // For now, this will lead to the 'manual payment' case if granteeCurrentAcademicYear is missing.
+            console.warn("Grantee academic year not specified. Cannot filter schedules by year.");
+        }
+
+
+        if (relevantSchedules.length === 1) {
+            var schedule = relevantSchedules[0];
+            paymentScheduleSection.innerHTML = `
+              <p><strong>Payment Schedule:</strong> ${schedule.schedule_name || 'Default Schedule'}</p>
+              <p><strong>Amount to Pay:</strong> ${schedule.amount || 'N/A'}</p>
+              <input type="hidden" name="payment_schedule_id" value="${schedule.schedule_id || ''}">
+              <input type="hidden" name="amount" value="${schedule.amount || ''}">
+            `;
+            if (schedule.amount) { // Only enable payment if amount is valid
+                receiptUploadSection.style.display = "block";
+                payButton.style.display = "block";
+            } else {
+                paymentScheduleSection.innerHTML += `<p class="text-danger">Schedule amount is missing. Cannot proceed.</p>`;
+            }
+        } else if (relevantSchedules.length > 1) {
+            var optionsHTML = '<option value="">-- Select Schedule --</option>';
+            relevantSchedules.forEach(function(schedule) {
+              optionsHTML += `<option value="${schedule.schedule_id || ''}" data-amount="${schedule.amount || ''}">
+                                ${schedule.schedule_name || 'Schedule'} - Amount: ${schedule.amount || 'N/A'}
+                              </option>`;
+            });
+            paymentScheduleSection.innerHTML = `
+              <div class="form-group">
+                <label for="payment_schedule_select">Select Payment Schedule (for Year ${granteeCurrentAcademicYear || 'N/A'}):</label>
+                <select name="payment_schedule_id" id="payment_schedule_select" class="form-control" required onchange="handleScheduleSelectionChange(this)">
+                  ${optionsHTML}
+                </select>
+                <p id="selectedScheduleAmountDisplay" style="margin-top: 10px; font-weight: bold;"></p>
+                <input type="hidden" name="amount" id="amount_hidden_from_schedule" value="">
+              </div>
+            `;
+            receiptUploadSection.style.display = "none"; // Hide until a schedule is chosen
+            payButton.style.display = "none";
+        } else {
+            // No specific schedule found for the year, or grantee.year is not set, or no available_schedules.
+            paymentScheduleSection.innerHTML = `
+              <p class="text-info">No specific payment schedule found for academic year ${granteeCurrentAcademicYear || ' (not specified)'}. You can make a general payment.</p>
+              <div class="form-group">
+                <label for="manual_amount">Amount to Pay:</label>
+                <input type="number" class="form-control" id="manual_amount" name="amount" placeholder="Enter amount" required step="0.01">
+              </div>
+              <input type="hidden" name="payment_schedule_id" value=""> 
+            `;
+            receiptUploadSection.style.display = "block";
+            payButton.style.display = "block";
+        }
+        
         detailsDiv.style.display = "block";
+      } else {
+        detailsDiv.style.display = "none";
+        if (selectedGranteeId) { // If an ID was selected but no data found
+            console.error("No data found in paymentDetailsFromFlask for grantee ID:", selectedGranteeId);
+            paymentScheduleSection.innerHTML = `<p class="text-danger">Error: Could not load details for the selected beneficiary.</p>`;
+            detailsDiv.style.display = "block"; // Show the error message
+        }
       }
+    }
+
+    function handleScheduleSelectionChange(selectElement) {
+        var receiptUploadSection = document.getElementById("receiptUploadSection");
+        var payButton = document.getElementById("payButton");
+        var selectedScheduleAmountDisplayP = document.getElementById("selectedScheduleAmountDisplay");
+        var amountHiddenInput = document.getElementById("amount_hidden_from_schedule");
+
+        var selectedValue = selectElement.value;
+        
+        if (selectedValue) { 
+            var selectedOption = selectElement.options[selectElement.selectedIndex];
+            var amount = selectedOption.getAttribute('data-amount');
+            
+            if (amount && parseFloat(amount) > 0) { // Check if amount is valid
+                receiptUploadSection.style.display = "block";
+                payButton.style.display = "block";
+                selectedScheduleAmountDisplayP.innerText = "Amount for selected schedule: " + amount;
+                amountHiddenInput.value = amount; 
+            } else {
+                receiptUploadSection.style.display = "none";
+                payButton.style.display = "none";
+                selectedScheduleAmountDisplayP.innerText = "Selected schedule has an invalid or missing amount.";
+                amountHiddenInput.value = "";
+            }
+        } else {
+            receiptUploadSection.style.display = "none";
+            payButton.style.display = "none";
+            selectedScheduleAmountDisplayP.innerText = "";
+            amountHiddenInput.value = "";
+        }
     }
   </script>
 </body>

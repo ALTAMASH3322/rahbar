@@ -11,109 +11,243 @@
     <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
 
     <!-- App css -->
-    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/app.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" type="text/css">
+    <link href="{{ url_for('static', filename='css/icons.min.css') }}" rel="stylesheet" type="text/css" /> <!-- Added icons.min.css -->
+    <link href="{{ url_for('static', filename='css/app.min.css') }}" rel="stylesheet" type="text/css">
+
+    <style>
+        .footer {
+            /* position: fixed; Remove fixed to allow normal flow */
+            /* bottom: 0; */
+            /* left: 50%; */
+            /* transform: translateX(-50%); */
+            width: 100%;
+            background-color: #f8f9fa;
+            padding: 10px 0;
+            text-align: center;
+            font-size: 14px;
+            color: #6c757d;
+            border-top: 1px solid #ddd;
+            margin-top: 20px; /* Add some margin if content is short */
+        }
+        .table th {
+            width: 30%; /* Give a bit more space to table headers */
+        }
+    </style>
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="row justify-content-center mt-4">
-            <div class="col-md-8">
-                <div class="text-center mb-4">
+    <div id="wrapper"> <!-- This wrapper should be present -->
+
+        <!-- Topbar Start -->
+        <div class="navbar-custom">
+            <div class="d-flex justify-content-between align-items-center w-100">
+                <!-- Left side - Admin Panel -->
+                <div>
+                    <h6 class="page-title mb-0">Application Panel</h6>
+                </div>
+        
+                <!-- Middle - Logo -->
+                <div>
                     <a href="{{ url_for('main.homepage') }}" class="text-success">
-                        <span style="display: inline-block; background-color: grey; color: white; font-weight: bold; padding: 10px; border-radius: 4px;">
-                            APPLICATION DETAILS
-                        </span>
+                        <h4>Rahbar Scholarship Information Management System</h4>
                     </a>
                 </div>
-
-                <div class="card">
-                    <div class="card-body">
-                        <h4 class="header-title mb-3">Applicant Information</h4>
-
-                        <table class="table table-striped">
-                            <tr>
-                                <th>Applicant Name</th>
-                                <td>{{ application.name }}</td>
-                            </tr>
-                            <tr>
-                                <th>Father's Name</th>
-                                <td>{{ application.father_name }}</td>
-                            </tr>
-                            <tr>
-                                <th>Mother's Name</th>
-                                <td>{{ application.mother_name }}</td>
-                            </tr>
-                            <tr>
-                                <th>RCC Center</th>
-                                <td>{{ application.rcc_name }}</td>
-                            </tr>
-                            <tr>
-                                <th>Course Applied</th>
-                                <td>{{ application.course_applied }}</td>
-                            </tr>
-                            <tr>
-                                <th>Annual Income</th>
-                                <td>₹{{ application.average_annual_salary }}</td>
-                            </tr>
-                            <tr>
-                                <th>Application Status</th>
-                                <td><span class="badge badge-info">{{ application.status }}</span></td>
-                            </tr>
-                        </table>
-
-                        <h4 class="header-title mt-4 mb-3">Update Status</h4>
-                        <form method="POST">
-                            <div class="form-group">
-                                <label for="status">Change Status</label>
-                                <select name="status" class="form-control" required>
-                                    <option value="draft" {% if application.status == 'draft' %}selected{% endif %}>Draft</option>
-                                    <option value="submitted" {% if application.status == 'submitted' %}selected{% endif %}>Submitted</option>
-                                    <option value="interviewing" {% if application.status == 'interviewing' %}selected{% endif %}>Interviewing</option>
-                                    <option value="accepted" {% if application.status == 'accepted' %}selected{% endif %}>Accepted</option>
-                                    <option value="on hold" {% if application.status == 'on hold' %}selected{% endif %}>on hold</option>
-                                    <option value="provisional admission letter" {% if application.status == 'provisional admission letter' %}selected{% endif %}>provisional admission letter Issued</option>
-                                    <option value="admitted" {% if application.status == 'admitted' %}selected{% endif %}>admitted</option>
-                                    <option value="rejected" {% if application.status == 'rejected' %}selected{% endif %}>Rejected</option>
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="comments">Comments</label>
-                                <textarea name="comments" class="form-control" rows="3" required>{{ application.comments }}</textarea>
-                            </div>
-
-                            <button type="submit" class="btn btn-success btn-block">Update Status</button>
-                        </form>
-
-                        <a href="{{ url_for('admin.view_applications') }}" class="btn btn-secondary btn-block mt-3">Back to Applications</a>
-
-                    </div>
-                </div>
+        
+                <!-- Right side - User Dropdown -->
+                <ul class="list-unstyled topnav-menu mb-0">
+                    <li class="dropdown notification-list">
+                        <a class="nav-link dropdown-toggle nav-user waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
+                            <img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" alt="user-image" class="rounded-circle">
+                            <span class="d-none d-sm-inline-block ml-1">{{ current_user.name }}</span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right profile-dropdown">
+                            <a href="{{ url_for('auth.logout') }}" class="dropdown-item notify-item">
+                                <i class="mdi mdi-logout-variant"></i>
+                                <span>Logout</span>
+                            </a>
+                        </div>
+                    </li>
+                </ul>
             </div>
         </div>
-    </div>
-    <!-- Footer -->
-        <!-- Footer -->
-        <footer class="footer">
-            <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
-        </footer>
-    
-        <style>
-            .footer {
-                position: fixed;
-                bottom: 0;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 100%;
-                background-color: #f8f9fa;
-                padding: 10px 0;
-                text-align: center;
-                font-size: 14px;
-                color: #6c757d;
-                border-top: 1px solid #ddd;
-            }
-        </style>
+        <!-- end Topbar -->
 
+        <!-- ========== Left Sidebar Start ========== -->
+        <div class="left-side-menu">
+            <div class="slimscroll-menu">
+                <!--- Sidemenu -->
+                <div id="sidebar-menu">
+                    <ul class="metismenu" id="side-menu">
+                        <li class="menu-title">Navigation</li>
+                        <!-- Dashboard -->
+                        <!-- Commented out as per your original structure for this page -->
+                        <!-- <li>
+                            <a href="{{ url_for('convenor.convenor_dashboard') }}" class="waves-effect waves-light">
+                                <i class="mdi mdi-view-dashboard"></i>
+                                <span>Dashboard</span>
+                            </a>
+                        </li> -->
+                        <!-- Applications -->
+                        <li>
+                            <a href="{{ url_for('admin.view_applications') }}" class="waves-effect waves-light">
+                                <i class="mdi mdi-file-document"></i>
+                                <span>View Applications</span>
+                            </a>
+                        </li>
+                        <!-- Sponsors -->
+                        <!-- <li>
+                            <a href="{{ url_for('convenor.manage_sponsors') }}" class="waves-effect waves-light">
+                                <i class="mdi mdi-account-multiple"></i>
+                                <span>Manage Sponsors</span>
+                            </a>
+                        </li> -->
+                        <!-- Student Progress -->
+                        <!-- <li>
+                            <a href="{{ url_for('convenor.view_student_progress') }}" class="waves-effect waves-light">
+                                <i class="mdi mdi-chart-line"></i>
+                                <span>Student Progress</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('convenor.convenor_payments') }}" class="waves-effect waves-light">
+                                <i class="mdi mdi-cash-multiple"></i> 
+                                <span>Payments</span>
+                            </a>
+                        </li> -->
+                    </ul>
+                </div>
+                <!-- End Sidebar -->
+            </div>
+        </div>
+        <!-- Left Sidebar End -->
+
+        <!-- ============================================================== -->
+        <!-- Start Page Content here -->
+        <!-- ============================================================== -->
+        <div class="content-page">
+            <div class="content">
+
+                <!-- Start Content-->
+                <div class="container-fluid">
+                    <!-- start page title -->
+                    <!-- <div class="row">
+                        <div class="col-12">
+                            <div class="page-title-box">
+                                <h4 class="page-title">Application Details</h4>
+                            </div>
+                        </div>
+                    </div> -->
+                    <!-- end page title -->
+
+                    <div class="row justify-content-center mt-4"> <!-- This can be simplified to <div class="row"> if you use col-md-10 or col-md-8 within it -->
+                        <div class="col-lg-8 col-md-10"> <!-- Adjusted column for better responsiveness, lg-8 for larger, md-10 for medium -->
+                            <div class="text-center mb-4">
+                                <a href="{{ url_for('main.homepage') }}" class="text-success">
+                                    <span style="display: inline-block; background-color: grey; color: white; font-weight: bold; padding: 10px; border-radius: 4px;">
+                                        APPLICATION DETAILS
+                                    </span>
+                                </a>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-body">
+                                    <h4 class="header-title mb-3">Applicant Information</h4>
+
+                                    <table class="table table-striped table-bordered"> <!-- Added table-bordered -->
+                                        <tbody> <!-- Added tbody for semantic correctness -->
+                                            <tr>
+                                                <th>Applicant Name</th>
+                                                <td>{{ application.name }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Father's Name</th>
+                                                <td>{{ application.father_name }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Mother's Name</th>
+                                                <td>{{ application.mother_name }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>RCC Center</th>
+                                                <td>{{ application.rcc_name }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Course Applied</th>
+                                                <td>{{ application.course_applied }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Annual Income</th>
+                                                <td>₹{{ "%.2f"|format(application.average_annual_salary|float) if application.average_annual_salary is defined and application.average_annual_salary is not none else 'N/A' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Application Status</th>
+                                                <td>
+                                                    {# Example of dynamic badge class based on status text - you might need more specific logic #}
+                                                    {% set badge_class = 'badge-info' %}
+                                                    {% if 'accepted' in application.status|lower or 'admitted' in application.status|lower %}
+                                                        {% set badge_class = 'badge-success' %}
+                                                    {% elif 'rejected' in application.status|lower %}
+                                                        {% set badge_class = 'badge-danger' %}
+                                                    {% elif 'submitted' in application.status|lower or 'interviewing' in application.status|lower %}
+                                                        {% set badge_class = 'badge-primary' %}
+                                                    {% elif 'on hold' in application.status|lower %}
+                                                        {% set badge_class = 'badge-warning' %}
+                                                    {% endif %}
+                                                    <span class="badge {{ badge_class }}">{{ application.status }}</span>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+
+                                    <h4 class="header-title mt-4 mb-3">Update Status</h4>
+                                    <form method="POST">
+                                        <div class="form-group">
+                                            <label for="status">Change Status</label>
+                                            <select name="status" id="status" class="form-control" required>
+                                                <option value="draft" {% if application.status == 'draft' %}selected{% endif %}>Draft</option>
+                                                <option value="submitted" {% if application.status == 'submitted' %}selected{% endif %}>Submitted</option>
+                                                <option value="interviewing" {% if application.status == 'interviewing' %}selected{% endif %}>Interviewing</option>
+                                                <option value="accepted" {% if application.status == 'accepted' %}selected{% endif %}>Accepted</option>
+                                                <option value="on hold" {% if application.status == 'on hold' %}selected{% endif %}>On Hold</option>
+                                                <option value="provisional admission letter" {% if application.status == 'provisional admission letter' %}selected{% endif %}>Provisional Admission Letter Issued</option>
+                                                <option value="admitted" {% if application.status == 'admitted' %}selected{% endif %}>Admitted</option>
+                                                <option value="rejected" {% if application.status == 'rejected' %}selected{% endif %}>Rejected</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="comments">Comments</label>
+                                            <textarea name="comments" id="comments" class="form-control" rows="3">{{ application.comments if application.comments is not none }}</textarea>
+                                            {# Removed 'required' from comments as it might not always be needed when just changing status #}
+                                        </div>
+
+                                        <button type="submit" class="btn btn-success btn-block">Update Status</button>
+                                    </form>
+
+                                    <a href="{{ url_for('admin.view_applications') }}" class="btn btn-secondary btn-block mt-3">Back to Applications</a>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div> <!-- container-fluid end -->
+
+            </div> <!-- content end -->
+
+            <!-- Footer Start -->
+            <footer class="footer">
+                <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
+            </footer>
+            <!-- end Footer -->
+
+        </div> <!-- content-page end -->
+
+    </div><!-- END wrapper -->
+
+    <!-- Vendor js -->
     <script src="{{ url_for('static', filename='js/vendor.min.js') }}"></script>
+    <!-- App js -->
+    <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
 </body>
 </html>

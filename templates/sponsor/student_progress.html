@@ -23,39 +23,37 @@
     <div id="wrapper">
 
         <!-- Topbar Start -->
-        <div id="wrapper">
-            <!-- Topbar Start -->
-            <div class="navbar-custom">
-              <div class="d-flex justify-content-between align-items-center w-100">
-                  <!-- Left side - Admin Panel -->
-                  <div>
-                      <h6 class="page-title mb-0">Sponsor Panel</h6>
-                  </div>
-          
-                  <!-- Middle - Logo -->
-                  <div>
-                    <a href="{{ url_for('main.homepage') }}" class="text-success">
-                        <h4>Rahbar Scholarship Information Management System</h4>
+        <div class="navbar-custom">
+            <div class="d-flex justify-content-between align-items-center w-100">
+                <!-- Left side - Admin Panel -->
+                <div>
+                    <h6 class="page-title mb-0">Sponsor Panel</h6>
+                </div>
+        
+                <!-- Middle - Logo -->
+                <div>
+                  <a href="{{ url_for('main.homepage') }}" class="text-success">
+                      <h4>Rahbar Scholarship Information Management System</h4>
+                      </a>
+                </div>
+        
+                <!-- Right side - User Dropdown -->
+                <ul class="list-unstyled topnav-menu mb-0">
+                    <li class="dropdown notification-list">
+                        <a class="nav-link dropdown-toggle nav-user waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
+                            <img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" alt="user-image" class="rounded-circle">
+                            <span class="d-none d-sm-inline-block ml-1">{{ sponsor.name }}</span>
                         </a>
-                  </div>
-          
-                  <!-- Right side - User Dropdown -->
-                  <ul class="list-unstyled topnav-menu mb-0">
-                      <li class="dropdown notification-list">
-                          <a class="nav-link dropdown-toggle nav-user waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
-                              <img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" alt="user-image" class="rounded-circle">
-                              <span class="d-none d-sm-inline-block ml-1">{{ current_user.name }}</span>
-                          </a>
-                          <div class="dropdown-menu dropdown-menu-right profile-dropdown">
-                              <a href="{{ url_for('auth.logout') }}" class="dropdown-item notify-item">
-                                  <i class="mdi mdi-logout-variant"></i>
-                                  <span>Logout</span>
-                              </a>
-                          </div>
-                      </li>
-                  </ul>
-              </div>
-          </div>
+                        <div class="dropdown-menu dropdown-menu-right profile-dropdown">
+                            <a href="{{ url_for('auth.logout') }}" class="dropdown-item notify-item">
+                                <i class="mdi mdi-logout-variant"></i>
+                                <span>Logout</span>
+                            </a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
         <!-- end Topbar -->
 
         <!-- ========== Left Sidebar Start ========== -->
@@ -119,13 +117,35 @@
                                     <h4 class="header-title">Beneficiary Progress</h4>
                                     <p class="text-muted">Here you can view the progress of your Beneficiary.</p>
 
+                                    <!-- Search Form -->
+                                    <form class="mb-4">
+                                        <div class="row">
+                                            <div class="col-md-3 mb-2">
+                                                <input type="text" id="searchName" class="form-control" placeholder="Search by Name">
+                                            </div>
+                                            <div class="col-md-3 mb-2">
+                                                <input type="text" id="searchSession" class="form-control" placeholder="Search by Session">
+                                            </div>
+                                            <div class="col-md-3 mb-2">
+                                                <input type="text" id="searchYear" class="form-control" placeholder="Search by Year">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <button type="button" id="searchButton" class="btn btn-primary mr-1">Search</button>
+                                                <button type="button" id="clearButton" class="btn btn-secondary">Clear</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                    <!-- End Search Form -->
+
                                     <!-- Progress Table -->
                                     <div class="table-responsive mt-4">
-                                        <table class="table table-centered mb-0">
+                                        <table id="progressDataTable" class="table table-centered mb-0">
                                             <thead>
                                                 <tr>
                                                     <th>Beneficiary Name</th>
                                                     <th>Progress (%)</th>
+                                                    <th>Session</th>
+                                                    <th>Year</th>
                                                     <th>File</th>
                                                     <th>Date</th>
                                                 </tr>
@@ -135,6 +155,8 @@
                                                 <tr>
                                                     <td>{{ progress.grantee_name }}</td>
                                                     <td>{{ progress.marks }}%</td>
+                                                    <td>{{ progress.session }}</td>
+                                                    <td>{{ progress.year }}</td>
                                                     <td>
                                                         <a href="{{ url_for('student.uploaded_file', filename=progress.file_path.split('/')[-1]) }}" target="_blank">View File</a>
                                                     </td>
@@ -142,7 +164,7 @@
                                                 </tr>
                                                 {% else %}
                                                 <tr>
-                                                    <td colspan="4" class="text-center">No progress data found.</td>
+                                                    <td colspan="6" class="text-center">No progress data found.</td>
                                                 </tr>
                                                 {% endfor %}
                                             </tbody>
@@ -159,27 +181,25 @@
             <!-- end content -->
 
             <!-- Footer Start -->
-            <!-- Footer -->
-        <!-- Footer -->
-        <footer class="footer">
-            <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
-        </footer>
-    
-        <style>
-            .footer {
-                position: fixed;
-                bottom: 0;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 100%;
-                background-color: #f8f9fa;
-                padding: 10px 0;
-                text-align: center;
-                font-size: 14px;
-                color: #6c757d;
-                border-top: 1px solid #ddd;
-            }
-        </style>
+            <footer class="footer">
+                <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
+            </footer>
+        
+            <style>
+                .footer {
+                    position: fixed;
+                    bottom: 0;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    width: 100%;
+                    background-color: #f8f9fa;
+                    padding: 10px 0;
+                    text-align: center;
+                    font-size: 14px;
+                    color: #6c757d;
+                    border-top: 1px solid #ddd;
+                }
+            </style>
             <!-- end Footer -->
         </div>
         <!-- End Page content -->
@@ -191,6 +211,114 @@
 
     <!-- App js -->
     <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
-</body>
 
+    <!-- Custom Search Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchNameInput = document.getElementById('searchName');
+            const searchSessionInput = document.getElementById('searchSession');
+            const searchYearInput = document.getElementById('searchYear');
+            const searchButton = document.getElementById('searchButton');
+            const clearButton = document.getElementById('clearButton');
+            const progressTableBody = document.querySelector('#progressDataTable tbody');
+            
+            const allRows = Array.from(progressTableBody.getElementsByTagName('tr'));
+            
+            const noDataRowElement = allRows.find(row => row.cells.length === 1 && row.cells[0].getAttribute('colspan') === '6');
+
+            function filterTable() {
+                const nameQuery = searchNameInput.value.toLowerCase().trim();
+                const sessionQuery = searchSessionInput.value.toLowerCase().trim();
+                const yearQuery = searchYearInput.value.toLowerCase().trim();
+                let anyRowVisible = false;
+
+                allRows.forEach(row => {
+                    if (row === noDataRowElement) {
+                        return;
+                    }
+
+                    const beneficiaryName = row.cells[0].textContent.toLowerCase().trim();
+                    const session = row.cells[2].textContent.toLowerCase().trim();
+                    const year = row.cells[3].textContent.toLowerCase().trim();
+
+                    const nameMatch = nameQuery === '' || beneficiaryName.includes(nameQuery);
+                    const sessionMatch = sessionQuery === '' || session.includes(sessionQuery);
+                    const yearMatch = yearQuery === '' || year.includes(yearQuery);
+
+                    if (nameMatch && sessionMatch && yearMatch) {
+                        row.style.display = ''; 
+                        anyRowVisible = true;
+                    } else {
+                        row.style.display = 'none'; 
+                    }
+                });
+
+                if (noDataRowElement) {
+                    if (anyRowVisible) {
+                        noDataRowElement.style.display = 'none'; 
+                    } else {
+                        noDataRowElement.style.display = ''; 
+                        noDataRowElement.cells[0].textContent = 'No matching progress data found.';
+                    }
+                }
+            }
+
+            function clearSearch() {
+                searchNameInput.value = '';
+                searchSessionInput.value = '';
+                searchYearInput.value = '';
+                let hasDataRows = false;
+
+                allRows.forEach(row => {
+                    if (row !== noDataRowElement) {
+                        row.style.display = ''; 
+                        hasDataRows = true;
+                    }
+                });
+
+                if (noDataRowElement) {
+                    if (hasDataRows) {
+                        noDataRowElement.style.display = 'none';
+                    } else {
+                        noDataRowElement.style.display = ''; 
+                        noDataRowElement.cells[0].textContent = 'No progress data found.'; 
+                    }
+                }
+            }
+
+            if (searchButton) {
+                searchButton.addEventListener('click', filterTable);
+            }
+            if (clearButton) {
+                clearButton.addEventListener('click', clearSearch);
+            }
+
+            [searchNameInput, searchSessionInput, searchYearInput].forEach(input => {
+                if (input) {
+                    input.addEventListener('keypress', function(event) {
+                        if (event.key === 'Enter') {
+                            event.preventDefault(); 
+                            filterTable();
+                        }
+                    });
+                }
+            });
+
+            if (noDataRowElement && allRows.length === 1 && allRows[0] === noDataRowElement) {
+                 noDataRowElement.cells[0].textContent = 'No progress data found.';
+                 noDataRowElement.style.display = '';
+            } else if (noDataRowElement) {
+                // If data rows exist, the noDataRowElement should initially be hidden
+                // (This assumes Jinja's 'else' clause in the template markup handles this correctly by not rendering it if data exists)
+                // The script mainly manages its visibility *during* and *after* filtering.
+                // If there are data rows, we assume the "no data" row is not displayed by default (handled by Jinja's template logic).
+                // If it was somehow rendered alongside data, this would hide it.
+                 let dataRowsPresent = allRows.some(row => row !== noDataRowElement);
+                 if (dataRowsPresent) {
+                    noDataRowElement.style.display = 'none';
+                 }
+            }
+        });
+    </script>
+</body>
 </html>

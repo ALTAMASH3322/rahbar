@@ -1,104 +1,138 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="utf-8">
+  <head>
+    <meta charset="utf-8" />
     <title>Applications | Rahbar</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta content="Scholarship Applications" name="description">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta content="Scholarship Applications" name="description" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
     <!-- App favicon -->
-    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <link
+      rel="shortcut icon"
+      href="{{ url_for('static', filename='images/favicon.ico') }}"
+    />
 
     <!-- App css -->
-    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" type="text/css">
-    <link href="{{ url_for('static', filename='css/icons.min.css') }}" rel="stylesheet" type="text/css" /> <!-- Added icons.min.css for mdi icons -->
-    <link href="{{ url_for('static', filename='css/app.min.css') }}" rel="stylesheet" type="text/css">
+    <link
+      href="{{ url_for('static', filename='css/bootstrap.min.css') }}"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="{{ url_for('static', filename='css/icons.min.css') }}"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <!-- Added icons.min.css for mdi icons -->
+    <link
+      href="{{ url_for('static', filename='css/app.min.css') }}"
+      rel="stylesheet"
+      type="text/css"
+    />
 
     <style>
-        .footer {
-            /* position: fixed; Remove fixed to allow normal flow */
-            /* bottom: 0; */
-            /* left: 50%; */
-            /* transform: translateX(-50%); */
-            width: 100%;
-            background-color: #f8f9fa;
-            padding: 10px 0;
-            text-align: center;
-            font-size: 14px;
-            color: #6c757d;
-            border-top: 1px solid #ddd;
-            margin-top: 20px; /* Add some margin if content is short */
-        }
+      .footer {
+        /* position: fixed; Remove fixed to allow normal flow */
+        /* bottom: 0; */
+        /* left: 50%; */
+        /* transform: translateX(-50%); */
+        width: 100%;
+        background-color: #f8f9fa;
+        padding: 10px 0;
+        text-align: center;
+        font-size: 14px;
+        color: #6c757d;
+        border-top: 1px solid #ddd;
+        margin-top: 20px; /* Add some margin if content is short */
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div id="wrapper">
+      <!-- Topbar Start -->
+      <div class="navbar-custom">
+        <div class="d-flex justify-content-between align-items-center w-100">
+          <!-- Left side - Admin Panel -->
+          <div>
+            <h6 class="page-title mb-0">Application Panel</h6>
+          </div>
 
-        <!-- Topbar Start -->
-        <div class="navbar-custom">
-            <div class="d-flex justify-content-between align-items-center w-100">
-                <!-- Left side - Admin Panel -->
-                <div>
-                    <h6 class="page-title mb-0">Application Panel</h6>
-                </div>
-        
-                <!-- Middle - Logo -->
-                <div>
-                    <a href="{{ url_for('main.homepage') }}" class="text-success">
-                        <h4>Rahbar Scholarship Information Management System</h4>
-                    </a>
-                </div>
-        
-                <!-- Right side - User Dropdown -->
-                <ul class="list-unstyled topnav-menu mb-0">
-                    <li class="dropdown notification-list">
-                        <a class="nav-link dropdown-toggle nav-user waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
-                            <img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" alt="user-image" class="rounded-circle">
-                            <span class="d-none d-sm-inline-block ml-1">{{ current_user.name }}</span>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-right profile-dropdown">
-                            <a href="{{ url_for('auth.logout') }}" class="dropdown-item notify-item">
-                                <i class="mdi mdi-logout-variant"></i>
-                                <span>Logout</span>
-                            </a>
-                        </div>
-                    </li>
-                </ul>
-            </div>
+          <!-- Middle - Logo -->
+          <div>
+            <a href="{{ url_for('main.homepage') }}" class="text-success">
+              <h4>Rahbar Scholarship Information Management System</h4>
+            </a>
+          </div>
+
+          <!-- Right side - User Dropdown -->
+          <ul class="list-unstyled topnav-menu mb-0">
+            <li class="dropdown notification-list">
+              <a
+                class="nav-link dropdown-toggle nav-user waves-effect"
+                data-toggle="dropdown"
+                href="#"
+                role="button"
+                aria-haspopup="false"
+                aria-expanded="false"
+              >
+                <img
+                  src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}"
+                  alt="user-image"
+                  class="rounded-circle"
+                />
+                <span class="d-none d-sm-inline-block ml-1"
+                  >{{ current_user.name }}</span
+                >
+              </a>
+              <div class="dropdown-menu dropdown-menu-right profile-dropdown">
+                <a
+                  href="{{ url_for('auth.logout') }}"
+                  class="dropdown-item notify-item"
+                >
+                  <i class="mdi mdi-logout-variant"></i>
+                  <span>Logout</span>
+                </a>
+              </div>
+            </li>
+          </ul>
         </div>
-        <!-- end Topbar -->
+      </div>
+      <!-- end Topbar -->
 
-        <!-- ========== Left Sidebar Start ========== -->
-        <div class="left-side-menu">
-            <div class="slimscroll-menu">
-                <!--- Sidemenu -->
-                <div id="sidebar-menu">
-                    <ul class="metismenu" id="side-menu">
-                        <li class="menu-title">Navigation</li>
-                        <!-- Dashboard -->
-                        <!-- <li>
+      <!-- ========== Left Sidebar Start ========== -->
+      <div class="left-side-menu">
+        <div class="slimscroll-menu">
+          <!--- Sidemenu -->
+          <div id="sidebar-menu">
+            <ul class="metismenu" id="side-menu">
+              <li class="menu-title">Navigation</li>
+              <!-- Dashboard -->
+              <!-- <li>
                             <a href="{{ url_for('convenor.convenor_dashboard') }}" class="waves-effect waves-light">
                                 <i class="mdi mdi-view-dashboard"></i>
                                 <span>Dashboard</span>
                             </a>
                         </li> -->
-                        <!-- Applications -->
-                        <li>
-                            <a href="{{ url_for('admin.view_applications') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-file-document"></i>
-                                <span>View Applications</span>
-                            </a>
-                        </li>
-                        <!-- Sponsors -->
-                        <!-- <li>
+              <!-- Applications -->
+              <li>
+                <a
+                  href="{{ url_for('admin.view_applications') }}"
+                  class="waves-effect waves-light"
+                >
+                  <i class="mdi mdi-file-document"></i>
+                  <span>View Applications</span>
+                </a>
+              </li>
+              <!-- Sponsors -->
+              <!-- <li>
                             <a href="{{ url_for('convenor.manage_sponsors') }}" class="waves-effect waves-light">
                                 <i class="mdi mdi-account-multiple"></i>
                                 <span>Manage Sponsors</span>
                             </a>
                         </li> -->
-                        <!-- Student Progress -->
-                        <!-- <li>
+              <!-- Student Progress -->
+              <!-- <li>
                             <a href="{{ url_for('convenor.view_student_progress') }}" class="waves-effect waves-light">
                                 <i class="mdi mdi-chart-line"></i>
                                 <span>Student Progress</span>
@@ -110,141 +144,186 @@
                                 <span>Payments</span>
                             </a>
                         </li> -->
-                    </ul>
-                </div>
-                <!-- End Sidebar -->
-            </div>
+            </ul>
+          </div>
+          <!-- End Sidebar -->
         </div>
-        <!-- Left Sidebar End -->
+      </div>
+      <!-- Left Sidebar End -->
 
-        <!-- ============================================================== -->
-        <!-- Start Page Content here -->
-        <!-- ============================================================== -->
-        <div class="content-page">
-            <div class="content">
+      <!-- ============================================================== -->
+      <!-- Start Page Content here -->
+      <!-- ============================================================== -->
+      <div class="content-page">
+        <div class="content">
+          <!-- Start Content-->
+          <div class="container-fluid">
+            <!-- start page title -->
+            <div class="row">
+              <div class="col-12">
+                <div class="page-title-box">
+                  <h4 class="page-title">Applications</h4>
+                </div>
+              </div>
+            </div>
+            <!-- end page title -->
 
-                <!-- Start Content-->
-                <div class="container-fluid">
+            <div class="row justify-content-center mt-4">
+              <!-- This div seems to be an extra centering wrapper, might not be needed if content-page provides enough structure -->
+              <div class="col-md-10">
+                <!-- This also might be too restrictive, consider col-12 or removing -->
+                <div class="text-center mb-4">
+                  <a href="{{ url_for('main.homepage') }}" class="text-success">
+                    <span
+                      style="
+                        display: inline-block;
+                        background-color: grey;
+                        color: white;
+                        font-weight: bold;
+                        padding: 10px;
+                        border-radius: 4px;
+                      "
+                    >
+                      RAHBAR SCHOLARSHIP APPLICATIONS
+                    </span>
+                  </a>
+                </div>
 
-                    <!-- start page title -->
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="page-title-box">
-                                <h4 class="page-title">Applications</h4>
-                            </div>
+                <!-- Filter Form -->
+                <div class="card">
+                  <div class="card-body">
+                    <h4 class="header-title mb-3">Filter Applications</h4>
+                    <form id="filter-form">
+                      <div class="row">
+                        <!-- Name Filter -->
+                        <div class="col-md-4 mb-2">
+                          <!-- Added mb-2 for spacing on small screens -->
+                          <input
+                            type="text"
+                            id="nameFilter"
+                            class="form-control"
+                            placeholder="Enter Applicant Name"
+                          />
                         </div>
-                    </div>
-                    <!-- end page title -->
 
-
-                    <div class="row justify-content-center mt-4"> <!-- This div seems to be an extra centering wrapper, might not be needed if content-page provides enough structure -->
-                        <div class="col-md-10"> <!-- This also might be too restrictive, consider col-12 or removing -->
-                            <div class="text-center mb-4">
-                                <a href="{{ url_for('main.homepage') }}" class="text-success">
-                                    <span style="display: inline-block; background-color: grey; color: white; font-weight: bold; padding: 10px; border-radius: 4px;">
-                                        RAHBAR SCHOLARSHIP APPLICATIONS
-                                    </span>
-                                </a>
-                            </div>
-
-                            <!-- Filter Form -->
-                            <div class="card">
-                                <div class="card-body">
-                                    <h4 class="header-title mb-3">Filter Applications</h4>
-                                    <form id="filter-form">
-                                        <div class="row">
-                                            <!-- Name Filter -->
-                                            <div class="col-md-4 mb-2"> <!-- Added mb-2 for spacing on small screens -->
-                                                <input type="text" id="nameFilter" class="form-control" placeholder="Enter Applicant Name">
-                                            </div>
-
-                                            <!-- Status Filter -->
-                                            <div class="col-md-4 mb-2">
-                                                <select id="statusFilter" class="form-control">
-                                                    <option value="">Select Status</option>
-                                                    <option value="draft">Draft</option>
-                                                    <option value="submitted">Submitted</option>
-                                                    <option value="interviewing">Interviewing</option>
-                                                    <option value="accepted">Accepted</option>
-                                                    <option value="on hold">On Hold</option>
-                                                    <option value="provisional admission letter">Provisional Admission Letter Issued</option>
-                                                    <option value="admitted">Admitted</option>
-                                                    <option value="rejected">Rejected</option>
-                                                </select>
-                                            </div>
-
-                                            <!-- RCC Center Filter (Text Input) -->
-                                            <div class="col-md-4 mb-2">
-                                                <input type="text" id="rccFilter" class="form-control" placeholder="Type RCC Center">
-                                            </div>
-                                        </div>
-
-                                        <div class="row mt-3">
-                                            <div class="col-md-12 text-center">
-                                                <button type="button" class="btn btn-primary mr-1" onclick="filterTable()">Apply Filters</button>
-                                                <button type="button" class="btn btn-secondary mr-1" onclick="resetFilters()">Clear</button>
-                                                <button type="button" class="btn btn-success" onclick="downloadCSV()">Download CSV</button>
-                                            </div>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-
-                            <!-- Application List -->
-                            <div class="card">
-                                <div class="card-body">
-                                    <h4 class="header-title mb-3">Application List</h4>
-                                    <div class="table-responsive"> <!-- Added table-responsive for better small screen behavior -->
-                                        <table class="table table-bordered table-hover"> <!-- Added table-hover -->
-                                            <thead class="thead-dark">
-                                                <tr>
-                                                    <th>ID</th>
-                                                    <th>Applicant Name</th>
-                                                    <th>RCC Center</th>
-                                                    <th>Status</th>
-                                                    <th>Action</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="applicationTable">
-                                                {% for application in applications %}
-                                                <tr>
-                                                    <td>{{ application.grantee_detail_id }}</td>
-                                                    <td class="app-name">{{ application.name }}</td>
-                                                    <td class="app-rcc">{{ application.rcc_name }}</td>
-                                                    <td class="app-status">{{ application.status }}</td>
-                                                    <td>
-                                                        <a href="{{ url_for('admin.view_application', application_id=application.grantee_detail_id) }}" class="btn btn-primary btn-sm">
-                                                            View Details
-                                                        </a>
-                                                    </td>
-                                                </tr>
-                                                {% else %}
-                                                <tr>
-                                                    <td colspan="5" class="text-center">No applications found.</td>
-                                                </tr>
-                                                {% endfor %}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
+                        <!-- Status Filter -->
+                        <div class="col-md-4 mb-2">
+                          <select id="statusFilter" class="form-control">
+                            <option value="">Select Status</option>
+                            <option value="draft">Draft</option>
+                            <option value="submitted">Submitted</option>
+                            <option value="interviewing">Interviewing</option>
+                            <option value="accepted">Accepted</option>
+                            <option value="on hold">On Hold</option>
+                            <option value="provisional admission letter">
+                              Provisional Admission Letter Issued
+                            </option>
+                            <option value="admitted">Admitted</option>
+                            <option value="rejected">Rejected</option>
+                          </select>
                         </div>
+
+                        <!-- RCC Center Filter (Text Input) -->
+                        <div class="col-md-4 mb-2">
+                          <input
+                            type="text"
+                            id="rccFilter"
+                            class="form-control"
+                            placeholder="Type RCC Center"
+                          />
+                        </div>
+                      </div>
+
+                      <div class="row mt-3">
+                        <div class="col-md-12 text-center">
+                          <button
+                            type="button"
+                            class="btn btn-primary mr-1"
+                            onclick="filterTable()"
+                          >
+                            Apply Filters
+                          </button>
+                          <button
+                            type="button"
+                            class="btn btn-secondary mr-1"
+                            onclick="resetFilters()"
+                          >
+                            Clear
+                          </button>
+                          <button
+                            type="button"
+                            class="btn btn-success"
+                            onclick="downloadCSV()"
+                          >
+                            Download CSV
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+
+                <!-- Application List -->
+                <div class="card">
+                  <div class="card-body">
+                    <h4 class="header-title mb-3">Application List</h4>
+                    <div class="table-responsive">
+                      <!-- Added table-responsive for better small screen behavior -->
+                      <table class="table table-bordered table-hover">
+                        <!-- Added table-hover -->
+                        <thead class="thead-dark">
+                          <tr>
+                            <th>ID</th>
+                            <th>Applicant Name</th>
+                            <th>RCC Center</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody id="applicationTable">
+                          {% for application in applications %}
+                          <tr>
+                            <td>{{ application.grantee_detail_id }}</td>
+                            <td class="app-name">{{ application.name }}</td>
+                            <td class="app-rcc">{{ application.rcc_name }}</td>
+                            <td class="app-status">{{ application.status }}</td>
+                            <td>
+                              <a
+                                href="{{ url_for('admin.view_application', application_id=application.grantee_detail_id) }}"
+                                class="btn btn-primary btn-sm"
+                              >
+                                View Details
+                              </a>
+                            </td>
+                          </tr>
+                          {% else %}
+                          <tr>
+                            <td colspan="5" class="text-center">
+                              No applications found.
+                            </td>
+                          </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
                     </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- container-fluid end -->
+        </div>
+        <!-- content end -->
 
-                </div> <!-- container-fluid end -->
-
-            </div> <!-- content end -->
-
-            <!-- Footer Start -->
-            <footer class="footer">
-                <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
-            </footer>
-            <!-- end Footer -->
-
-        </div> <!-- content-page end -->
-
-    </div><!-- END wrapper -->
-
+        <!-- Footer Start -->
+        <footer class="footer">
+          <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
+        </footer>
+        <!-- end Footer -->
+      </div>
+      <!-- content-page end -->
+    </div>
+    <!-- END wrapper -->
 
     <!-- Vendor js -->
     <script src="{{ url_for('static', filename='js/vendor.min.js') }}"></script>
@@ -253,159 +332,173 @@
 
     <!-- JavaScript for Filtering and CSV Download -->
     <script>
-        function filterTable() {
-            var nameFilter = document.getElementById("nameFilter").value.toLowerCase();
-            var statusFilter = document.getElementById("statusFilter").value.toLowerCase();
-            var rccFilter = document.getElementById("rccFilter").value.toLowerCase();
-            var tableRows = document.querySelectorAll("#applicationTable tr");
-            var foundVisibleRow = false;
+      function filterTable() {
+        var nameFilter = document
+          .getElementById("nameFilter")
+          .value.toLowerCase();
+        var statusFilter = document
+          .getElementById("statusFilter")
+          .value.toLowerCase();
+        var rccFilter = document
+          .getElementById("rccFilter")
+          .value.toLowerCase();
+        var tableRows = document.querySelectorAll("#applicationTable tr");
+        var foundVisibleRow = false;
 
-            tableRows.forEach(row => {
-                // Check if the row is a data row (has td elements with the specific classes)
-                var appNameCell = row.querySelector(".app-name");
-                var appStatusCell = row.querySelector(".app-status");
-                var appRccCell = row.querySelector(".app-rcc");
+        tableRows.forEach((row) => {
+          // Check if the row is a data row (has td elements with the specific classes)
+          var appNameCell = row.querySelector(".app-name");
+          var appStatusCell = row.querySelector(".app-status");
+          var appRccCell = row.querySelector(".app-rcc");
 
-                // If it's not a data row (e.g., the "No applications found" row), skip it or handle differently
-                if (!appNameCell || !appStatusCell || !appRccCell) {
-                    if (row.querySelector('td[colspan="5"]')) { // This is likely the "No applications" row
-                        // Its visibility will be handled after checking all data rows
-                    }
-                    return;
-                }
-
-                var appName = appNameCell.textContent.toLowerCase();
-                var appStatus = appStatusCell.textContent.toLowerCase();
-                var appRcc = appRccCell.textContent.toLowerCase();
-
-                var nameMatch = appName.includes(nameFilter) || nameFilter === "";
-                var statusMatch = appStatus === statusFilter || statusFilter === ""; // Exact match for status dropdown
-                var rccMatch = appRcc.includes(rccFilter) || rccFilter === "";
-
-                if (nameMatch && statusMatch && rccMatch) {
-                    row.style.display = "";
-                    foundVisibleRow = true;
-                } else {
-                    row.style.display = "none";
-                }
-            });
-
-            // Handle the "No applications found" message
-            var noApplicationsRow = document.querySelector("#applicationTable tr td[colspan='5']");
-            if (noApplicationsRow) { // If the "No applications" row exists from Jinja
-                 if (foundVisibleRow) {
-                    noApplicationsRow.parentElement.style.display = "none"; // Hide the "No applications" row
-                } else {
-                    // If no data rows are visible, but the original "No applications" row was from Jinja
-                    // (meaning the table was initially empty), we show it.
-                    // If the table was not initially empty, this means filters found nothing.
-                    // We might want a different message like "No matching applications found."
-                    // For now, just showing the original "No applications found" row.
-                    noApplicationsRow.parentElement.style.display = "";
-                    noApplicationsRow.textContent = "No matching applications found for the current filters.";
-                }
-            } else if (!foundVisibleRow && tableRows.length > 0) {
-                // If the "No applications" row wasn't there initially (table had data),
-                // and now no rows are visible, dynamically add a "No matching applications" message.
-                var tbody = document.getElementById("applicationTable");
-                // Remove any previously added "no match" row
-                var existingNoMatch = tbody.querySelector(".no-match-row");
-                if (existingNoMatch) existingNoMatch.remove();
-
-                var tr = document.createElement('tr');
-                tr.classList.add("no-match-row");
-                var td = document.createElement('td');
-                td.setAttribute('colspan', '5');
-                td.classList.add('text-center');
-                td.textContent = 'No matching applications found.';
-                tr.appendChild(td);
-                tbody.appendChild(tr);
-            } else if (foundVisibleRow) {
-                 var tbody = document.getElementById("applicationTable");
-                 var existingNoMatch = tbody.querySelector(".no-match-row");
-                 if (existingNoMatch) existingNoMatch.remove();
+          // If it's not a data row (e.g., the "No applications found" row), skip it or handle differently
+          if (!appNameCell || !appStatusCell || !appRccCell) {
+            if (row.querySelector('td[colspan="5"]')) {
+              // This is likely the "No applications" row
+              // Its visibility will be handled after checking all data rows
             }
+            return;
+          }
 
+          var appName = appNameCell.textContent.toLowerCase();
+          var appStatus = appStatusCell.textContent.toLowerCase();
+          var appRcc = appRccCell.textContent.toLowerCase();
 
+          var nameMatch = appName.includes(nameFilter) || nameFilter === "";
+          var statusMatch = appStatus === statusFilter || statusFilter === ""; // Exact match for status dropdown
+          var rccMatch = appRcc.includes(rccFilter) || rccFilter === "";
+
+          if (nameMatch && statusMatch && rccMatch) {
+            row.style.display = "";
+            foundVisibleRow = true;
+          } else {
+            row.style.display = "none";
+          }
+        });
+
+        // Handle the "No applications found" message
+        var noApplicationsRow = document.querySelector(
+          "#applicationTable tr td[colspan='5']"
+        );
+        if (noApplicationsRow) {
+          // If the "No applications" row exists from Jinja
+          if (foundVisibleRow) {
+            noApplicationsRow.parentElement.style.display = "none"; // Hide the "No applications" row
+          } else {
+            // If no data rows are visible, but the original "No applications" row was from Jinja
+            // (meaning the table was initially empty), we show it.
+            // If the table was not initially empty, this means filters found nothing.
+            // We might want a different message like "No matching applications found."
+            // For now, just showing the original "No applications found" row.
+            noApplicationsRow.parentElement.style.display = "";
+            noApplicationsRow.textContent =
+              "No matching applications found for the current filters.";
+          }
+        } else if (!foundVisibleRow && tableRows.length > 0) {
+          // If the "No applications" row wasn't there initially (table had data),
+          // and now no rows are visible, dynamically add a "No matching applications" message.
+          var tbody = document.getElementById("applicationTable");
+          // Remove any previously added "no match" row
+          var existingNoMatch = tbody.querySelector(".no-match-row");
+          if (existingNoMatch) existingNoMatch.remove();
+
+          var tr = document.createElement("tr");
+          tr.classList.add("no-match-row");
+          var td = document.createElement("td");
+          td.setAttribute("colspan", "5");
+          td.classList.add("text-center");
+          td.textContent = "No matching applications found.";
+          tr.appendChild(td);
+          tbody.appendChild(tr);
+        } else if (foundVisibleRow) {
+          var tbody = document.getElementById("applicationTable");
+          var existingNoMatch = tbody.querySelector(".no-match-row");
+          if (existingNoMatch) existingNoMatch.remove();
+        }
+      }
+
+      function resetFilters() {
+        document.getElementById("nameFilter").value = "";
+        document.getElementById("statusFilter").value = "";
+        document.getElementById("rccFilter").value = "";
+
+        // Remove any dynamically added "no match" row
+        var tbody = document.getElementById("applicationTable");
+        var existingNoMatch = tbody.querySelector(".no-match-row");
+        if (existingNoMatch) existingNoMatch.remove();
+
+        // Show all original rows (including the Jinja "No applications found" if it was there)
+        var tableRows = document.querySelectorAll("#applicationTable tr");
+        var hasDataRows = false;
+        tableRows.forEach((row) => {
+          row.style.display = "";
+          if (row.querySelector(".app-name")) {
+            // Check if it's a data row
+            hasDataRows = true;
+          }
+        });
+
+        // If the original "No applications" message existed and there are no actual data rows after reset
+        var noApplicationsRow = document.querySelector(
+          "#applicationTable tr td[colspan='5']"
+        );
+        if (noApplicationsRow) {
+          noApplicationsRow.textContent = "No applications found."; // Reset its text
+          if (hasDataRows) {
+            noApplicationsRow.parentElement.style.display = "none";
+          } else {
+            noApplicationsRow.parentElement.style.display = "";
+          }
+        }
+      }
+
+      function downloadCSV() {
+        var table = document.getElementById("applicationTable"); // Get tbody
+        var rows = table.querySelectorAll("tr"); // Get all rows within tbody
+        var csvContent = "ID,Applicant Name,RCC Center,Status\n"; // Header row
+        var foundVisibleRowForCSV = false;
+
+        rows.forEach((row) => {
+          // Only include rows that are currently visible and are data rows
+          if (row.style.display !== "none" && row.querySelector(".app-name")) {
+            foundVisibleRowForCSV = true;
+            var cols = row.querySelectorAll("td");
+            var rowData = [];
+            // Extract data from first 4 columns (ID, Name, RCC, Status)
+            for (let i = 0; i < 4; i++) {
+              if (cols[i]) {
+                rowData.push(
+                  '"' + cols[i].textContent.trim().replace(/"/g, '""') + '"'
+                ); // Handle commas and quotes
+              } else {
+                rowData.push("");
+              }
+            }
+            csvContent += rowData.join(",") + "\n";
+          }
+        });
+
+        if (!foundVisibleRowForCSV) {
+          alert("No data to download based on current filters.");
+          return;
         }
 
-        function resetFilters() {
-            document.getElementById("nameFilter").value = "";
-            document.getElementById("statusFilter").value = "";
-            document.getElementById("rccFilter").value = "";
-
-            // Remove any dynamically added "no match" row
-            var tbody = document.getElementById("applicationTable");
-            var existingNoMatch = tbody.querySelector(".no-match-row");
-            if (existingNoMatch) existingNoMatch.remove();
-
-            // Show all original rows (including the Jinja "No applications found" if it was there)
-            var tableRows = document.querySelectorAll("#applicationTable tr");
-            var hasDataRows = false;
-            tableRows.forEach(row => {
-                row.style.display = "";
-                if (row.querySelector(".app-name")) { // Check if it's a data row
-                    hasDataRows = true;
-                }
-            });
-
-            // If the original "No applications" message existed and there are no actual data rows after reset
-            var noApplicationsRow = document.querySelector("#applicationTable tr td[colspan='5']");
-            if (noApplicationsRow) {
-                noApplicationsRow.textContent = "No applications found."; // Reset its text
-                if(hasDataRows){
-                    noApplicationsRow.parentElement.style.display = "none";
-                } else {
-                    noApplicationsRow.parentElement.style.display = "";
-                }
-            }
+        var blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        var link = document.createElement("a");
+        if (link.download !== undefined) {
+          // Feature detection
+          var url = URL.createObjectURL(blob);
+          link.setAttribute("href", url);
+          link.setAttribute("download", "applications.csv");
+          link.style.visibility = "hidden";
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        } else {
+          alert("CSV download is not supported by your browser.");
         }
-
-
-        function downloadCSV() {
-            var table = document.getElementById("applicationTable"); // Get tbody
-            var rows = table.querySelectorAll("tr"); // Get all rows within tbody
-            var csvContent = "ID,Applicant Name,RCC Center,Status\n"; // Header row
-            var foundVisibleRowForCSV = false;
-
-            rows.forEach(row => {
-                // Only include rows that are currently visible and are data rows
-                if (row.style.display !== "none" && row.querySelector(".app-name")) {
-                    foundVisibleRowForCSV = true;
-                    var cols = row.querySelectorAll("td");
-                    var rowData = [];
-                    // Extract data from first 4 columns (ID, Name, RCC, Status)
-                    for (let i = 0; i < 4; i++) {
-                        if(cols[i]) {
-                            rowData.push('"' + cols[i].textContent.trim().replace(/"/g, '""') + '"'); // Handle commas and quotes
-                        } else {
-                            rowData.push("");
-                        }
-                    }
-                    csvContent += rowData.join(",") + "\n";
-                }
-            });
-
-            if (!foundVisibleRowForCSV) {
-                alert("No data to download based on current filters.");
-                return;
-            }
-
-            var blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-            var link = document.createElement("a");
-            if (link.download !== undefined) { // Feature detection
-                var url = URL.createObjectURL(blob);
-                link.setAttribute("href", url);
-                link.setAttribute("download", "applications.csv");
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
-            } else {
-                alert("CSV download is not supported by your browser.");
-            }
-        }
+      }
     </script>
-</body>
+  </body>
 </html>

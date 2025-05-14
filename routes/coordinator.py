@@ -24,44 +24,94 @@ def get_db_connection():
 @coordinator_bp.route('/coordinator_dashboard', methods=['GET'])
 @login_required
 def coordinator_dashboard():
-    # Ensure only Coordinators can access this route
-    if current_user.role_id != 3:
+    # Ensure only Coordinators can access this route (adjust role_id if needed)
+    if current_user.role_id != 3: # Assuming Coordinator role_id is 3
         flash('You do not have permission to access this page.', 'error')
         return redirect(url_for('auth.login'))
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    # Fetch coordinator details
-    cursor.execute("SELECT * FROM users WHERE user_id = %s", (current_user.user_id,))
+    # Fetch coordinator details (assuming 'users' table)
+    cursor.execute("SELECT user_id, name, email, phone FROM users WHERE user_id = %s", (current_user.user_id,))
     coordinator = cursor.fetchone()
 
-    # Fetch all applications
-    cursor.execute("SELECT * FROM grantee_details")
-    applications = cursor.fetchall()
+    if not coordinator:
+        flash('Coordinator details not found.', 'error')
+        # Handle error appropriately, e.g., redirect or render error page
+        cursor.close()
+        conn.close()
+        return redirect(url_for('main.homepage')) # Or some other sensible redirect
 
-    # Fetch all sponsors and convenors
-    cursor.execute("""
-        SELECT u.*, r.role_name, r.description
-        FROM users u
-        JOIN roles r ON u.role_id = r.role_id
-        WHERE u.role_id IN (4, 5)  
-    """)
-    sponsors_convenors = cursor.fetchall()
+    # --- Fetch available years for the dropdown ---
+    # Combine years from relevant tables. Adjust table/column names as needed.
+    # Using UNION to get distinct years from multiple potential sources.
+    # Make sure the 'created_at' column exists and is a DATE, DATETIME, or TIMESTAMP type.
+    query_years = """
+        (SELECT DISTINCT YEAR(created_at) AS year FROM grantee_details WHERE created_at IS NOT NULL)
+        UNION
+        (SELECT DISTINCT YEAR(created_at) AS year FROM users WHERE role_id = 5 AND created_at IS NOT NULL) /* Assuming role_id 5 is Sponsor */
+        UNION
+        (SELECT DISTINCT YEAR(created_at) AS year FROM users WHERE role_id = 2 AND created_at IS NOT NULL) /* Assuming role_id 2 is Grantee/Beneficiary */
+        ORDER BY year DESC;
+    """
+    cursor.execute(query_years)
+    available_years_result = cursor.fetchall()
+    available_years = [row['year'] for row in available_years_result if row['year'] is not None]
 
-    # Fetch all grantees (students)
-    cursor.execute("SELECT * FROM users WHERE role_id = 6")  # Role ID 6 = Grantee (Student)
-    grantees = cursor.fetchall()
+    # Get selected year from query parameters, default to current year or most recent if not provided
+    selected_year = request.args.get('year', type=int)
+    if selected_year is None and available_years:
+        selected_year = available_years[0] # Default to the most recent year
+    elif selected_year is None: # No data, no years
+        selected_year = datetime.now().year # Fallback to current system year
+
+    # --- Fetch stats based on selected_year ---
+    year_filter_clause = ""
+    params = []
+
+    if selected_year:
+        year_filter_clause = " WHERE YEAR(created_at) = %s"
+        params.append(selected_year)
+
+    # Fetch total applications (adjust table and columns as needed)
+    # Assuming 'grantee_details' stores applications
+    cursor.execute(f"SELECT COUNT(*) AS count FROM grantee_details {year_filter_clause}", tuple(params))
+    applications_count = cursor.fetchone()['count'] or 0
+
+    # Fetch total sponsors (adjust table, columns, and role_id for sponsors)
+    # Assuming 'users' table and role_id = 5 for sponsors
+    # If sponsors_convenors means both, adjust the query
+    sponsor_filter_clause = f" WHERE role_id = 5 {('AND YEAR(created_at) = %s' if selected_year else '')}"
+    sponsor_params = [selected_year] if selected_year else []
+    cursor.execute(f"SELECT COUNT(*) AS count FROM users {sponsor_filter_clause}", tuple(sponsor_params))
+    sponsors_count = cursor.fetchone()['count'] or 0
+
+
+    # Fetch total grantees/beneficiaries (adjust table, columns, and role_id for grantees)
+    # Assuming 'users' table and role_id = 2 for grantees
+    grantee_filter_clause = f" WHERE role_id = 2 {('AND YEAR(created_at) = %s' if selected_year else '')}"
+    grantee_params = [selected_year] if selected_year else []
+    cursor.execute(f"SELECT COUNT(*) AS count FROM users {grantee_filter_clause}", tuple(grantee_params))
+    grantees_count = cursor.fetchone()['count'] or 0
+
+    # --- Data for Charts (Placeholder - you'll make this dynamic too, possibly by year) ---
+    # For now, I'll leave the chart data fetching as it might be,
+    # but you'd likely want to filter chart data by 'selected_year' as well.
+    # Example: applications_by_status, sponsors_by_region
 
     cursor.close()
     conn.close()
 
     return render_template(
-        'coordinator/dashboard.html',
+        'coordinator/dashboard.html', # Ensure path is correct
         coordinator=coordinator,
-        applications=applications,
-        sponsors_convenors=sponsors_convenors,
-        grantees=grantees
+        applications_count=applications_count,
+        sponsors_count=sponsors_count,
+        grantees_count=grantees_count,
+        available_years=available_years,
+        selected_year=selected_year
+        # Pass other data needed for charts, etc.
     )
 
 # View Applications Route
@@ -130,7 +180,7 @@ def assign_sponsor():
         cursor.close()
         conn.close()
 
-    return redirect(url_for('coordinator.coordinator_dashboard'))
+    return redirect(url_for(' coordinator/dashboard.html'))
 
 # Activate/Inactivate Sponsor or Convenor
 @coordinator_bp.route('/update_user_status/<int:user_id>/<status>', methods=['GET'])
@@ -332,7 +382,7 @@ def change_region(user_id):
         cursor.close()
         conn.close()
 
-    return redirect(url_for('coordinator.coordinator_dashboard'))
+    return redirect(url_for('coordinator.dashboard'))
 
 # Assign Students to Sponsors (Bulk Assignment)
 @coordinator_bp.route('/assign_students_to_sponsors', methods=['POST'])

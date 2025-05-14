@@ -1,287 +1,276 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
+  <head>
     <meta charset="utf-8" />
     <title>Student Progress | Rahbar</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta content="Student Progress for Rahbar Application" name="description" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      content="Student Progress for Rahbar Application"
+      name="description"
+    />
     <meta content="Coderthemes" name="author" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
     <!-- App favicon -->
-    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <link
+      rel="shortcut icon"
+      href="{{ url_for('static', filename='images/favicon.ico') }}"
+    />
 
     <!-- App css -->
-    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" id="bootstrap-stylesheet" />
-    <link href="{{ url_for('static', filename='css/icons.min.css') }}" rel="stylesheet" type="text/css" />
-    <link href="{{ url_for('static', filename='css/app.min.css') }}" rel="stylesheet" type="text/css" id="app-stylesheet" />
-</head>
+    <link
+      href="{{ url_for('static', filename='css/bootstrap.min.css') }}"
+      rel="stylesheet"
+      type="text/css"
+      id="bootstrap-stylesheet"
+    />
+    <link
+      href="{{ url_for('static', filename='css/icons.min.css') }}"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="{{ url_for('static', filename='css/app.min.css') }}"
+      rel="stylesheet"
+      type="text/css"
+      id="app-stylesheet"
+    />
+    <style>
+      /* Moved footer style to head */
+      .footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        /* Simplified for full-width */
+        width: 100%;
+        background-color: #f8f9fa;
+        padding: 10px 0;
+        text-align: center;
+        font-size: 14px;
+        color: #6c757d;
+        border-top: 1px solid #ddd;
+      }
+    </style>
+  </head>
 
-<body>
+  <body>
     <!-- Begin page -->
     <div id="wrapper">
+      <!-- Topbar Start -->
+      <div class="navbar-custom">
+        <div class="d-flex justify-content-between align-items-center w-100">
+          <!-- Left side - Admin Panel -->
+          <div>
+            <h6 class="page-title mb-0">Convenor Panel</h6>
+          </div>
 
-        <!-- Topbar Start -->
-        <div class="navbar-custom">
-            <div class="d-flex justify-content-between align-items-center w-100">
-                <!-- Left side - Admin Panel -->
-                <div>
-                    <h6 class="page-title mb-0">Convenor Panel</h6>
-                </div>
-        
-                <!-- Middle - Logo -->
-                <div>
-                    <a href="{{ url_for('main.homepage') }}" class="text-success">
-                        <h4>Rahbar Scholarship Information Management System</h4>
-                        </a>
-                </div>
-        
-                <!-- Right side - User Dropdown -->
-                <ul class="list-unstyled topnav-menu mb-0">
-                    <li class="dropdown notification-list">
-                        <a class="nav-link dropdown-toggle nav-user waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
-                            <img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" alt="user-image" class="rounded-circle">
-                            <span class="d-none d-sm-inline-block ml-1">{{ current_user.name }}</span>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-right profile-dropdown">
-                            <a href="{{ url_for('auth.logout') }}" class="dropdown-item notify-item">
-                                <i class="mdi mdi-logout-variant"></i>
-                                <span>Logout</span>
-                            </a>
-                        </div>
-                    </li>
-                </ul>
-            </div>
+          <!-- Middle - Logo -->
+          <div>
+            <a href="{{ url_for('main.homepage') }}" class="text-success">
+              <h4>Rahbar Scholarship Information Management System</h4>
+            </a>
+          </div>
+
+          <!-- Right side - User Dropdown -->
+          <ul class="list-unstyled topnav-menu mb-0">
+            <li class="dropdown notification-list">
+              <a
+                class="nav-link dropdown-toggle nav-user waves-effect"
+                data-toggle="dropdown"
+                href="#"
+                role="button"
+                aria-haspopup="false"
+                aria-expanded="false"
+              >
+                <img
+                  src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}"
+                  alt="user-image"
+                  class="rounded-circle"
+                />
+                <span class="d-none d-sm-inline-block ml-1"
+                  >{{ current_user.name }}</span
+                >
+              </a>
+              <div class="dropdown-menu dropdown-menu-right profile-dropdown">
+                <a
+                  href="{{ url_for('auth.logout') }}"
+                  class="dropdown-item notify-item"
+                >
+                  <i class="mdi mdi-logout-variant"></i>
+                  <span>Logout</span>
+                </a>
+              </div>
+            </li>
+          </ul>
         </div>
-        <!-- end Topbar -->
+      </div>
+      <!-- end Topbar -->
 
-        <!-- ========== Left Sidebar Start ========== -->
-        <div class="left-side-menu">
-            <div class="slimscroll-menu">
-                <!--- Sidemenu -->
-                <div id="sidebar-menu">
-                    <ul class="metismenu" id="side-menu">
-                        <li class="menu-title">Navigation</li>
-                        <!-- Dashboard -->
-                        <li>
-                            <a href="{{ url_for('convenor.convenor_dashboard') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-view-dashboard"></i>
-                                <span>Dashboard</span>
-                            </a>
-                        </li>
-                        <!-- Applications -->
-                        <li>
-                            <a href="{{ url_for('admin.view_applications') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-file-document"></i>
-                                <span>View Applications</span>
-                            </a>
-                        </li>
-                        <!-- Sponsors -->
-                        <li>
-                            <a href="{{ url_for('convenor.manage_sponsors') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-account-multiple"></i>
-                                <span>Manage Sponsors</span>
-                            </a>
-                        </li>
-                        <!-- Student Progress -->
-                        <li>
-                            <a href="{{ url_for('convenor.view_student_progress') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-chart-line"></i>
-                                <span>Student Progress</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{{ url_for('convenor.convenor_payments') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-account-multiple"></i>
-                                <span>Payments</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-                <!-- End Sidebar -->
-            </div>
+      <!-- ========== Left Sidebar Start ========== -->
+      <div class="left-side-menu">
+        <div class="slimscroll-menu">
+          <!--- Sidemenu -->
+          <div id="sidebar-menu">
+            <ul class="metismenu" id="side-menu">
+              <li class="menu-title">Navigation</li>
+              <!-- Dashboard -->
+              <li>
+                <a
+                  href="{{ url_for('convenor.convenor_dashboard') }}"
+                  class="waves-effect waves-light"
+                >
+                  <i class="mdi mdi-view-dashboard"></i>
+                  <span>Dashboard</span>
+                </a>
+              </li>
+              <!-- Applications -->
+              <li>
+                <a
+                  href="{{ url_for('admin.view_applications') }}"
+                  class="waves-effect waves-light"
+                >
+                  <i class="mdi mdi-file-document"></i>
+                  <span>View Applications</span>
+                </a>
+              </li>
+              <!-- Sponsors -->
+              <li>
+                <a
+                  href="{{ url_for('convenor.manage_sponsors') }}"
+                  class="waves-effect waves-light"
+                >
+                  <i class="mdi mdi-account-multiple"></i>
+                  <span>Manage Sponsors</span>
+                </a>
+              </li>
+              <!-- Student Progress -->
+              <li>
+                <a
+                  href="{{ url_for('convenor.view_student_progress') }}"
+                  class="waves-effect waves-light"
+                >
+                  <i class="mdi mdi-chart-line"></i>
+                  <span>Student Progress</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="{{ url_for('convenor.convenor_payments') }}"
+                  class="waves-effect waves-light"
+                >
+                  <i class="mdi mdi-account-multiple"></i>
+                  <span>Payments</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+          <!-- End Sidebar -->
         </div>
-        <!-- Left Sidebar End -->
+      </div>
+      <!-- Left Sidebar End -->
 
-        <!-- ============================================================== -->
-        <!-- Start Page Content here -->
-        <!-- ============================================================== -->
+      <!-- ============================================================== -->
+      <!-- Start Page Content here -->
+      <!-- ============================================================== -->
 
-        <div class="content-page">
-            <div class="content">
-                <!-- Start Content-->
-                <div class="container-fluid">
-                    <!-- start page title -->
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="page-title-box">
-                                <h4 class="page-title">Student Progress</h4>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- end page title -->
-
-                    <!-- Filter Section -->
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h4 class="header-title">Filter and Sort Progress</h4>
-                                    <form method="GET" action="{{ url_for('convenor.view_student_progress') }}">
-                                        <div class="row">
-                                            <!-- Grantee Name Filter -->
-                                            <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <label for="grantee_name">Beneficiary Name</label>
-                                                    <input type="text" class="form-control" id="grantee_name" name="grantee_name" placeholder="Enter grantee name" value="{{ request.args.get('grantee_name', '') }}">
-                                                </div>
-                                            </div>
-
-                                            <!-- Marks Range Filter -->
-                                            <div class="col-md-2">
-                                                <div class="form-group">
-                                                    <label for="min_marks">Minimum Marks</label>
-                                                    <input type="number" class="form-control" id="min_marks" name="min_marks" placeholder="Min marks" value="{{ request.args.get('min_marks', '') }}">
-                                                </div>
-                                            </div>
-                                            <div class="col-md-2">
-                                                <div class="form-group">
-                                                    <label for="max_marks">Maximum Marks</label>
-                                                    <input type="number" class="form-control" id="max_marks" name="max_marks" placeholder="Max marks" value="{{ request.args.get('max_marks', '') }}">
-                                                </div>
-                                            </div>
-
-                                            <!-- Date Range Filter -->
-                                            <div class="col-md-2">
-                                                <div class="form-group">
-                                                    <label for="start_date">Start Date</label>
-                                                    <input type="date" class="form-control" id="start_date" name="start_date" value="{{ request.args.get('start_date', '') }}">
-                                                </div>
-                                            </div>
-                                            <div class="col-md-2">
-                                                <div class="form-group">
-                                                    <label for="end_date">End Date</label>
-                                                    <input type="date" class="form-control" id="end_date" name="end_date" value="{{ request.args.get('end_date', '') }}">
-                                                </div>
-                                            </div>
-
-                                            <!-- Sorting Dropdown -->
-                                            <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <label for="sort_by">Sort By</label>
-                                                    <select class="form-control" id="sort_by" name="sort_by">
-                                                        <option value="">-- Select --</option>
-                                                        <option value="grantee_name" {% if request.args.get('sort_by') == 'grantee_name' %}selected{% endif %}>Beneficiary Name</option>
-                                                        <option value="marks" {% if request.args.get('sort_by') == 'marks' %}selected{% endif %}>Marks</option>
-                                                        <option value="created_at" {% if request.args.get('sort_by') == 'created_at' %}selected{% endif %}>Date</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-
-                                            <!-- Submit Button -->
-                                            <div class="col-md-2">
-                                                <div class="form-group">
-                                                    <label>&nbsp;</label>
-                                                    <button type="submit" class="btn btn-primary btn-block">Apply Filters</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- End Filter Section -->
-
-                    <!-- Student Progress Section -->
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h4 class="header-title">Student Progress</h4>
-                                    <div class="mt-3">
-                                        {% if grantee_id %}
-                                            <h5>Progress for Beneficiary ID: {{ grantee_id }}</h5>
-                                        {% else %}
-                                            <h5>Progress for All Beneficiary in {{ convenor.region }}</h5>
-                                        {% endif %}
-                                        <table class="table table-striped">
-                                            <thead>
-                                                <tr>
-                                                    <th>
-                                                        <a href="{{ url_for('convenor.view_student_progress', sort_by='grantee_name', grantee_name=request.args.get('grantee_name'), min_marks=request.args.get('min_marks'), max_marks=request.args.get('max_marks'), start_date=request.args.get('start_date'), end_date=request.args.get('end_date')) }}">
-                                                            Beneficiary Name
-                                                        </a>
-                                                    </th>
-                                                    <th>
-                                                        <a href="{{ url_for('convenor.view_student_progress', sort_by='marks', grantee_name=request.args.get('grantee_name'), min_marks=request.args.get('min_marks'), max_marks=request.args.get('max_marks'), start_date=request.args.get('start_date'), end_date=request.args.get('end_date')) }}">
-                                                            Marks
-                                                        </a>
-                                                    </th>
-                                                    <th>File</th>
-                                                    <th>
-                                                        <a href="{{ url_for('convenor.view_student_progress', sort_by='created_at', grantee_name=request.args.get('grantee_name'), min_marks=request.args.get('min_marks'), max_marks=request.args.get('max_marks'), start_date=request.args.get('start_date'), end_date=request.args.get('end_date')) }}">
-                                                            Date
-                                                        </a>
-                                                    </th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {% for progress in progress_data %}
-                                                    <tr>
-                                                        <td>{{ progress.grantee_name }}</td>
-                                                        <td>{{ progress.marks }}</td>
-                                                        <td>
-                                                            {% if progress.file_path %}
-                                                                <a href="{{ url_for('convenor.uploaded_file', filename=progress.file_path.split('/')[-1]) }}" target="_blank">
-                                                                    View File
-                                                                </a>
-                                                            {% else %}
-                                                                No file uploaded
-                                                            {% endif %}
-                                                        </td>
-                                                        <td>{{ progress.created_at }}</td>
-                                                    </tr>
-                                                {% endfor %}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- End Student Progress Section -->
+      <div class="content-page">
+        <div class="content">
+          <!-- Start Content-->
+          <div class="container-fluid">
+            <!-- start page title -->
+            <div class="row">
+              <div class="col-12">
+                <div class="page-title-box">
+                  <h4 class="page-title">Student Progress</h4>
                 </div>
-                <!-- end container-fluid -->
+              </div>
             </div>
-            <!-- end content -->
+            <!-- end page title -->
 
-            <!-- Footer Start -->
-            <!-- Footer -->
-        <!-- Footer -->
+            <!-- Student Progress Section -->
+            <div class="row">
+              <div class="col-12">
+                <div class="card">
+                  <div class="card-body">
+                    <h4 class="header-title">Student Progress</h4>
+                    <div class="mt-3">
+                      {% if grantee_id %}
+                      <h5>Progress for Beneficiary ID: {{ grantee_id }}</h5>
+                      {% else %}
+                      <h5>
+                        Progress for All Beneficiary in {{ convenor.region }}
+                      </h5>
+                      {% endif %}
+                      <table class="table table-striped">
+                        <thead>
+                          <tr>
+                            <th>Beneficiary Name</th>
+                            <th>Marks</th>
+                            <th>Session</th>
+                            <th>Year</th>
+                            <th>File</th>
+                            <th>Date</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for progress in progress_data %}
+                          <tr>
+                            <td>{{ progress.grantee_name }}</td>
+                            <td
+                              {%
+                              if
+                              progress.marks|float
+                              <
+                              50
+                              %}
+                              class="text-danger"
+                              {%
+                              else
+                              %}
+                              class="text-success"
+                              {%
+                              endif
+                              %}
+                            >
+                              {{ progress.marks }}
+                            </td>
+
+                            <td>{{ progress.session }}</td>
+                            <td>{{ progress.year }}</td>
+
+                            <td>
+                              {% if progress.file_path %}
+                              <a
+                                href="{{ url_for('convenor.uploaded_file', filename=progress.file_path.split('/')[-1]) }}"
+                                target="_blank"
+                              >
+                                View File
+                              </a>
+                              {% else %} No file uploaded {% endif %}
+                            </td>
+                            <td>{{ progress.created_at }}</td>
+                          </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- End Student Progress Section -->
+          </div>
+          <!-- end container-fluid -->
+        </div>
+        <!-- end content -->
+
+        <!-- Footer Start -->
         <footer class="footer">
-            <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
+          <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
         </footer>
-    
-        <style>
-            .footer {
-                position: fixed;
-                bottom: 0;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 100%;
-                background-color: #f8f9fa;
-                padding: 10px 0;
-                text-align: center;
-                font-size: 14px;
-                color: #6c757d;
-                border-top: 1px solid #ddd;
-            }
-        </style>
-            <!-- end Footer -->
-        </div>
-        <!-- End Page content -->
+        <!-- end Footer -->
+      </div>
+      <!-- End Page content -->
     </div>
     <!-- END wrapper -->
 
@@ -290,6 +279,5 @@
 
     <!-- App js -->
     <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
-</body>
-
+  </body>
 </html>

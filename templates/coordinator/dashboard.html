@@ -47,35 +47,51 @@
       <!-- Topbar Start -->
       <div class="navbar-custom">
         <div class="d-flex justify-content-between align-items-center w-100">
-            <!-- Left side - Admin Panel -->
-            <div>
-                <h6 class="page-title mb-0">Coordinator Panel</h6>
-            </div>
-    
-            <!-- Middle - Logo -->
-            <div>
-              <a href="{{ url_for('main.homepage') }}" class="text-success">
-                <h4>Rahbar Scholarship Information Management System</h4>
+          <!-- Left side - Admin Panel -->
+          <div>
+            <h6 class="page-title mb-0">Coordinator Panel</h6>
+          </div>
+
+          <!-- Middle - Logo -->
+          <div>
+            <a href="{{ url_for('main.homepage') }}" class="text-success">
+              <h4>Rahbar Scholarship Information Management System</h4>
+            </a>
+          </div>
+
+          <!-- Right side - User Dropdown -->
+          <ul class="list-unstyled topnav-menu mb-0">
+            <li class="dropdown notification-list">
+              <a
+                class="nav-link dropdown-toggle nav-user waves-effect"
+                data-toggle="dropdown"
+                href="#"
+                role="button"
+                aria-haspopup="false"
+                aria-expanded="false"
+              >
+                <img
+                  src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}"
+                  alt="user-image"
+                  class="rounded-circle"
+                />
+                <span class="d-none d-sm-inline-block ml-1"
+                  >{{ current_user.name }}</span
+                >
+              </a>
+              <div class="dropdown-menu dropdown-menu-right profile-dropdown">
+                <a
+                  href="{{ url_for('auth.logout') }}"
+                  class="dropdown-item notify-item"
+                >
+                  <i class="mdi mdi-logout-variant"></i>
+                  <span>Logout</span>
                 </a>
-            </div>
-    
-            <!-- Right side - User Dropdown -->
-            <ul class="list-unstyled topnav-menu mb-0">
-                <li class="dropdown notification-list">
-                    <a class="nav-link dropdown-toggle nav-user waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
-                        <img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" alt="user-image" class="rounded-circle">
-                        <span class="d-none d-sm-inline-block ml-1">{{ current_user.name }}</span>
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-right profile-dropdown">
-                        <a href="{{ url_for('auth.logout') }}" class="dropdown-item notify-item">
-                            <i class="mdi mdi-logout-variant"></i>
-                            <span>Logout</span>
-                        </a>
-                    </div>
-                </li>
-            </ul>
+              </div>
+            </li>
+          </ul>
         </div>
-    </div>
+      </div>
       <!-- end Topbar -->
 
       <!-- ========== Left Sidebar Start ========== -->
@@ -183,26 +199,49 @@
               </div>
 
               <!-- Quick Stats -->
+              
+              <!-- Quick Stats -->
               <div class="col-md-6">
                 <div class="card">
                   <div class="card-body">
-                    <h4 class="header-title">Quick Stats</h4>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="header-title">Quick Stats</h4>
+                        <div>
+                            <label for="yearFilter" class="sr-only">Select Year:</label>
+                            <select id="yearFilter" class="form-control form-control-sm" style="display: inline-block; width: auto;">
+                                {% if not available_years %}
+                                    <option value="">No Data</option>
+                                {% else %}
+                                    {% for year in available_years %}
+                                        <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>
+                                            {{ year }}
+                                        </option>
+                                    {% endfor %}
+                                {% endif %}
+                                {% if not selected_year and available_years %} <!-- Handle case where selected_year might be None initially but years exist -->
+                                     <option value="" selected disabled>Select Year</option>
+                                {% endif %}
+                            </select>
+                        </div>
+                    </div>
                     <div class="mt-3">
                       <p>
-                        <strong>Total Applications:</strong> {{
-                        applications|length }}
+                        <strong>Total Applications:</strong> {{ applications_count }}
                       </p>
                       <p>
-                        <strong>Total Sponsors:</strong> {{
-                        sponsors_convenors|length }}
+                        <strong>Total Sponsors:</strong> {{ sponsors_count }}
                       </p>
                       <p>
-                        <strong>Total Beneficiary:</strong> {{ grantees|length }}
+                        <strong>Total Beneficiary:</strong> {{ grantees_count }}
                       </p>
+                      {% if selected_year %}
+                        <p class="text-muted"><small>Showing stats for the year: {{ selected_year }}</small></p>
+                      {% endif %}
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
             </div>
             <!-- End Coordinator Details -->
 
@@ -255,23 +294,23 @@
         <!-- Footer -->
         <footer class="footer">
           <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
-      </footer>
-  
-      <style>
+        </footer>
+
+        <style>
           .footer {
-              position: fixed;
-              bottom: 0;
-              left: 50%;
-              transform: translateX(-50%);
-              width: 100%;
-              background-color: #f8f9fa;
-              padding: 10px 0;
-              text-align: center;
-              font-size: 14px;
-              color: #6c757d;
-              border-top: 1px solid #ddd;
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            background-color: #f8f9fa;
+            padding: 10px 0;
+            text-align: center;
+            font-size: 14px;
+            color: #6c757d;
+            border-top: 1px solid #ddd;
           }
-      </style>
+        </style>
         <!-- end Footer -->
       </div>
       <!-- End Page content -->
@@ -294,6 +333,25 @@
 
     <!-- App js -->
     <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
+
+    <script>
+      $(document).ready(function () {
+        // ... (your existing chart initialization code) ...
+
+        $("#yearFilter").on("change", function () {
+          var selectedYear = $(this).val();
+          if (selectedYear) {
+            // Construct the new URL with the selected year as a query parameter
+            var currentUrl = window.location.pathname; // Gets '/coordinator_dashboard'
+            window.location.href = currentUrl + "?year=" + selectedYear;
+          } else {
+            // If "Select Year" or no year is chosen, reload without the year parameter
+            var currentUrl = window.location.pathname;
+            window.location.href = currentUrl;
+          }
+        });
+      });
+    </script>
 
     <!-- Initialize the charts -->
     <script>

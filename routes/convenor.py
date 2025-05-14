@@ -196,7 +196,8 @@ def view_applications():
         'convenor/view_applications.html',
         applications=applications,
         sort_by=sort_by,
-        order=order
+        order=order,
+        user =convenor  # Pass convenor to the template
     )
 
 # Approve/Reject Applications
@@ -212,6 +213,8 @@ def update_application_status(application_id):
 
     conn = get_db_connection()
     cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users WHERE user_id = %s", (current_user.user_id,))
+    convenor = cursor.fetchone()
 
     # Update application status
     cursor.execute("""
@@ -225,7 +228,7 @@ def update_application_status(application_id):
     conn.close()
 
     flash('Application status updated successfully!', 'success')
-    return redirect(url_for('convenor.view_applications'))
+    return redirect(url_for('convenor.view_applications', user =convenor))  # Pass convenor to the template
 
 # Manage Sponsors with Sorting
 @convenor_bp.route('/manage_sponsors', methods=['GET'])
@@ -496,7 +499,7 @@ def upload_file():
     else:
         flash('No file selected.', 'error')
 
-    return redirect(url_for('convenor.convenor_dashboard'))
+    return redirect(url_for('convenor.convenor_dashboard'))  # Pass convenor to the template
 
 # Serve Uploaded Files
 @convenor_bp.route('/uploads/<filename>')
@@ -535,6 +538,8 @@ def convenor_payments():
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM users WHERE user_id = %s", (current_user.user_id,))
+    convenor = cursor.fetchone()
 
     if request.method == 'POST':
         action = request.form.get('action')
@@ -568,7 +573,7 @@ def convenor_payments():
                 conn.rollback()
                 flash('An error occurred while processing the payment.', 'error')
 
-        return redirect(url_for('convenor.convenor_payments'))
+        return redirect(url_for('convenor.convenor_payments', convenor=convenor))
 
     # Fetch assigned grantees and payment details
     cursor.execute("SELECT * FROM grantor_grantees WHERE grantor_id = %s", (current_user.user_id,))
@@ -651,4 +656,4 @@ def convenor_payments():
     cursor.close()
     conn.close()
 
-    return render_template('convenor/payment.html', payment_details=payment_details, past_payments=past_payments)
+    return render_template('convenor/payment.html', payment_details=payment_details, past_payments=past_payments , convenor=convenor)

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 14, 2025 at 02:59 AM
+-- Generation Time: May 16, 2025 at 11:20 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -28,7 +28,7 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `application_period` (
-  `id` int(11) NOT NULL DEFAULT 1,
+  `id` int(11) NOT NULL,
   `start_date` datetime DEFAULT NULL,
   `end_date` datetime DEFAULT NULL,
   `is_active` tinyint(1) DEFAULT 0
@@ -39,7 +39,8 @@ CREATE TABLE `application_period` (
 --
 
 INSERT INTO `application_period` (`id`, `start_date`, `end_date`, `is_active`) VALUES
-(1, '2025-03-09 00:00:00', '2025-03-10 00:00:00', 0);
+(1, '2025-03-09 00:00:00', '2025-03-10 00:00:00', 0),
+(2, '2025-08-13 00:00:00', '2026-07-16 00:00:00', 0);
 
 -- --------------------------------------------------------
 
@@ -353,7 +354,8 @@ INSERT INTO `payments` (`payment_id`, `grantor_id`, `grantee_id`, `amount`, `pay
 (4, '5', '7', 1000.00, '2025-02-26 12:32:51', 'uploads\\adhaar_card_2.pdf', 'Paid', NULL, '2025-02-26 12:32:51', '2025-02-26 12:46:32'),
 (5, '5', '7', 0.00, '2025-03-12 06:39:44', NULL, 'Pending', '2025-07-12', '2025-03-12 06:39:44', '2025-03-12 06:39:44'),
 (6, '6', '8', 0.00, '2025-03-12 06:39:44', NULL, 'Pending', '2025-07-12', '2025-03-12 06:39:44', '2025-03-12 06:39:44'),
-(7, '5', '8', 12000.00, '2025-03-30 21:47:35', 'uploads\\first_europass.pdf', 'Paid', NULL, '2025-03-30 21:47:35', '2025-03-30 21:47:35');
+(7, '5', '8', 12000.00, '2025-03-30 21:47:35', 'uploads\\first_europass.pdf', 'Paid', NULL, '2025-03-30 21:47:35', '2025-03-30 21:47:35'),
+(8, '5', '7', 12000.00, '2025-05-14 10:25:59', 'uploads\\ss.pdf', 'Paid', NULL, '2025-05-14 10:25:59', '2025-05-14 10:25:59');
 
 -- --------------------------------------------------------
 
@@ -560,16 +562,16 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`user_id`, `name`, `email`, `sex`, `password_hash`, `phone`, `role_id`, `status`, `created_at`, `updated_at`, `region`, `year`) VALUES
-('1', 'Super Admin', 'superadmin@rahbar.com', 'M', 'hello', '1234567890', 1, 'Active', '2025-01-25 18:48:22', '2025-04-07 02:16:48', 'Jeddah', 2025),
+('1', 'Super Admin', 'superadmin@rahbar.com', 'M', 'hello', '1234567890', 1, 'Active', '2024-01-01 18:48:22', '2025-05-14 11:53:22', 'Jeddah', 2025),
 ('12', 'unassigned', 'unassigned', 'M', 'hello', '35461', 8, 'Active', '2025-01-27 02:54:38', '2025-04-07 02:16:54', 'Jeddah', 2025),
 ('2', 'Application Admin', 'appadmin@rahbar.com', 'F', 'hello', '1234567891', 2, 'Active', '2025-01-25 18:48:22', '2025-04-07 02:16:59', 'Jeddah', 2025),
 ('3', 'Application Coordinator', 'coordinator@rahbar.com', 'M', 'hello', '1234567892', 3, 'Active', '2025-01-25 18:48:22', '2025-04-07 02:17:02', 'Jeddah', 2025),
 ('4', 'Convenor', 'convenor@rahbar.com', 'F', 'hello', '1234567893', 4, 'Active', '2025-01-25 18:48:22', '2025-04-07 02:17:05', 'Jeddah', 2025),
 ('5', 'Grantor 1', 'grantor1@rahbar.com', 'M', 'hello', '1234567894', 5, 'Active', '2025-01-25 18:48:22', '2025-04-07 02:17:09', 'Jeddah', 2025),
 ('5698', 'Altamash', 'altamash3321@gmail.com', 'M', 'hello', '7257830478', 2, 'Active', '2025-03-09 20:13:38', '2025-04-07 02:17:12', 'Jharkhand', 2025),
-('6', 'Grantor 2', 'grantor2@rahbar.com', 'F', 'hello', '1234567895', 5, 'Active', '2025-01-25 18:48:22', '2025-04-07 02:17:15', 'Jeddah', 2025),
+('6', 'Grantor 2', 'grantor2@rahbar.com', 'F', 'hello', '1234567895', 5, 'Active', '2024-01-01 18:48:22', '2025-05-14 11:53:40', 'Jeddah', 2025),
 ('7', 'Grantee 1', 'grantee1@rahbar.com', 'M', 'hello', '1234567896', 6, 'Active', '2025-01-25 18:48:22', '2025-04-07 02:17:18', 'Jeddah', 2025),
-('8', 'Grantee 2', 'grantee2@rahbar.com', 'F', 'hello', '1234567897', 6, 'Active', '2025-01-25 18:48:22', '2025-04-07 02:17:22', 'Jeddah', 2025),
+('8', 'Grantee 2', 'grantee2@rahbar.com', 'F', 'hello', '1234567897', 6, 'Active', '2024-01-01 18:48:22', '2025-05-14 11:54:01', 'Jeddah', 2025),
 ('9', 'Management', 'management@rahbar.com', 'M', 'hello', '1234567898', 7, 'Active', '2025-01-25 18:48:22', '2025-04-07 02:17:26', 'Jeddah', 2025),
 ('M003-2025', 'MD ALTAMASH', 'ALTAMASH3328@GMAIL.COM', 'M', 'hello', '7257830471', 6, 'recognised', '2025-03-11 18:06:11', '2025-04-07 02:17:29', 'Jeddah', 2025);
 
@@ -839,6 +841,12 @@ ALTER TABLE `user_payment_mapping`
 --
 
 --
+-- AUTO_INCREMENT for table `application_period`
+--
+ALTER TABLE `application_period`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
 -- AUTO_INCREMENT for table `application_status`
 --
 ALTER TABLE `application_status`
@@ -914,7 +922,7 @@ ALTER TABLE `notifications`
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `payment_due_dates`
@@ -926,7 +934,7 @@ ALTER TABLE `payment_due_dates`
 -- AUTO_INCREMENT for table `payment_schedules`
 --
 ALTER TABLE `payment_schedules`
-  MODIFY `schedule_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `schedule_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `permissions`

@@ -32,12 +32,29 @@
       type="text/css"
       id="app-stylesheet"
     />
+    <style>
+      .footer {
+        position: fixed;
+        bottom: 0;
+        left: 0; /* Changed from 50% and transform */
+        width: 100%;
+        background-color: #f8f9fa;
+        padding: 10px 20px; /* Added some horizontal padding */
+        text-align: center;
+        font-size: 14px;
+        color: #6c757d;
+        border-top: 1px solid #ddd;
+        z-index: 1030; /* High z-index */
+      }
+      .content-page {
+        padding-bottom: 70px; /* Ensure content doesn't hide behind footer */
+      }
+    </style>
   </head>
 
   <body>
     <!-- Begin page -->
     <div id="wrapper">
-      <!-- Topbar Start -->
       <!-- Topbar Start -->
       <div class="navbar-custom">
         <div class="d-flex justify-content-between align-items-center w-100">
@@ -122,7 +139,7 @@
                   class="waves-effect waves-light"
                 >
                   <i class="mdi mdi-settings"></i>
-                  <span>System Configuration</span>
+                  <span>Payment Configuration</span>
                 </a>
               </li>
               <!-- Generate Reports -->
@@ -191,37 +208,65 @@
             <!-- start page title -->
             <div class="row">
               <div class="col-12">
-                <div class="page-title-box">
-                  <h4 class="page-title">Admin Dashboard</h4>
+                <div class="page-title-box d-flex justify-content-between align-items-center">
+                  <h4 class="page-title mb-0">Admin Dashboard {% if selected_year %}(Year: {{ selected_year }}){% endif %}</h4>
+                  <!-- Year Filter Dropdown -->
+                  <form method="GET" action="{{ url_for('admin.admin_dashboard') }}" id="yearFilterForm" class="form-inline">
+                    <div class="form-group mb-0">
+                        <label for="yearSelect" class="mr-2">Year:</label>
+                        <select class="form-control form-control-sm" id="yearSelect" name="year" onchange="document.getElementById('yearFilterForm').submit();">
+                            <option value="">All Years</option>
+                            {% for yr in available_years %}
+                                <option value="{{ yr }}" {% if yr|string == selected_year|string %}selected{% endif %}>{{ yr }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                  </form>
                 </div>
               </div>
             </div>
             <!-- end page title -->
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                {% for category, message in messages %}
+                  <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <span aria-hidden="true">×</span>
+                    </button>
+                  </div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+            <!-- End Flash Messages -->
+
 
             <!-- Summary Cards -->
             <div class="row">
               <div class="col-md-6 col-xl-3">
                 <div class="card-box">
                   <h4 class="header-title mt-0 mb-3">Total Users</h4>
-                  <h2 class="text-primary">{{ users|length }}</h2>
+                  <h2 class="text-primary">{{ users_count }}</h2>
                 </div>
               </div>
               <div class="col-md-6 col-xl-3">
                 <div class="card-box">
                   <h4 class="header-title mt-0 mb-3">Total Applications</h4>
-                  <h2 class="text-success">{{ applications|length }}</h2>
+                  <h2 class="text-success">{{ applications_count }}</h2>
                 </div>
               </div>
               <div class="col-md-6 col-xl-3">
                 <div class="card-box">
                   <h4 class="header-title mt-0 mb-3">Total Payments</h4>
-                  <h2 class="text-info">{{ payments|length }}</h2>
+                  <h2 class="text-info">{{ payments_count }}</h2>
                 </div>
               </div>
               <div class="col-md-6 col-xl-3">
                 <div class="card-box">
                   <h4 class="header-title mt-0 mb-3">Active Sponsors</h4>
-                  <h2 class="text-warning">{{ sponsors_convenors|length }}</h2>
+                  <h2 class="text-warning">{{ sponsors_convenors_count }}</h2>
                 </div>
               </div>
             </div>
@@ -234,11 +279,10 @@
                   <div class="card-body">
                     <h4 class="header-title">Application Period Status</h4>
                     <p>
-                      {% if application_period and application_period.is_active
-                      %}
+                      {% if application_period and application_period.is_active %}
                       <span class="badge badge-success">Active</span>
-                      ({{ application_period.start_date }} to {{
-                      application_period.end_date }}) {% else %}
+                      ({{ application_period.start_date }} to {{ application_period.end_date }})
+                      {% else %}
                       <span class="badge badge-danger">Inactive</span>
                       {% endif %}
                     </p>
@@ -246,32 +290,39 @@
                 </div>
               </div>
             </div>
+            <!-- Grantees list (example - if you still want to show it, not year-filtered by default) -->
+            <!--
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="header-title">Grantees (Students)</h4>
+                            {% if grantees %}
+                                <ul>
+                                    {% for grantee in grantees[:5] %} <!- Limiting to 5 for brevity ->
+                                        <li>{{ grantee.name }} ({{ grantee.email }})</li>
+                                    {% endfor %}
+                                    {% if grantees|length > 5 %}
+                                        <li>... and {{ grantees|length - 5 }} more.</li>
+                                    {% endif %}
+                                </ul>
+                            {% else %}
+                                <p>No grantees found.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            -->
           </div>
           <!-- end container-fluid -->
         </div>
         <!-- end content -->
 
         <!-- Footer -->
-        <!-- Footer -->
         <footer class="footer">
           <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
         </footer>
-
-        <style>
-          .footer {
-            position: fixed;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            background-color: #f8f9fa;
-            padding: 10px 0;
-            text-align: center;
-            font-size: 14px;
-            color: #6c757d;
-            border-top: 1px solid #ddd;
-          }
-        </style>
         <!-- end Footer -->
       </div>
       <!-- End Page content -->

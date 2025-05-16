@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, send_file, send_from_directory
+from flask import Blueprint, current_app, render_template, request, redirect, url_for, flash, jsonify, send_file, send_from_directory
 from flask_login import login_required, current_user
 import mysql.connector
 from config import Config as c  # Import config values
@@ -7,6 +7,7 @@ import os
 import pandas as pd
 from io import BytesIO
 from datetime import datetime
+import datetime
 
 # Create Blueprint for admin routes
 admin_bp = Blueprint('admin', __name__)
@@ -32,41 +33,122 @@ if not os.path.exists(UPLOAD_FOLDER):
 @admin_bp.route('/admin_dashboard', methods=['GET'])
 @login_required
 def admin_dashboard():
-    # Ensure only Admins (Super Admin or Application Admin) can access this route
-    if current_user.role_id not in [1, 2]:  # Role ID 1 = Super Admin, 2 = Application Admin
+    if current_user.role_id not in [1, 2]:
         flash('You do not have permission to access this page.', 'error')
         return redirect(url_for('auth.login'))
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    #print(f"Current User ID: {current_user.name}")  # Debugging
 
-    # Fetch admin details
-    cursor.execute("SELECT * FROM users WHERE user_id = %s", (current_user.user_id,))
+    # Get selected year from query parameters, default to None (all years)
+    selected_year = request.args.get('year', None)
+    if selected_year == "": # Handle case where "All Years" (empty value) is selected
+        selected_year = None
+    
+    # --- Fetch available years for the dropdown ---
+    # We'll query each relevant table and combine the years
+    all_years_set = set()
+
+    # Years from users table (assuming 'created_at' column exists)
+    # Replace 'created_at' with your actual column name if different
+    cursor.execute("SELECT DISTINCT YEAR(created_at) as year FROM users WHERE created_at IS NOT NULL")
+    for row in cursor.fetchall():
+        if row['year']:
+            all_years_set.add(row['year'])
+
+    # Years from grantee_details table (assuming 'created_at' or a relevant date column exists)
+    # Replace 'application_date' or 'created_at' with your actual column name
+    # For grantee_details, let's assume a submission date like 'application_date' or a generic 'created_at'
+    # If it doesn't have a created_at, you might need to choose a relevant date field or skip it for year filtering
+    cursor.execute("SELECT DISTINCT YEAR(created_at) as year FROM grantee_details WHERE created_at IS NOT NULL") # Assuming created_at
+    for row in cursor.fetchall():
+        if row['year']:
+            all_years_set.add(row['year'])
+    
+    # Years from payments table (assuming 'payment_date' or 'created_at' column exists)
+    # Replace 'payment_date' with your actual column name
+    cursor.execute("SELECT DISTINCT YEAR(payment_date) as year FROM payments WHERE payment_date IS NOT NULL") # Assuming payment_date
+    for row in cursor.fetchall():
+        if row['year']:
+            all_years_set.add(row['year'])
+
+    # Sponsors/Convenors are from the users table, so their years are already covered by the first query.
+
+    available_years = sorted(list(all_years_set), reverse=True) # Sort descending
+
+    # --- Build WHERE clauses for year filtering ---
+    year_filter_users = ""
+    year_filter_applications = ""
+    year_filter_payments = ""
+
+    params_users = []
+    params_applications = []
+    params_payments = []
+
+    if selected_year:
+        try:
+            # Validate selected_year is an integer
+            year_int = int(selected_year)
+            year_filter_users = "WHERE YEAR(created_at) = %s"
+            params_users.append(year_int)
+            
+            # Adjust column name for grantee_details if different
+            year_filter_applications = "WHERE YEAR(created_at) = %s" # Assuming created_at
+            params_applications.append(year_int)
+
+            # Adjust column name for payments if different
+            year_filter_payments = "WHERE YEAR(payment_date) = %s" # Assuming payment_date
+            params_payments.append(year_int)
+
+        except ValueError:
+            flash('Invalid year selected.', 'error')
+            selected_year = None # Fallback to all years if invalid
+            # Reset filters if year is invalid
+            year_filter_users = ""
+            year_filter_applications = ""
+            year_filter_payments = ""
+            params_users = []
+            params_applications = []
+            params_payments = []
+
+
+    # --- Fetch data with year filtering ---
+    cursor.execute(f"SELECT * FROM users WHERE user_id = %s", (current_user.user_id,))
     admin = cursor.fetchone()
 
-    # Fetch all users
-    cursor.execute("SELECT * FROM users")
-    users = cursor.fetchall()
+    # Fetch users count
+    cursor.execute(f"SELECT COUNT(*) as count FROM users {year_filter_users}", tuple(params_users))
+    users_count = cursor.fetchone()['count']
 
-    # Fetch all applications
-    cursor.execute("SELECT * FROM grantee_details")
-    applications = cursor.fetchall()
+    # Fetch applications count
+    cursor.execute(f"SELECT COUNT(*) as count FROM grantee_details {year_filter_applications}", tuple(params_applications))
+    applications_count = cursor.fetchone()['count']
 
-    # Fetch all payments
-    cursor.execute("SELECT * FROM payments")
-    payments = cursor.fetchall()
+    # Fetch payments count
+    cursor.execute(f"SELECT COUNT(*) as count FROM payments {year_filter_payments}", tuple(params_payments))
+    payments_count = cursor.fetchone()['count']
 
-    # Fetch all sponsors and convenors
-    cursor.execute("SELECT * FROM users WHERE role_id IN (4, 5)")  # Role ID 4 = Convenor, 5 = Sponsor
-    sponsors_convenors = cursor.fetchall()
+    # Fetch sponsors and convenors count
+    # Sponsors/Convenors are also users, so their created_at is tied to the users table.
+    # We need to combine the year filter with the role and status filter.
+    sponsors_convenors_base_query = "SELECT COUNT(*) as count FROM users WHERE role_id IN (4, 5) AND status LIKE 'Active'"
+    sponsors_params = []
+    if selected_year:
+        sponsors_convenors_query = f"{sponsors_convenors_base_query} AND YEAR(created_at) = %s"
+        sponsors_params.append(int(selected_year)) # Assuming selected_year is validated
+    else:
+        sponsors_convenors_query = sponsors_convenors_base_query
+        
+    cursor.execute(sponsors_convenors_query, tuple(sponsors_params))
+    sponsors_convenors_count = cursor.fetchone()['count']
 
-    # Fetch all grantees (students)
-    cursor.execute("SELECT * FROM users WHERE role_id = 6")  # Role ID 6 = Grantee (Student)
-    grantees = cursor.fetchall()
+    # Fetch all grantees (students) - Not directly filtered by year for summary card in original request
+    # If you want to filter grantees by year as well, apply similar logic.
+    cursor.execute("SELECT * FROM users WHERE role_id = 6")
+    grantees = cursor.fetchall() # For now, keep fetching all grantees if not used in a year-filtered card
 
     # Fetch application period status
-    cursor.execute("SELECT * FROM application_period WHERE id = 1")
+    cursor.execute("SELECT * FROM application_period WHERE id = 1 AND is_active = 1")
     application_period = cursor.fetchone()
 
     cursor.close()
@@ -75,12 +157,14 @@ def admin_dashboard():
     return render_template(
         'admin/dashboard.html',
         admin=admin,
-        users=users,
-        applications=applications,
-        payments=payments,
-        sponsors_convenors=sponsors_convenors,
-        grantees=grantees,
-        application_period=application_period
+        users_count=users_count,
+        applications_count=applications_count,
+        payments_count=payments_count,
+        sponsors_convenors_count=sponsors_convenors_count,
+        grantees=grantees, # Pass grantees if still needed elsewhere on the page
+        application_period=application_period,
+        available_years=available_years,
+        selected_year=selected_year
     )
 
 # Start or End Application Period
@@ -91,57 +175,96 @@ def manage_application_period():
         flash('You do not have permission to access this page.', 'error')
         return redirect(url_for('auth.login'))
 
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    # Fetch current application period status
-    cursor.execute("SELECT * FROM application_period WHERE id = 1")
-    application_period = cursor.fetchone()
+    conn = None 
+    cursor = None 
 
     if request.method == 'POST':
         action = request.form.get('action')
-        start_date = request.form.get('start_date')
-        end_date = request.form.get('end_date')
+        start_date_str = request.form.get('start_date')
+        end_date_str = request.form.get('end_date')
+        user_id = current_user.user_id
 
         try:
+            conn = get_db_connection()
+            # Use a buffered cursor for POST operations as well, just in case
+            cursor = conn.cursor(dictionary=True, buffered=True) 
+
             if action == 'start':
-                if not start_date or not end_date:
-                    flash('Start and end dates are required.', 'error')
-                    return redirect(url_for('admin.manage_application_period'))
+                if not start_date_str or not end_date_str:
+                    flash('Start date and end date are required to start a new period.', 'error')
+                else:
+                    try:
+                        start_date = datetime.datetime.strptime(start_date_str, '%Y-%m-%d').date()
+                        end_date = datetime.datetime.strptime(end_date_str, '%Y-%m-%d').date()
 
-                start_date = datetime.strptime(start_date, '%Y-%m-%d')
-                end_date = datetime.strptime(end_date, '%Y-%m-%d')
-
-                cursor.execute("""
-                    INSERT INTO application_period (id, start_date, end_date, is_active)
-                    VALUES (1, %s, %s, 1)
-                    ON DUPLICATE KEY UPDATE
-                        start_date = VALUES(start_date),
-                        end_date = VALUES(end_date),
-                        is_active = VALUES(is_active)
-                """, (start_date, end_date))
-                conn.commit()
-                flash('Application period started successfully!', 'success')
-
+                        if end_date < start_date:
+                            flash('End date cannot be before the start date.', 'error')
+                        else:
+                            
+                            
+                            cursor.execute("""
+                                INSERT INTO application_period (start_date, end_date, is_active)
+                                VALUES (%s, %s, 1)
+                            """, (start_date, end_date)) 
+                            
+                            conn.commit()
+                            flash('New application period started successfully! All previous active periods have been ended.', 'success')
+                    except ValueError:
+                        flash('Invalid date format. Please use YYYY-MM-DD.', 'error')
+            
             elif action == 'end':
-                cursor.execute("UPDATE application_period SET is_active = 0 WHERE id = 1")
-                conn.commit()
-                flash('Application period ended successfully!', 'success')
+                cursor.execute("""
+                    UPDATE application_period 
+                    SET is_active = 0
+                    WHERE is_active = 1; 
+                """)
+                
+                if cursor.rowcount > 0: 
+                    conn.commit()
+                    flash(f'{cursor.rowcount} application period(s) ended successfully!', 'success')
+                else:
+                    flash('No active application period found to end.', 'info')
+            else:
+                flash('Invalid action specified.', 'error')
 
         except Exception as e:
-            conn.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            if conn and conn.is_connected(): conn.rollback()
+            flash(f'An error occurred: {str(e)}', 'error')
+            current_app.logger.error(f"Error in manage_application_period POST: {e}", exc_info=True)
         finally:
-            cursor.close()
-            conn.close()
+            if cursor: cursor.close()
+            if conn: conn.close()
 
         return redirect(url_for('admin.manage_application_period'))
 
-    # For GET requests, render the template
-    cursor.close()
-    conn.close()
-    return render_template('admin/manage_application_period.html', application_period=application_period)
+    # --- For GET requests, fetch the CURRENTLY ACTIVE period (if any) ---
+    application_period_data = None
+    try:
+        conn = get_db_connection()
+        # Use a buffered cursor for GET requests
+        cursor = conn.cursor(dictionary=True, buffered=True) 
+        
+        cursor.execute("SELECT id, start_date, end_date, is_active FROM application_period WHERE is_active = 1 ORDER BY start_date DESC LIMIT 1")
+        application_period_data = cursor.fetchone() # Consume the result
 
+        # If no active period, and you want to show the last created one (optional)
+        # The "pass" in your original code meant the second query's results might not have been consumed if it ran.
+        if not application_period_data:
+            # Example: Fetch last entered period if none active (optional display logic)
+            # cursor.execute("SELECT id, start_date, end_date, is_active FROM application_period ORDER BY id DESC LIMIT 1")
+            # last_period = cursor.fetchone() # MUST consume result if query is run
+            # if last_period:
+            #    application_period_data = last_period # Or just use it to display "Last period was..."
+            pass # Current logic: if no active period, application_period_data remains None
+
+    except Exception as e:
+        flash(f'Error fetching application period: {str(e)}', 'error')
+        current_app.logger.error(f"Error in manage_application_period GET: {e}", exc_info=True)
+    finally:
+        if cursor: cursor.close() # This is where the error was happening
+        if conn: conn.close()
+        
+    return render_template('admin/manage_application_period.html', application_period=application_period_data)
 # Manage Users
 @admin_bp.route('/manage_users', methods=['GET', 'POST'])
 @login_required
@@ -271,140 +394,279 @@ def system_configuration():
         flash('Permission denied', 'error')
         return redirect(url_for('auth.login'))
 
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    conn = None
+    cursor = None
+    
+    # Generate a list of years for the dropdown, e.g., last 5 years to next 5 years
+    current_system_year = datetime.datetime.now().year
+    available_years_for_dropdown = [str(y) for y in range(current_system_year - 5, current_system_year + 6)]
 
-    frequencies = ['yearly', 'half-yearly', 'quarterly', 'monthly']
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
 
-    if request.method == 'POST':
-        try:
-            # Process all frequencies
-            for freq in frequencies:
-                amount = request.form.get(f'amount_{freq}')
-                deadline = request.form.get(f'deadline_{freq}')
+        if request.method == 'POST':
+            user_id = current_user.user_id
+            selected_year_str = request.form.get('selected_year')
+            amount_str = request.form.get('amount')
 
-                if amount and deadline:
+            if not selected_year_str or not amount_str:
+                flash('Year and Amount are required.', 'error')
+            else:
+                try:
+                    selected_year = int(selected_year_str)
+                    amount = float(amount_str)
+                    if amount < 0:
+                         raise ValueError("Amount cannot be negative.")
+
+                    # ON DUPLICATE KEY UPDATE will work if 'year' is a UNIQUE key
                     cursor.execute("""
-                        INSERT INTO payment_schedules (frequency, amount, deadline_date)
-                        VALUES (%s, %s, %s)
+                        INSERT INTO payment_schedules (
+                            amount,
+                            year,
+                            status, -- Assuming status is still 1 or to be set
+                            updated_by
+                        )
+                        VALUES (%s, %s, 1, %s) -- 3 Python placeholders
                         ON DUPLICATE KEY UPDATE
                             amount = VALUES(amount),
-                            deadline_date = VALUES(deadline_date),
-                            updated_at = NOW()
-                    """, (freq, float(amount), deadline))
+                            status = VALUES(status), -- Or remove if status is not managed here
+                            updated_at = NOW(),
+                            updated_by = VALUES(updated_by);
+                    """, (amount, selected_year, user_id))
+                    conn.commit()
+                    flash(f'Payment amount for year {selected_year} saved successfully.', 'success')
+                except ValueError:
+                    flash('Invalid year or amount format. Amount cannot be negative.', 'error')
+                    if conn.is_connected(): conn.rollback()
+                except Exception as e:
+                    flash(f'An error occurred: {str(e)}', 'error')
+                    if conn.is_connected(): conn.rollback()
+                    current_app.logger.error(f"Error in POST system_configuration: {e}", exc_info=True)
+            
+            # Redirect to the same page, possibly with the year pre-selected if desired
+            # Or just redirect to the base config page.
+            # To pre-select, add ?selected_year=selected_year to the redirect URL.
+            return redirect(url_for('admin.system_configuration'))
 
-            conn.commit()
-            flash('Payment schedules updated successfully', 'success')
+        # --- GET request - load all existing payment schedules ---
+        # And also get data for a potentially pre-selected year for the form
+        
+        # Fetch all schedules for display in the table
+        cursor.execute("""
+            SELECT ps.schedule_id, ps.amount, ps.year, ps.updated_at, u.name as updated_by_name
+            FROM payment_schedules ps
+            LEFT JOIN users u ON ps.updated_by = u.user_id
+            ORDER BY ps.year DESC
+        """)
+        all_schedules = cursor.fetchall()
 
+        # For the form: if a year is selected via GET param (e.g., after an error or for editing)
+        # Or default to the current year for the form
+        year_for_form_str = request.args.get('selected_year', str(current_system_year))
+        try:
+            year_for_form = int(year_for_form_str)
         except ValueError:
-            flash('Invalid amount format', 'error')
-            conn.rollback()
-        except Exception as e:
-            flash(f'Database error: {str(e)}', 'error')
-            conn.rollback()
-        finally:
-            cursor.close()
-            conn.close()
+            year_for_form = current_system_year # Fallback
 
-        return redirect(url_for('admin.system_configuration'))
+        form_data = {'amount': '', 'selected_year_for_form': year_for_form}
 
-    # GET request - load existing data
-    cursor.execute("SELECT * FROM payment_schedules")
-    existing_data = {row['frequency']: row for row in cursor.fetchall()}
+        cursor.execute("""
+            SELECT amount FROM payment_schedules WHERE year = %s
+        """, (year_for_form,))
+        schedule_for_form_year = cursor.fetchone()
+        if schedule_for_form_year:
+            form_data['amount'] = schedule_for_form_year['amount']
+        
 
-    # Prepare data structure for template
-    payment_data = []
-    for freq in frequencies:
-        payment_data.append({
-            'frequency': freq,
-            'amount': existing_data.get(freq, {}).get('amount', ''),
-            'deadline': existing_data.get(freq, {}).get('deadline_date', '')
-        })
+        return render_template(
+            'admin/system_configuration.html',
+            all_schedules=all_schedules, # For the display table
+            form_data=form_data, # For pre-filling the add/edit form
+            available_years=available_years_for_dropdown, # For the year selection dropdown
+            current_system_year=current_system_year # For general display if needed
+        )
 
-    cursor.close()
-    conn.close()
-
-    return render_template(
-        'admin/system_configuration.html',
-        payment_data=payment_data,
-        frequencies=frequencies
-    )
+    except Exception as e:
+        flash(f'An unexpected error occurred: {str(e)}', 'error')
+        current_app.logger.error(f"Error in system_configuration: {e}", exc_info=True)
+        # Fallback rendering in case of major error
+        return render_template(
+            'admin/system_configuration.html',
+            all_schedules=[],
+            form_data={'amount': '', 'selected_year_for_form': current_system_year},
+            available_years=available_years_for_dropdown,
+            current_system_year=current_system_year
+        )
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
 # Generate Reports
 @admin_bp.route('/admin_generate_reports', methods=['GET', 'POST'])
 @login_required
 def admin_generate_reports():
     if current_user.role_id not in [1, 2]:  # Ensure only Admins can access this route
         flash('You do not have permission to access this page.', 'error')
-        print("This is creating the issue")
+        # print("Permission issue hit") # For debugging if needed
         return redirect(url_for('auth.login'))
+
+    # --- Data Fetching for page load and report generation ---
+    # It's better to fetch data once. If POST, this data is used.
+    # If GET, this data is passed to the template for previews.
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    # Fetch all applications
+    # Fetch all applications (Original query)
     cursor.execute("SELECT * FROM grantee_details")
-    applications = cursor.fetchall()
+    applications_data = cursor.fetchall() # Use a different variable name to avoid confusion
 
-    # Fetch all payments
-    cursor.execute("SELECT * FROM payments")
-    payments = cursor.fetchall()
+    # Fetch all payments (MODIFIED QUERY to include names)
+    cursor.execute("""
+        SELECT
+            p.payment_id,
+            p.amount,
+            p.status AS payment_status,
+            p.payment_date,
+            p.receipt_url, 
+            p.grantee_id,
+            grantee_user.name AS grantee_name,
+            p.grantor_id,
+            grantor_user.name AS grantor_name,
+            p.created_at, 
+            p.updated_at
+        FROM payments p
+        LEFT JOIN users grantee_user ON p.grantee_id = grantee_user.user_id
+        LEFT JOIN users grantor_user ON p.grantor_id = grantor_user.user_id
+       
+    """)
+    payments_data = cursor.fetchall() # Use a different variable name
 
-    # Fetch all sponsors and convenors
+    # Fetch all sponsors and convenors (Original query)
     cursor.execute("SELECT * FROM users WHERE role_id IN (4, 5)")  # Role ID 4 = Convenor, 5 = Sponsor
-    sponsors_convenors = cursor.fetchall()
+    sponsors_convenors_data = cursor.fetchall() # Use a different variable name
 
-    # Fetch all grantees (students)
+    # Fetch all grantees (students) (Original query)
     cursor.execute("SELECT * FROM users WHERE role_id = 6")  # Role ID 6 = Grantee (Student)
-    grantees = cursor.fetchall()
+    grantees_data = cursor.fetchall() # Use a different variable name
 
     cursor.close()
     conn.close()
 
     if request.method == 'POST':
         report_type = request.form.get('reportType')
-        format = request.form.get('format')
+        report_format = request.form.get('format') # Renamed from 'format' for clarity
 
-        # Prepare data based on report type
+        data_for_df = [] # Data to be converted to DataFrame
+        filename_prefix = 'report'
+        columns_for_report = [] # To control columns in the report
+
         if report_type == 'applications':
-            data = applications
-            filename = 'applications_report'
+            data_for_df = applications_data
+            filename_prefix = 'applications_report'
+            # Define specific columns for applications if you don't want SELECT *
+            # For example: columns_for_report = ['grantee_detail_id', 'name', 'status', ...]
         elif report_type == 'payments':
-            data = payments
-            filename = 'payments_report'
+            data_for_df = payments_data # This now includes the names
+            filename_prefix = 'payments_report'
+            columns_for_report = [ # Define the columns you want in the payment report
+                'payment_id', 'grantee_name', 'grantor_name', 'amount', 
+                'payment_status', 'payment_date', 'receipt_url', 
+                'updated_by_name', 'notes', 'created_at', 'updated_at',
+                # Optionally include original IDs if needed:
+                # 'grantee_id', 'grantor_id', 'updated_by' 
+            ]
         elif report_type == 'sponsors_convenors':
-            data = sponsors_convenors
-            filename = 'sponsors_convenors_report'
+            data_for_df = sponsors_convenors_data
+            filename_prefix = 'sponsors_convenors_report'
+            # Define specific columns: columns_for_report = ['user_id', 'name', 'email', 'role_id', ...]
         elif report_type == 'grantees':
-            data = grantees
-            filename = 'grantees_report'
+            data_for_df = grantees_data
+            filename_prefix = 'grantees_report'
+            # Define specific columns: columns_for_report = ['user_id', 'name', 'email', ...]
+        else:
+            flash('Invalid report type selected.', 'error')
+            return redirect(url_for('admin.admin_generate_reports'))
+
+        if not data_for_df:
+            flash(f'No data available for {report_type.replace("_", " ")} report.', 'info')
+            return redirect(url_for('admin.admin_generate_reports'))
 
         # Convert data to a DataFrame
-        df = pd.DataFrame(data)
+        df = pd.DataFrame(data_for_df)
+
+        # If specific columns are defined, use them. Otherwise, use all columns from df.
+        if columns_for_report:
+            # Filter to include only existing columns from the defined list, preserving order
+            df = df[[col for col in columns_for_report if col in df.columns]]
+        elif df.empty: # If df is empty after all, no point proceeding
+             flash(f'No data to generate for {report_type.replace("_", " ")} report.', 'info')
+             return redirect(url_for('admin.admin_generate_reports'))
+
 
         # Generate the report in the selected format
-        if format == 'csv':
+        if report_format == 'csv':
             output = BytesIO()
-            df.to_csv(output, index=False)
+            df.to_csv(output, index=False, encoding='utf-8')
             output.seek(0)
-            return send_file(output, as_attachment=True, download_name=f"{filename}.csv", mimetype='text/csv')
+            return send_file(output, as_attachment=True, download_name=f"{filename_prefix}.csv", mimetype='text/csv')
 
-        elif format == 'excel':
+        elif report_format == 'excel':
             output = BytesIO()
+            # Use pd.ExcelWriter for more control if needed in the future (e.g., multiple sheets)
             with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-                df.to_excel(writer, index=False)
+                df.to_excel(writer, index=False, sheet_name='Report')
             output.seek(0)
-            return send_file(output, as_attachment=True, download_name=f"{filename}.xlsx", mimetype='application/vnd.ms-excel')
+            return send_file(output, as_attachment=True, download_name=f"{filename_prefix}.xlsx", mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
-        elif format == 'pdf':
-            # Use a library like ReportLab or WeasyPrint to generate PDFs
-            pass
+        elif report_format == 'pdf':
+            # Placeholder for PDF generation - use a library like WeasyPrint or ReportLab
+            try:
+                from weasyprint import HTML # Make sure WeasyPrint is installed: pip install WeasyPrint
+                # Create a basic HTML string from the DataFrame
+                html_content = df.to_html(index=False, border=1, classes="table table-striped")
+                # Add some minimal styling for better PDF output
+                styled_html = f"""
+                <html>
+                    <head>
+                        <meta charset="utf-8">
+                        <style>
+                            body {{ font-family: Arial, sans-serif; font-size: 10pt; }}
+                            table {{ border-collapse: collapse; width: 100%; }}
+                            th, td {{ border: 1px solid #ccc; padding: 5px; text-align: left; }}
+                            th {{ background-color: #f2f2f2; }}
+                            .table-striped tbody tr:nth-of-type(odd) {{ background-color: rgba(0,0,0,.05); }}
+                        </style>
+                    </head>
+                    <body>
+                        <h2>{filename_prefix.replace("_", " ").title()}</h2>
+                        {html_content}
+                    </body>
+                </html>
+                """
+                output = BytesIO()
+                HTML(string=styled_html).write_pdf(output)
+                output.seek(0)
+                return send_file(output, as_attachment=True, download_name=f"{filename_prefix}.pdf", mimetype='application/pdf')
+            except ImportError:
+                flash("PDF generation library (WeasyPrint) is not installed. Please install it.", "error")
+                return redirect(url_for('admin.admin_generate_reports'))
+            except Exception as e:
+                flash(f"An error occurred during PDF generation: {str(e)}", "error")
+                current_app.logger.error(f"PDF Generation Error: {e}", exc_info=True)
+                return redirect(url_for('admin.admin_generate_reports'))
+        else:
+            flash("Invalid report format selected.", "error")
+            return redirect(url_for('admin.admin_generate_reports'))
 
+
+    # This data is passed to the template for the initial page load (e.g., for previews if any)
     return render_template(
         'admin/generate_reports.html',
-        applications=applications,
-        payments=payments,
-        sponsors_convenors=sponsors_convenors,
-        grantees=grantees
+        applications=applications_data,
+        payments=payments_data, # This now includes names
+        sponsors_convenors=sponsors_convenors_data,
+        grantees=grantees_data
     )
 
 # Serve Uploaded Files

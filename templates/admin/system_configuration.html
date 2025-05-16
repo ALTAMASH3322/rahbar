@@ -1,251 +1,264 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
+  <head>
     <meta charset="utf-8" />
     <title>System Configuration | Rahbar</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta content="System Configuration for Rahbar Application" name="description" />
     <meta content="Coderthemes" name="author" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-
-    <!-- App favicon -->
-    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
-
-    <!-- App css -->
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}" />
     <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" id="bootstrap-stylesheet" />
     <link href="{{ url_for('static', filename='css/icons.min.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ url_for('static', filename='css/app.min.css') }}" rel="stylesheet" type="text/css" id="app-stylesheet" />
-</head>
-
-<body>
-    <!-- Begin page -->
-       <!-- Begin page -->
-    <div id="wrapper">
-
-       <!-- Topbar Start -->
-<!-- Topbar Start -->
-<div class="navbar-custom">
-    <div class="d-flex justify-content-between align-items-center w-100">
-        <!-- Left side - Admin Panel -->
-        <div>
-            <h6 class="page-title mb-0">Admin Panel</h6>
-        </div>
-
-        <!-- Middle - Logo -->
-        <div>
-            <a href="{{ url_for('main.homepage') }}" class="text-success">
-                <h4>Rahbar Scholarship Information Management System</h4>
-                </a>
-        </div>
-
-        <!-- Right side - User Dropdown -->
-        <ul class="list-unstyled topnav-menu mb-0">
-            <li class="dropdown notification-list">
-                <a class="nav-link dropdown-toggle nav-user waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
-                    <img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" alt="user-image" class="rounded-circle">
-                    <span class="d-none d-sm-inline-block ml-1">{{ current_user.name }}</span>
-                </a>
-                <div class="dropdown-menu dropdown-menu-right profile-dropdown">
-                    <a href="{{ url_for('auth.logout') }}" class="dropdown-item notify-item">
-                        <i class="mdi mdi-logout-variant"></i>
-                        <span>Logout</span>
-                    </a>
-                </div>
-            </li>
-        </ul>
-    </div>
-</div>
-<!-- end Topbar -->
-
-        <!-- ========== Left Sidebar Start ========== -->
-        <div class="left-side-menu">
-            <div class="slimscroll-menu">
-                <!--- Sidemenu -->
-                <div id="sidebar-menu">
-                    <ul class="metismenu" id="side-menu">
-                        <li class="menu-title">Navigation</li>
-                        <!-- Dashboard -->
-                        <li>
-                            <a href="{{ url_for('admin.admin_dashboard') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-view-dashboard"></i>
-                                <span>Dashboard</span>
-                            </a>
-                        </li>
-                        <!-- Manage Users -->
-                        <li>
-                            <a href="{{ url_for('admin.manage_users') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-account-multiple"></i>
-                                <span>Manage Users</span>
-                            </a>
-                        </li>
-                        <!-- System Configuration -->
-                        <li>
-                            <a href="{{ url_for('admin.system_configuration') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-settings"></i>
-                                <span>System Configuration</span>
-                            </a>
-                        </li>
-                        <!-- Generate Reports -->
-                        <li>
-                            <a href="{{ url_for('admin.admin_generate_reports') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-chart-bar"></i>
-                                <span>Generate Reports</span>
-                            </a>
-                        </li>
-                        <!-- Application Period -->
-                        <li>
-                            <a href="{{ url_for('admin.manage_application_period') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-calendar"></i>
-                                <span>Application Period</span>
-                            </a>
-                        </li>
-                        <!-- In admin/dashboard.html -->
-<li>
-    <a href="{{ url_for('admin.manage_rcc_centers') }}" class="waves-effect waves-light">
-        <i class="mdi mdi-bank"></i>
-        <span>Manage RCC Centers</span>
-    </a>
-</li>
-<li>
-    <a href="{{ url_for('admin.manage_courses') }}" class="waves-effect waves-light">
-        <i class="mdi mdi-book-open"></i>
-        <span>Manage Courses</span>
-    </a>
-</li>
-                    </ul>
-                </div>
-                <!-- End Sidebar -->
-            </div>
-        </div>
-        <!-- Left Sidebar End -->
-
-        <!-- ============================================================== -->
-        <!-- Start Page Content here -->
-        <!-- ============================================================== -->
-
-        <div class="content-page">
-            <div class="content">
-                <!-- Start Content-->
-                <div class="container-fluid">
-                    <!-- start page title -->
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="page-title-box">
-                                <h4 class="page-title">Payment Schedule Configuration</h4>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- end page title -->
-
-                    <!-- Configuration Form -->
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h4 class="header-title mb-4">Manage Payment Schedules</h4>
-                                    <form method="POST" action="{{ url_for('admin.system_configuration') }}">
-                                        <div class="table-responsive">
-                                            <table class="table table-bordered table-hover">
-                                                <thead class="thead-light">
-                                                    <tr>
-                                                        <th>Payment Frequency</th>
-                                                        <th>Fee Amount (₹)</th>
-                                                        <th>Deadline Date</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {% for item in payment_data %}
-                                                    <tr>
-                                                        <td>
-                                                            {{ item.frequency|replace('-', ' ')|title }}
-                                                        </td>
-                                                        <td>
-                                                            <input type="number"
-                                                                   class="form-control"
-                                                                   name="amount_{{ item.frequency }}"
-                                                                   step="0.01"
-                                                                   min="0"
-                                                                   value="{{ item.amount if item.amount else 0 }}"
-                                                                   required>
-                                                        </td>
-                                                        <td>
-                                                            <input type="date"
-                                                                   class="form-control"
-                                                                   name="deadline_{{ item.frequency }}"
-                                                                   value="{{ item.deadline if item.deadline else '' }}"
-                                                                   required>
-                                                        </td>
-                                                    </tr>
-                                                    {% endfor %}
-                                                </tbody>
-                                            </table>
-                                        </div>
-
-                                        <div class="mt-4">
-                                            <button type="submit" class="btn btn-primary">
-                                                <i class="mdi mdi-content-save mr-1"></i> Save All Changes
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- end container-fluid -->
-            </div>
-            <!-- end content -->
-
-            <!-- Footer Start -->
-            <!-- Footer -->
-        <!-- Footer -->
-        <footer class="footer">
-            <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
-        </footer>
-    
-        <style>
-            .footer {
-                position: fixed;
-                bottom: 0;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 100%;
-                background-color: #f8f9fa;
-                padding: 10px 0;
-                text-align: center;
-                font-size: 14px;
-                color: #6c757d;
-                border-top: 1px solid #ddd;
-            }
-        </style>
-            <!-- end Footer -->
-        </div>
-        <!-- End Page content -->
-    </div>
-    <!-- END wrapper -->
-
-    <!-- Vendor js -->
-    <script src="{{ url_for('static', filename='js/vendor.min.js') }}"></script>
-
-    <!-- App js -->
-    <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
-
     <style>
-    .table thead th {
-        background-color: #f8f9fa;
-        font-weight: 600;
-    }
-    .table td {
-        vertical-align: middle;
-    }
-    .table input {
-        max-width: 200px;
-    }
-    .table-hover tbody tr:hover {
-        background-color: #f8f9fa;
-    }
+      .footer { position: fixed; bottom: 0; left: 0; width: 100%; background-color: #f8f9fa; padding: 10px 20px; text-align: center; font-size: 14px; color: #6c757d; border-top: 1px solid #ddd; z-index: 1030; }
+      .content-page { padding-bottom: 70px; }
+      .table thead th { background-color: #e9ecef; font-weight: 600; }
+      .table td, .table th { vertical-align: middle; }
+      .table-hover tbody tr:hover { background-color: #f1f3f5; }
+      .form-section { margin-bottom: 2rem; padding: 1.5rem; border: 1px solid #dee2e6; border-radius: .25rem; background-color: #f8f9fa;}
     </style>
-</body>
+  </head>
+  <body>
+    <div id="wrapper">
+      <!-- Topbar -->
+      <div class="navbar-custom">
+        <div class="d-flex justify-content-between align-items-center w-100">
+          <div><h6 class="page-title mb-0">Admin Panel</h6></div>
+          <div><a href="{{ url_for('main.homepage') }}" class="text-success"><h4>Rahbar Scholarship Information Management System</h4></a></div>
+          <ul class="list-unstyled topnav-menu mb-0">
+            <li class="dropdown notification-list">
+              <a class="nav-link dropdown-toggle nav-user waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
+                <img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" alt="user-image" class="rounded-circle" />
+                <span class="d-none d-sm-inline-block ml-1">{{ current_user.name }}</span>
+              </a>
+              <div class="dropdown-menu dropdown-menu-right profile-dropdown">
+                <a href="{{ url_for('auth.logout') }}" class="dropdown-item notify-item"><i class="mdi mdi-logout-variant"></i><span>Logout</span></a>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <!-- end Topbar -->
 
+      <!-- Left Sidebar -->
+     <div class="left-side-menu">
+        <div class="slimscroll-menu">
+          <div id="sidebar-menu">
+            <ul class="metismenu" id="side-menu">
+              <li class="menu-title">Navigation</li>
+              <li><a href="{{ url_for('admin.admin_dashboard') }}" class="waves-effect waves-light"><i class="mdi mdi-view-dashboard"></i><span>Dashboard</span></a></li>
+              <li><a href="{{ url_for('admin.manage_users') }}" class="waves-effect waves-light"><i class="mdi mdi-account-multiple"></i><span>Manage Users</span></a></li>
+              <li><a href="{{ url_for('admin.system_configuration') }}" class="waves-effect waves-light"><i class="mdi mdi-settings"></i><span>Payment Configuration</span></a></li>
+              <li><a href="{{ url_for('admin.admin_generate_reports') }}" class="waves-effect waves-light"><i class="mdi mdi-chart-bar"></i><span>Generate Reports</span></a></li>
+              <li><a href="{{ url_for('admin.manage_application_period') }}" class="waves-effect waves-light"><i class="mdi mdi-calendar"></i><span>Application Period</span></a></li>
+              <li><a href="{{ url_for('admin.manage_rcc_centers') }}" class="waves-effect waves-light"><i class="mdi mdi-bank"></i><span>Manage RCC Centers</span></a></li>
+              <li><a href="{{ url_for('admin.manage_courses') }}" class="waves-effect waves-light"><i class="mdi mdi-book-open"></i><span>Manage Courses</span></a></li>
+              <li><a href="{{ url_for('admin.manage_students') }}" class="waves-effect waves-light"><i class="mdi mdi-account-school"></i><span>Manage Students</span></a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <!-- Left Sidebar End -->
+
+      <div class="content-page">
+        <div class="content">
+          <div class="container-fluid">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show mt-3" role="alert">
+                  {{ message }}
+                  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
+                </div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+
+            <div class="row">
+              <div class="col-12">
+                <div class="page-title-box mt-3">
+                  <h4 class="page-title">Yearly Payment Amount Configuration</h4>
+                </div>
+              </div>
+            </div>
+
+            <!-- Add/Edit Payment Schedule Form -->
+            <div class="row">
+              <div class="col-lg-8 col-md-10 mx-auto">
+                <div class="card form-section">
+                  <div class="card-body">
+                    <h5 class="card-title">Set or Update Payment Amount for a Year</h5>
+                    <form method="POST" action="{{ url_for('admin.system_configuration') }}" id="paymentConfigForm">
+                      <div class="form-group row">
+                        <label for="selected_year_input" class="col-sm-3 col-form-label">Select Year</label> <!-- Changed id for clarity -->
+                        <div class="col-sm-9">
+                          <select class="form-control" id="selected_year_input" name="selected_year" required>
+                            <!-- Removed onchange from here; will be handled by separate JS -->
+                            <option value="">-- Select Year --</option>
+                            {% for year_opt in available_years %}
+                            <option value="{{ year_opt }}" {% if year_opt|int == form_data.selected_year_for_form %}selected{% endif %}>
+                              {{ year_opt }}
+                            </option>
+                            {% endfor %}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div class="form-group row">
+                        <label for="amount_input" class="col-sm-3 col-form-label">Fee Amount (₹)</label> <!-- Changed id for clarity -->
+                        <div class="col-sm-9">
+                          <input type="number" class="form-control" id="amount_input" name="amount"
+                                 step="0.01" min="0" placeholder="Enter amount for selected year"
+                                 value="{{ form_data.amount if form_data.amount is not none else '' }}"
+                                 required>
+                        </div>
+                      </div>
+
+                      <div class="form-group row mt-4">
+                        <div class="col-sm-9 offset-sm-3">
+                          <button type="submit" class="btn btn-primary" id="save_amount_button"> <!-- Added id -->
+                            <i class="mdi mdi-content-save mr-1"></i> Save Amount for Year
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Display Existing Payment Schedules -->
+            <div class="row mt-4">
+              <div class="col-12">
+                <div class="card">
+                  <div class="card-body">
+                    <h4 class="header-title">Existing Payment Schedules</h4>
+                    {% if all_schedules and all_schedules|length > 0 %}
+                    <div class="table-responsive">
+                      <table class="table table-bordered table-hover" id="existing_schedules_table"> <!-- Added id -->
+                        <thead class="thead-light">
+                          <tr>
+                            <th>ID</th>
+                            <th data-column="year">Year</th> <!-- Added data-column for easier JS targeting -->
+                            <th data-column="amount">Amount (₹)</th> <!-- Added data-column -->
+                            <th>Last Updated At</th>
+                            <th>Updated By</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for schedule in all_schedules %}
+                          <tr>
+                            <td>{{ schedule.schedule_id }}</td>
+                            <td class="schedule-year">{{ schedule.year }}</td> <!-- Added class -->
+                            <td class="schedule-amount">{{ "%.2f"|format(schedule.amount|float) if schedule.amount is not none and schedule.amount != '' else 'N/A' }}</td> <!-- Added class and check for empty string -->
+                            <td>{{ schedule.updated_at.strftime('%Y-%m-%d %H:%M:%S') if schedule.updated_at else 'N/A' }}</td>
+                            <td>{{ schedule.updated_by_name if schedule.updated_by_name else (schedule.updated_by if schedule.updated_by else 'N/A') }}</td>
+                          </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No payment schedules have been configured yet.</p>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- container-fluid -->
+        </div><!-- content -->
+        <footer class="footer">
+          <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
+        </footer>
+      </div><!-- End Page content -->
+    </div><!-- END wrapper -->
+    <script src="{{ url_for('static', filename='js/vendor.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const yearSelect = document.getElementById('selected_year_input');
+            const amountInput = document.getElementById('amount_input');
+            const saveButton = document.getElementById('save_amount_button');
+            const existingSchedulesTable = document.getElementById('existing_schedules_table');
+            const paymentConfigForm = document.getElementById('paymentConfigForm');
+
+            function checkAndDisableForm() {
+                const selectedYear = yearSelect.value;
+                let yearExistsWithAmount = false;
+
+                if (selectedYear && existingSchedulesTable) {
+                    const tableRows = existingSchedulesTable.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+                    for (let i = 0; i < tableRows.length; i++) {
+                        const row = tableRows[i];
+                        const yearCell = row.querySelector('.schedule-year'); // Using class
+                        const amountCell = row.querySelector('.schedule-amount'); // Using class
+
+                        if (yearCell && amountCell) {
+                            const yearInTable = yearCell.textContent.trim();
+                            const amountInTable = amountCell.textContent.trim();
+
+                            // Check if the year matches and if amount is not 'N/A' and is a positive number
+                            // (Adjust this condition based on how "amount set" is defined, e.g., not empty, > 0)
+                            if (yearInTable === selectedYear && amountInTable !== 'N/A' && parseFloat(amountInTable.replace(/[^0-9.-]+/g,"")) > 0) {
+                                yearExistsWithAmount = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (yearExistsWithAmount) {
+                    amountInput.disabled = true;
+                    amountInput.placeholder = "Amount already set for this year";
+                    saveButton.disabled = true;
+                    saveButton.title = "Cannot save, amount already set for the selected year.";
+                     // Optionally, clear the amount input if it was pre-filled by server for this year
+                    // amountInput.value = ''; 
+                } else if (selectedYear === "") { // If "-- Select Year --" is chosen
+                    amountInput.disabled = true;
+                    amountInput.placeholder = "Select a year first";
+                    saveButton.disabled = true;
+                    saveButton.title = "Please select a year.";
+                }
+                else {
+                    amountInput.disabled = false;
+                    amountInput.placeholder = "Enter amount for selected year";
+                    saveButton.disabled = false;
+                    saveButton.title = "";
+                }
+            }
+
+            if (yearSelect) {
+                yearSelect.addEventListener('change', function() {
+                    const selectedYearValue = this.value;
+                    // Reload page to get amount for the selected year (if it exists)
+                    // and then run the checkAndDisableForm
+                    if (selectedYearValue) {
+                        window.location.href = "{{ url_for('admin.system_configuration') }}?selected_year=" + selectedYearValue;
+                    } else {
+                        window.location.href = "{{ url_for('admin.system_configuration') }}"; // Reload to clear selection
+                    }
+                    // Note: checkAndDisableForm will run on the reloaded page's DOMContentLoaded
+                });
+            }
+
+            // Initial check when the page loads (especially after reload with selected_year)
+            checkAndDisableForm();
+
+            // Optional: Prevent form submission if button is disabled (though disabled attribute should do this)
+            if(paymentConfigForm && saveButton){
+                paymentConfigForm.addEventListener('submit', function(event){
+                    if(saveButton.disabled){
+                        event.preventDefault();
+                        alert("Cannot save: The amount for the selected year is already set or year is not selected.");
+                    }
+                });
+            }
+        });
+    </script>
+  </body>
 </html>

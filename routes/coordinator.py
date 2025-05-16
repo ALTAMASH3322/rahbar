@@ -1,3 +1,4 @@
+import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, flash, send_from_directory, jsonify
 from flask_login import login_required, current_user
 import mysql.connector
@@ -50,9 +51,9 @@ def coordinator_dashboard():
     query_years = """
         (SELECT DISTINCT YEAR(created_at) AS year FROM grantee_details WHERE created_at IS NOT NULL)
         UNION
-        (SELECT DISTINCT YEAR(created_at) AS year FROM users WHERE role_id = 5 AND created_at IS NOT NULL) /* Assuming role_id 5 is Sponsor */
+        (SELECT DISTINCT YEAR(created_at) AS year FROM users WHERE (role_id = 5 OR role_id = 4)  AND created_at IS NOT NULL) /* Assuming role_id 5 is Sponsor */
         UNION
-        (SELECT DISTINCT YEAR(created_at) AS year FROM users WHERE role_id = 2 AND created_at IS NOT NULL) /* Assuming role_id 2 is Grantee/Beneficiary */
+        (SELECT DISTINCT YEAR(created_at) AS year FROM users WHERE role_id = 6 AND created_at IS NOT NULL) /* Assuming role_id 6 is Grantee/Beneficiary */
         ORDER BY year DESC;
     """
     cursor.execute(query_years)
@@ -90,7 +91,7 @@ def coordinator_dashboard():
 
     # Fetch total grantees/beneficiaries (adjust table, columns, and role_id for grantees)
     # Assuming 'users' table and role_id = 2 for grantees
-    grantee_filter_clause = f" WHERE role_id = 2 {('AND YEAR(created_at) = %s' if selected_year else '')}"
+    grantee_filter_clause = f" WHERE role_id = 6 {('AND YEAR(created_at) = %s' if selected_year else '')}"
     grantee_params = [selected_year] if selected_year else []
     cursor.execute(f"SELECT COUNT(*) AS count FROM users {grantee_filter_clause}", tuple(grantee_params))
     grantees_count = cursor.fetchone()['count'] or 0
@@ -177,10 +178,12 @@ def assign_sponsor():
         conn.rollback()
         flash(f'An error occurred: {str(e)}', 'error')
     finally:
+        cursor.execute("SELECT user_id, name, email, phone FROM users WHERE user_id = %s", (current_user.user_id,))
+        coordinator = cursor.fetchone()
         cursor.close()
         conn.close()
 
-    return redirect(url_for(' coordinator/dashboard.html'))
+    return redirect(url_for(' coordinator/dashboard.html',coordinator=coordinator))
 
 # Activate/Inactivate Sponsor or Convenor
 @coordinator_bp.route('/update_user_status/<int:user_id>/<status>', methods=['GET'])
@@ -272,15 +275,15 @@ def co_map_students_to_sponsors(sponsor_id):
     # Extract user IDs from mapped_students
     mapped_student_ids = [student['user_id'] for student in mapped_students]
 
-    cursor.execute("SELECT * FROM users WHERE user_id = %s", (current_user.user_id,))
-    convenor = cursor.fetchone()
+    cursor.execute("SELECT user_id, name, email, phone FROM users WHERE user_id = %s", (current_user.user_id,))
+    coordinator = cursor.fetchone()
 
     cursor.close()
     conn.close()
 
     return render_template(
         'coordinator/map_students.html',
-        convenor=convenor,  # Pass convenor to the template
+        coordinator =coordinator ,  # Pass convenor to the template
         students=students,
         mapped_students=mapped_students,  # Pass full details of mapped students
         mapped_student_ids=mapped_student_ids,  # Pass only the IDs for comparison
@@ -297,6 +300,10 @@ def co_manage_sponsors():
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
+
+
+    cursor.execute("SELECT user_id, name, email, phone FROM users WHERE user_id = %s", (current_user.user_id,))
+    coordinator = cursor.fetchone()
 
     # Fetch all sponsors and convenors
     cursor.execute("""
@@ -316,6 +323,7 @@ def co_manage_sponsors():
 
     return render_template(
         'coordinator/manage_sponsors.html',
+        coordinator=coordinator,
         sponsors_convenors=sponsors_convenors,
         grantees=grantees
     )
@@ -465,8 +473,12 @@ def monitor_payments():
     if current_user.role_id != 3:  # Ensure only coordinators can access this route
         flash('You do not have permission to access this page.', 'error')
         return redirect(url_for('auth.login'))
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT user_id, name, email, phone FROM users WHERE user_id = %s", (current_user.user_id,))
+    coordinator = cursor.fetchone()
 
-    return render_template('coordinator/monitor_payments.html')
+    return render_template('coordinator/monitor_payments.html', coordinator=coordinator)
 
 # Monitor Payments Data (for DataTables)
 @coordinator_bp.route('/monitor_payments_data', methods=['GET'])
@@ -477,6 +489,9 @@ def monitor_payments_data():
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT user_id, name, email, phone FROM users WHERE user_id = %s", (current_user.user_id,))
+    coordinator = cursor.fetchone()
 
     # Fetch DataTables parameters
     draw = request.args.get('draw', default=1, type=int)
@@ -525,6 +540,7 @@ def monitor_payments_data():
 
         # Prepare response for DataTables
         response = {
+            "coordinator": coordinator,
             "draw": draw,
             "recordsTotal": total_records,
             "recordsFiltered": total_records,  # Update if search is applied
@@ -559,9 +575,11 @@ def generate_reports():
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT user_id, name, email, phone FROM users WHERE user_id = %s", (current_user.user_id,))
+    coordinator = cursor.fetchone()
 
     # Fetch all applications
-    cursor.execute("SELECT * FROM grantee_details")
+    cursor.execute("SELECT * FROM grantee_details g join application_status a on g.grantee_detail_id = a.grantee_detail_id")
     applications = cursor.fetchall()
 
     # Fetch all payments
@@ -620,6 +638,7 @@ def generate_reports():
 
     return render_template(
         'coordinator/generate_reports.html',
+        coordinator=coordinator,
         applications=applications,
         payments=payments,
         sponsors_convenors=sponsors_convenors,

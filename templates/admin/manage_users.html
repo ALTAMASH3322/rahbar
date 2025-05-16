@@ -1,303 +1,452 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
+  <head>
     <meta charset="utf-8" />
     <title>Manage Users | Rahbar</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta content="Manage Users for Rahbar Application" name="description" />
     <meta content="Coderthemes" name="author" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
     <!-- App favicon -->
-    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <link
+      rel="shortcut icon"
+      href="{{ url_for('static', filename='images/favicon.ico') }}"
+    />
 
     <!-- App css -->
-    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" id="bootstrap-stylesheet" />
-    <link href="{{ url_for('static', filename='css/icons.min.css') }}" rel="stylesheet" type="text/css" />
-    <link href="{{ url_for('static', filename='css/app.min.css') }}" rel="stylesheet" type="text/css" id="app-stylesheet" />
-</head>
+    <link
+      href="{{ url_for('static', filename='css/bootstrap.min.css') }}"
+      rel="stylesheet"
+      type="text/css"
+      id="bootstrap-stylesheet"
+    />
+    <link
+      href="{{ url_for('static', filename='css/icons.min.css') }}"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="{{ url_for('static', filename='css/app.min.css') }}"
+      rel="stylesheet"
+      type="text/css"
+      id="app-stylesheet"
+    />
+  </head>
 
-<body>
+  <body>
     <!-- Begin page -->
-      <!-- Begin page -->
+    <!-- Begin page -->
     <div id="wrapper">
-
-       <!-- Topbar Start -->
-<!-- Topbar Start -->
-<div class="navbar-custom">
-    <div class="d-flex justify-content-between align-items-center w-100">
-        <!-- Left side - Admin Panel -->
-        <div>
+      <!-- Topbar Start -->
+      <!-- Topbar Start -->
+      <div class="navbar-custom">
+        <div class="d-flex justify-content-between align-items-center w-100">
+          <!-- Left side - Admin Panel -->
+          <div>
             <h6 class="page-title mb-0">Admin Panel</h6>
-        </div>
+          </div>
 
-        <!-- Middle - Logo -->
-        <div>
+          <!-- Middle - Logo -->
+          <div>
             <a href="{{ url_for('main.homepage') }}" class="text-success">
-                <h4>Rahbar Scholarship Information Management System</h4>
-                </a>
-        </div>
+              <h4>Rahbar Scholarship Information Management System</h4>
+            </a>
+          </div>
 
-        <!-- Right side - User Dropdown -->
-        <ul class="list-unstyled topnav-menu mb-0">
+          <!-- Right side - User Dropdown -->
+          <ul class="list-unstyled topnav-menu mb-0">
             <li class="dropdown notification-list">
-                <a class="nav-link dropdown-toggle nav-user waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
-                    <img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" alt="user-image" class="rounded-circle">
-                    <span class="d-none d-sm-inline-block ml-1">{{ current_user.name }}</span>
+              <a
+                class="nav-link dropdown-toggle nav-user waves-effect"
+                data-toggle="dropdown"
+                href="#"
+                role="button"
+                aria-haspopup="false"
+                aria-expanded="false"
+              >
+                <img
+                  src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}"
+                  alt="user-image"
+                  class="rounded-circle"
+                />
+                <span class="d-none d-sm-inline-block ml-1"
+                  >{{ current_user.name }}</span
+                >
+              </a>
+              <div class="dropdown-menu dropdown-menu-right profile-dropdown">
+                <a
+                  href="{{ url_for('auth.logout') }}"
+                  class="dropdown-item notify-item"
+                >
+                  <i class="mdi mdi-logout-variant"></i>
+                  <span>Logout</span>
                 </a>
-                <div class="dropdown-menu dropdown-menu-right profile-dropdown">
-                    <a href="{{ url_for('auth.logout') }}" class="dropdown-item notify-item">
-                        <i class="mdi mdi-logout-variant"></i>
-                        <span>Logout</span>
-                    </a>
-                </div>
+              </div>
             </li>
-        </ul>
-    </div>
-</div>
-<!-- end Topbar -->
-
-        <!-- ========== Left Sidebar Start ========== -->
-        <div class="left-side-menu">
-            <div class="slimscroll-menu">
-                <!--- Sidemenu -->
-                <div id="sidebar-menu">
-                    <ul class="metismenu" id="side-menu">
-                        <li class="menu-title">Navigation</li>
-                        <!-- Dashboard -->
-                        <li>
-                            <a href="{{ url_for('admin.admin_dashboard') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-view-dashboard"></i>
-                                <span>Dashboard</span>
-                            </a>
-                        </li>
-                        <!-- Manage Users -->
-                        <li>
-                            <a href="{{ url_for('admin.manage_users') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-account-multiple"></i>
-                                <span>Manage Users</span>
-                            </a>
-                        </li>
-                        <!-- System Configuration -->
-                        <li>
-                            <a href="{{ url_for('admin.system_configuration') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-settings"></i>
-                                <span>System Configuration</span>
-                            </a>
-                        </li>
-                        <!-- Generate Reports -->
-                        <li>
-                            <a href="{{ url_for('admin.admin_generate_reports') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-chart-bar"></i>
-                                <span>Generate Reports</span>
-                            </a>
-                        </li>
-                        <!-- Application Period -->
-                        <li>
-                            <a href="{{ url_for('admin.manage_application_period') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-calendar"></i>
-                                <span>Application Period</span>
-                            </a>
-                        </li>
-                        <!-- In admin/dashboard.html -->
-<li>
-    <a href="{{ url_for('admin.manage_rcc_centers') }}" class="waves-effect waves-light">
-        <i class="mdi mdi-bank"></i>
-        <span>Manage RCC Centers</span>
-    </a>
-</li>
-<li>
-    <a href="{{ url_for('admin.manage_courses') }}" class="waves-effect waves-light">
-        <i class="mdi mdi-book-open"></i>
-        <span>Manage Courses</span>
-    </a>
-</li>
-                    </ul>
-                </div>
-                <!-- End Sidebar -->
-            </div>
+          </ul>
         </div>
-        <!-- Left Sidebar End -->
+      </div>
+      <!-- end Topbar -->
 
-        <!-- ============================================================== -->
-        <!-- Start Page Content here -->
-        <!-- ============================================================== -->
+      <!-- ========== Left Sidebar Start ========== -->
+      <div class="left-side-menu">
+        <div class="slimscroll-menu">
+          <!--- Sidemenu -->
+          <div id="sidebar-menu">
+            <ul class="metismenu" id="side-menu">
+              <li class="menu-title">Navigation</li>
+              <!-- Dashboard -->
+              <li>
+                <a
+                  href="{{ url_for('admin.admin_dashboard') }}"
+                  class="waves-effect waves-light"
+                >
+                  <i class="mdi mdi-view-dashboard"></i>
+                  <span>Dashboard</span>
+                </a>
+              </li>
+              <!-- Manage Users -->
+              <li>
+                <a
+                  href="{{ url_for('admin.manage_users') }}"
+                  class="waves-effect waves-light"
+                >
+                  <i class="mdi mdi-account-multiple"></i>
+                  <span>Manage Users</span>
+                </a>
+              </li>
+              <!-- System Configuration -->
+              <li>
+                <a
+                  href="{{ url_for('admin.system_configuration') }}"
+                  class="waves-effect waves-light"
+                >
+                  <i class="mdi mdi-settings"></i>
+                  <span>Payment Configuration</span>
+                </a>
+              </li>
+              <!-- Generate Reports -->
+              <li>
+                <a
+                  href="{{ url_for('admin.admin_generate_reports') }}"
+                  class="waves-effect waves-light"
+                >
+                  <i class="mdi mdi-chart-bar"></i>
+                  <span>Generate Reports</span>
+                </a>
+              </li>
+              <!-- Application Period -->
+              <li>
+                <a
+                  href="{{ url_for('admin.manage_application_period') }}"
+                  class="waves-effect waves-light"
+                >
+                  <i class="mdi mdi-calendar"></i>
+                  <span>Application Period</span>
+                </a>
+              </li>
+              <!-- In admin/dashboard.html -->
+              <li>
+                <a
+                  href="{{ url_for('admin.manage_rcc_centers') }}"
+                  class="waves-effect waves-light"
+                >
+                  <i class="mdi mdi-bank"></i>
+                  <span>Manage RCC Centers</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="{{ url_for('admin.manage_courses') }}"
+                  class="waves-effect waves-light"
+                >
+                  <i class="mdi mdi-book-open"></i>
+                  <span>Manage Courses</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="{{ url_for('admin.manage_students') }}"
+                  class="waves-effect waves-light"
+                >
+                  <i class="mdi mdi-account-school"></i>
+                  <span>Manage Students</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+          <!-- End Sidebar -->
+        </div>
+      </div>
+      <!-- Left Sidebar End -->
 
-        <div class="content-page">
-            <div class="content">
-                <!-- Start Content-->
-                <div class="container-fluid">
-                    <!-- start page title -->
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="page-title-box">
-                                <h4 class="page-title">Manage Users</h4>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- end page title -->
+      <!-- ============================================================== -->
+      <!-- Start Page Content here -->
+      <!-- ============================================================== -->
 
-                    <!-- Add User Button -->
+      <div class="content-page">
+        <div class="content">
+          <!-- Start Content-->
+          <div class="container-fluid">
+            <!-- start page title -->
+            <div class="row">
+              <div class="col-12">
+                <div class="page-title-box">
+                  <h4 class="page-title">Manage Users</h4>
+                </div>
+              </div>
+            </div>
+            <!-- end page title -->
+
+            <!-- Add User Button -->
+            <div class="row mb-3">
+              <div class="col-12">
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  data-toggle="modal"
+                  data-target="#addUserModal"
+                >
+                  Add New User
+                </button>
+              </div>
+            </div>
+
+            <!-- User Table -->
+            <div class="row">
+              <div class="col-12">
+                <div class="card">
+                  <div class="card-body">
+                    <h4 class="header-title">User List</h4>
+                    <!-- Filters -->
                     <div class="row mb-3">
-                        <div class="col-12">
-                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addUserModal">
-                                Add New User
-                            </button>
-                        </div>
+                      <div class="col-md-3">
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="searchName"
+                          placeholder="Filter by Name"
+                        />
+                      </div>
+                      <div class="col-md-3">
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="searchEmail"
+                          placeholder="Filter by Email"
+                        />
+                      </div>
+                      <div class="col-md-3">
+                        <select class="form-control" id="searchRole">
+                          <option value="">Filter by Role</option>
+                          {% for role in roles %}
+                          <option value="{{ role.role_name }}">
+                            {{ role.role_name }}
+                          </option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                      <div class="col-md-3">
+                        <select class="form-control" id="searchStatus">
+                          <option value="">Filter by Status</option>
+                          <option value="Active">Active</option>
+                          <option value="Inactive">Inactive</option>
+                          <option value="registered">Registered</option>
+                          <option value="recognised">Recognised</option>
+                        </select>
+                      </div>
                     </div>
 
-                    <!-- User Table -->
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h4 class="header-title">User List</h4>
-                                <!-- Filters -->
-<div class="row mb-3">
-    <div class="col-md-3">
-        <input type="text" class="form-control" id="searchName" placeholder="Filter by Name">
-    </div>
-    <div class="col-md-3">
-        <input type="text" class="form-control" id="searchEmail" placeholder="Filter by Email">
-    </div>
-    <div class="col-md-3">
-        <select class="form-control" id="searchRole">
-            <option value="">Filter by Role</option>
-            {% for role in roles %}
-            <option value="{{ role.role_name }}">{{ role.role_name }}</option>
-            {% endfor %}
-        </select>
-    </div>
-    <div class="col-md-3">
-        <select class="form-control" id="searchStatus">
-            <option value="">Filter by Status</option>
-            <option value="Active">Active</option>
-            <option value="Inactive">Inactive</option>
-            <option value="registered">Registered</option>
-            <option value="recognised">Recognised</option>
-        </select>
-    </div>
-</div>
-
-
-                                    <table class="table table-striped">
-                                        <thead>
-                                            <tr>
-                                                <th>Name</th>
-                                                <th>Email</th>
-                                                <th>Role</th>
-                                                <th>Status</th>
-                                                <th>Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for user in users %}
-                                                <tr>
-                                                    <td>{{ user.name }}</td>
-                                                    <td>{{ user.email }}</td>
-                                                    <td>{{ user.role_name }}</td>
-                                                    <td>{{ user.status }}</td>
-                                                    <td>
-                                                        <a href="{{ url_for('admin.edit_user', user_id=user.user_id) }}" class="btn btn-sm btn-primary">Edit</a>
-                                                        <a href="{{ url_for('admin.delete_user', user_id=user.user_id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this user?')">Delete</a>
-                                                    </td>
-                                                </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <table class="table table-striped">
+                      <thead>
+                        <tr>
+                          <th>Name</th>
+                          <th>Email</th>
+                          <th>Role</th>
+                          <th>Status</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for user in users %}
+                        <tr>
+                          <td>{{ user.name }}</td>
+                          <td>{{ user.email }}</td>
+                          <td>{{ user.role_name }}</td>
+                          <td>{{ user.status }}</td>
+                          <td>
+                            <a
+                              href="{{ url_for('admin.edit_user', user_id=user.user_id) }}"
+                              class="btn btn-sm btn-primary"
+                              >Edit</a
+                            >
+                            <a
+                              href="{{ url_for('admin.delete_user', user_id=user.user_id) }}"
+                              class="btn btn-sm btn-danger"
+                              onclick="return confirm('Are you sure you want to delete this user?')"
+                              >Delete</a
+                            >
+                          </td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-                <!-- end container-fluid -->
+              </div>
             </div>
-            <!-- end content -->
+          </div>
+          <!-- end container-fluid -->
+        </div>
+        <!-- end content -->
 
-            <!-- Add User Modal -->
-            <div class="modal fade" id="addUserModal" tabindex="-1" role="dialog" aria-labelledby="addUserModalLabel" aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="addUserModalLabel">Add New User</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <form method="POST" action="{{ url_for('admin.manage_users') }}">
-                               <div class="form-group">
-                                    <label for="user_id">ID</label>
-                                    <input type="text" class="form-control" id="user_id" name="user_id" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="name">Name</label>
-                                    <input type="text" class="form-control" id="name" name="name" required>
-                                </div>
-                            <div class="form-group">
-                                    <label for="contact">Contact</label>
-                                    <input type="text" class="form-control" id="contact" name="contact" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="email">Email</label>
-                                    <input type="email" class="form-control" id="email" name="email" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="region">Region</label>
-                                    <input type="region" class="form-control" id="region" name="region" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="role_id">Role</label>
-                                    <select class="form-control" id="role_id" name="role_id" required>
-                                        {% for role in roles %}
-                                            <option value="{{ role.role_id }}">{{ role.role_name }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="status">Status</label>
-                                    <select class="form-control" id="status" name="status" required>
-                                        <option value="Active">Active</option>
-                                        <option value="Inactive">Inactive</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="password">Password</label>
-                                    <input type="password" class="form-control" id="password" name="password" required>
-                                </div>
-                                <button type="submit" class="btn btn-primary">Save</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
+        <!-- Add User Modal -->
+        <div
+          class="modal fade"
+          id="addUserModal"
+          tabindex="-1"
+          role="dialog"
+          aria-labelledby="addUserModalLabel"
+          aria-hidden="true"
+        >
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="addUserModalLabel">Add New User</h5>
+                <button
+                  type="button"
+                  class="close"
+                  data-dismiss="modal"
+                  aria-label="Close"
+                >
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <form
+                  method="POST"
+                  action="{{ url_for('admin.manage_users') }}"
+                >
+                  <div class="form-group">
+                    <label for="user_id">ID</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="user_id"
+                      name="user_id"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="name">Name</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="name"
+                      name="name"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="contact">Contact</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="contact"
+                      name="contact"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="email">Email</label>
+                    <input
+                      type="email"
+                      class="form-control"
+                      id="email"
+                      name="email"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="region">Region</label>
+                    <input
+                      type="region"
+                      class="form-control"
+                      id="region"
+                      name="region"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="role_id">Role</label>
+                    <select
+                      class="form-control"
+                      id="role_id"
+                      name="role_id"
+                      required
+                    >
+                      {% for role in roles %}
+                      <option value="{{ role.role_id }}">
+                        {{ role.role_name }}
+                      </option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="status">Status</label>
+                    <select
+                      class="form-control"
+                      id="status"
+                      name="status"
+                      required
+                    >
+                      <option value="Active">Active</option>
+                      <option value="Inactive">Inactive</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="password">Password</label>
+                    <input
+                      type="password"
+                      class="form-control"
+                      id="password"
+                      name="password"
+                      required
+                    />
+                  </div>
+                  <button type="submit" class="btn btn-primary">Save</button>
+                </form>
+              </div>
             </div>
+          </div>
+        </div>
 
-            <!-- Footer Start -->
-           <!-- Footer -->
+        <!-- Footer Start -->
+        <!-- Footer -->
         <!-- Footer -->
         <footer class="footer">
-            <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
+          <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
         </footer>
-    
+
         <style>
-            .footer {
-                position: fixed;
-                bottom: 0;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 100%;
-                background-color: #f8f9fa;
-                padding: 10px 0;
-                text-align: center;
-                font-size: 14px;
-                color: #6c757d;
-                border-top: 1px solid #ddd;
-            }
+          .footer {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            background-color: #f8f9fa;
+            padding: 10px 0;
+            text-align: center;
+            font-size: 14px;
+            color: #6c757d;
+            border-top: 1px solid #ddd;
+          }
         </style>
-            <!-- end Footer -->
-        </div>
-        <!-- End Page content -->
+        <!-- end Footer -->
+      </div>
+      <!-- End Page content -->
     </div>
     <!-- END wrapper -->
 
@@ -307,53 +456,44 @@
     <!-- App js -->
     <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
 
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const searchName = document.getElementById("searchName");
+        const searchEmail = document.getElementById("searchEmail");
+        const searchRole = document.getElementById("searchRole");
+        const searchStatus = document.getElementById("searchStatus");
+        const tableRows = document.querySelectorAll("table tbody tr");
 
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const searchName = document.getElementById("searchName");
-    const searchEmail = document.getElementById("searchEmail");
-    const searchRole = document.getElementById("searchRole");
-    const searchStatus = document.getElementById("searchStatus");
-    const tableRows = document.querySelectorAll("table tbody tr");
+        function filterUsers() {
+          const nameFilter = searchName.value.toLowerCase();
+          const emailFilter = searchEmail.value.toLowerCase();
+          const roleFilter = searchRole.value.toLowerCase();
+          const statusFilter = searchStatus.value.toLowerCase();
 
-    function filterUsers() {
-        const nameFilter = searchName.value.toLowerCase();
-        const emailFilter = searchEmail.value.toLowerCase();
-        const roleFilter = searchRole.value.toLowerCase();
-        const statusFilter = searchStatus.value.toLowerCase();
-
-        tableRows.forEach(row => {
+          tableRows.forEach((row) => {
             const name = row.cells[0].textContent.toLowerCase();
             const email = row.cells[1].textContent.toLowerCase();
             const role = row.cells[2].textContent.toLowerCase();
             const status = row.cells[3].textContent.toLowerCase();
 
             if (
-                (name.includes(nameFilter) || nameFilter === "") &&
-                (email.includes(emailFilter) || emailFilter === "") &&
-                (role.includes(roleFilter) || roleFilter === "") &&
-                (status.includes(statusFilter) || statusFilter === "")
+              (name.includes(nameFilter) || nameFilter === "") &&
+              (email.includes(emailFilter) || emailFilter === "") &&
+              (role.includes(roleFilter) || roleFilter === "") &&
+              (status.includes(statusFilter) || statusFilter === "")
             ) {
-                row.style.display = "";
+              row.style.display = "";
             } else {
-                row.style.display = "none";
+              row.style.display = "none";
             }
-        });
-    }
+          });
+        }
 
-    searchName.addEventListener("keyup", filterUsers);
-    searchEmail.addEventListener("keyup", filterUsers);
-    searchRole.addEventListener("change", filterUsers);
-    searchStatus.addEventListener("change", filterUsers);
-});
-</script>
-
-
-
-
-
-
-
-</body>
-
+        searchName.addEventListener("keyup", filterUsers);
+        searchEmail.addEventListener("keyup", filterUsers);
+        searchRole.addEventListener("change", filterUsers);
+        searchStatus.addEventListener("change", filterUsers);
+      });
+    </script>
+  </body>
 </html>

@@ -35,44 +35,78 @@
       type="text/css"
       id="app-stylesheet"
     />
+    <style>
+      .footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background-color: #f8f9fa;
+        padding: 10px 20px;
+        text-align: center;
+        font-size: 14px;
+        color: #6c757d;
+        border-top: 1px solid #ddd;
+        z-index: 1030; /* Ensure it's above most content, Bootstrap modal z-index is higher */
+      }
+
+      /* Add padding to the bottom of the content-page to prevent footer overlap */
+      .content-page {
+        padding-bottom: 70px; /* Adjust this value based on your footer's height + a little extra */
+      }
+    </style>
   </head>
 
   <body>
     <!-- Begin page -->
     <div id="wrapper">
       <!-- Topbar Start -->
-      <div id="wrapper">
-        <!-- Topbar Start -->
-        <div class="navbar-custom">
-          <div class="d-flex justify-content-between align-items-center w-100">
-              <!-- Left side - Admin Panel -->
-              <div>
-                  <h6 class="page-title mb-0">Coordinator Panel</h6>
-              </div>
-      
-              <!-- Middle - Logo -->
-              <div>
-                <a href="{{ url_for('main.homepage') }}" class="text-success">
-                  <h4>Rahbar Scholarship Information Management System</h4>
-                  </a>
-              </div>
-      
-              <!-- Right side - User Dropdown -->
-              <ul class="list-unstyled topnav-menu mb-0">
-                  <li class="dropdown notification-list">
-                      <a class="nav-link dropdown-toggle nav-user waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
-                          <img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" alt="user-image" class="rounded-circle">
-                          <span class="d-none d-sm-inline-block ml-1">{{ current_user.name }}</span>
-                      </a>
-                      <div class="dropdown-menu dropdown-menu-right profile-dropdown">
-                          <a href="{{ url_for('auth.logout') }}" class="dropdown-item notify-item">
-                              <i class="mdi mdi-logout-variant"></i>
-                              <span>Logout</span>
-                          </a>
-                      </div>
-                  </li>
-              </ul>
+      <div class="navbar-custom">
+        <div class="d-flex justify-content-between align-items-center w-100">
+          <!-- Left side - Admin Panel -->
+          <div>
+            <h6 class="page-title mb-0">Coordinator Panel</h6>
           </div>
+
+          <!-- Middle - Logo -->
+          <div>
+            <a href="{{ url_for('main.homepage') }}" class="text-success">
+              <h4>Rahbar Scholarship Information Management System</h4>
+            </a>
+          </div>
+
+          <!-- Right side - User Dropdown -->
+          <ul class="list-unstyled topnav-menu mb-0">
+            <li class="dropdown notification-list">
+              <a
+                class="nav-link dropdown-toggle nav-user waves-effect"
+                data-toggle="dropdown"
+                href="#"
+                role="button"
+                aria-haspopup="false"
+                aria-expanded="false"
+              >
+                <img
+                  src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}"
+                  alt="user-image"
+                  class="rounded-circle"
+                />
+                <span class="d-none d-sm-inline-block ml-1"
+                  >{{ coordinator.name }}</span
+                >
+              </a>
+              <div class="dropdown-menu dropdown-menu-right profile-dropdown">
+                <a
+                  href="{{ url_for('auth.logout') }}"
+                  class="dropdown-item notify-item"
+                >
+                  <i class="mdi mdi-logout-variant"></i>
+                  <span>Logout</span>
+                </a>
+              </div>
+            </li>
+          </ul>
+        </div>
       </div>
       <!-- end Topbar -->
 
@@ -179,7 +213,7 @@
                           <option value="applications">
                             Applications Report
                           </option>
-                          <option value="payments">Payments Report</option>
+                          <!-- <option value="payments">Payments Report</option> -->
                           <option value="sponsors_convenors">
                             Sponsors & Convenors Report
                           </option>
@@ -215,25 +249,51 @@
                 <div class="card">
                   <div class="card-body">
                     <h4 class="header-title">Applications Report Preview</h4>
+
+                    <!-- Search Input -->
+                    <div class="form-group">
+                      <label for="applicationSearchInput"
+                        >Search Applications:</label
+                      >
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="applicationSearchInput"
+                        placeholder="Search by Name, Contact, or Status..."
+                      />
+                    </div>
+                    <!-- End Search Input -->
+
                     <div class="table-responsive">
-                      <table class="table table-bordered">
+                      <table
+                        class="table table-bordered"
+                        id="applicationsPreviewTable"
+                      >
                         <thead>
                           <tr>
                             <th>ID</th>
                             <th>Name</th>
-                            <th>Email</th>
+                            <th>Contact</th>
                             <th>Status</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {% for application in applications %}
+                          {% if applications and applications|length > 0 %} {%
+                          for application in applications %}
                           <tr>
-                            <td>{{ application.id }}</td>
+                            <td>{{ application.grantee_detail_id }}</td>
                             <td>{{ application.name }}</td>
-                            <td>{{ application.email }}</td>
+                            <td>{{ application.student_mobile }}</td>
                             <td>{{ application.status }}</td>
                           </tr>
-                          {% endfor %}
+                          {% endfor %} {% else %}
+                          <tr id="initialNoDataRow">
+                            <td colspan="4" class="text-center">
+                              No applications to display. Select a report type
+                              and generate.
+                            </td>
+                          </tr>
+                          {% endif %}
                         </tbody>
                       </table>
                     </div>
@@ -248,27 +308,9 @@
         <!-- end content -->
 
         <!-- Footer Start -->
-        <!-- Footer -->
-        <!-- Footer -->
         <footer class="footer">
           <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
-      </footer>
-  
-      <style>
-          .footer {
-              position: fixed;
-              bottom: 0;
-              left: 50%;
-              transform: translateX(-50%);
-              width: 100%;
-              background-color: #f8f9fa;
-              padding: 10px 0;
-              text-align: center;
-              font-size: 14px;
-              color: #6c757d;
-              border-top: 1px solid #ddd;
-          }
-      </style>
+        </footer>
         <!-- end Footer -->
       </div>
       <!-- End Page content -->
@@ -280,5 +322,110 @@
 
     <!-- App js -->
     <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const searchInput = document.getElementById("applicationSearchInput");
+        const table = document.getElementById("applicationsPreviewTable");
+        if (!table) {
+          console.error("Table with ID 'applicationsPreviewTable' not found.");
+          return;
+        }
+        const tableBody = table.getElementsByTagName("tbody")[0];
+        if (!tableBody) {
+          console.error("Tbody not found in 'applicationsPreviewTable'.");
+          return;
+        }
+
+        // Function to update table rows based on search
+        function filterTable() {
+          const searchTerm = searchInput.value.toLowerCase().trim();
+          const tableRows = Array.from(tableBody.getElementsByTagName("tr")); // Get a live collection or convert to array
+          let visibleRows = 0;
+
+          // Remove any previous "no matching" message
+          const existingNoMatchRow = tableBody.querySelector(".no-match-row");
+          if (existingNoMatchRow) {
+            existingNoMatchRow.remove();
+          }
+
+          // Hide the initial "no data" row if it exists
+          const initialNoData = document.getElementById("initialNoDataRow");
+          if (initialNoData) {
+            initialNoData.style.display = "none";
+          }
+
+          tableRows.forEach((row) => {
+            // Skip the row if it's the initial no-data message or a no-match message
+            if (
+              row.id === "initialNoDataRow" ||
+              row.classList.contains("no-match-row")
+            ) {
+              return;
+            }
+
+            const idCell = row.cells[0]
+              ? row.cells[0].textContent.toLowerCase()
+              : "";
+            const nameCell = row.cells[1]
+              ? row.cells[1].textContent.toLowerCase()
+              : "";
+            const contactCell = row.cells[2]
+              ? row.cells[2].textContent.toLowerCase()
+              : "";
+            const statusCell = row.cells[3]
+              ? row.cells[3].textContent.toLowerCase()
+              : "";
+
+            if (
+              idCell.includes(searchTerm) ||
+              nameCell.includes(searchTerm) ||
+              contactCell.includes(searchTerm) ||
+              statusCell.includes(searchTerm)
+            ) {
+              row.style.display = ""; // Show row
+              visibleRows++;
+            } else {
+              row.style.display = "none"; // Hide row
+            }
+          });
+
+          if (visibleRows === 0 && searchTerm !== "") {
+            // If no actual data rows are visible and there's a search term, add "no matching" message
+            const tempRow = tableBody.insertRow(); // Inserts at the end
+            tempRow.className = "no-match-row";
+            const cell = tempRow.insertCell();
+            cell.colSpan = 4;
+            cell.className = "text-center";
+            cell.textContent = "No matching applications found.";
+          } else if (
+            visibleRows === 0 &&
+            searchTerm === "" &&
+            initialNoData &&
+            tableRows.filter(
+              (r) =>
+                r.id !== "initialNoDataRow" &&
+                !r.classList.contains("no-match-row")
+            ).length === 0
+          ) {
+            // If search is cleared, no data rows exist apart from initial/no-match, show initial "no data" row
+            initialNoData.style.display = "";
+          }
+        }
+
+        if (searchInput) {
+          searchInput.addEventListener("keyup", filterTable);
+        } else {
+          console.error(
+            "Search input with ID 'applicationSearchInput' not found."
+          );
+        }
+
+        // Initial call to set up table state correctly if applications list is initially empty
+        // This is mainly to ensure the "no data" row is handled if the list is empty from the server.
+        // The Jinja template already handles the initial display of this row.
+        // filterTable(); // Optional: Call once on load if needed, but Jinja handles initial empty state.
+      });
+    </script>
   </body>
 </html>

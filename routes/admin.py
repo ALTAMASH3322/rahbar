@@ -286,13 +286,13 @@ def manage_users():
         status = request.form.get('status')
         region = request.form.get('region')
         password = request.form.get('password')
-        hashed_password = generate_password_hash(password)
+        hashed_password = password
         cursor.execute("""
             INSERT INTO users (user_id, name, email,phone, role_id, status, password_hash, created_at, updated_at, region)
             VALUES (%s, %s, %s,%s, %s, %s,%s, NOW(), NOW(),%s)
         """, (user_id, name, email,contact, role_id, status, hashed_password,region))
 
-        print(user_id, name, email, role_id, status, hashed_password, region)
+        #print(user_id, name, email, role_id, status, hashed_password, region)
 
         conn.commit()
         flash('User saved successfully!', 'success')
@@ -680,7 +680,7 @@ def uploaded_file(filename):
 @admin_bp.route('/apply', methods=['GET', 'POST'])
 @login_required
 def public_application():
-    print(current_user.user_id )
+    #print(current_user.user_id )
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
@@ -880,6 +880,8 @@ def update_application_status(grantee_detail_id):
                 INSERT INTO application_status (grantee_detail_id, status, comments, updated_by)
                 VALUES (%s, %s, %s, %s)
             """, (grantee_detail_id, status, comments, current_user.user_id))
+
+            print(current_user.user_id)
 
             conn.commit()
             flash('Status updated successfully', 'success')
@@ -1246,7 +1248,7 @@ def view_application(application_id):
         LEFT JOIN application_status a ON g.grantee_detail_id = a.grantee_detail_id
         WHERE g.grantee_detail_id = %s
     """, (application_id,))
-    print(application_id)
+    #print(application_id)
     application = cursor.fetchone()
 
     if not application:
@@ -1268,9 +1270,9 @@ def view_application(application_id):
             #print(f"This is the issue in the code{application_id}")
             cursor.execute("""
                 UPDATE application_status
-                SET status = %s, comments = %s, updated_at = NOW()
+                SET status = %s, comments = %s, updated_by = %s , updated_at = NOW()
                 WHERE grantee_detail_id = %s
-            """, (new_status, comments, application_id))
+            """, (new_status, comments, application_id , current_user.user_id))
             # Replace None with user ID if authentication exists
 
             conn.commit()

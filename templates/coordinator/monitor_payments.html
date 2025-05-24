@@ -201,7 +201,7 @@
                           <th>Amount</th>
                           <th>Status</th>
                           <th>Receipt</th>
-                          <th>Actions</th>
+                          <!-- <th>Actions</th>  REMOVE THIS LINE -->
                         </tr>
                       </thead>
                       <tbody></tbody>
@@ -259,11 +259,9 @@
           processing: true,
           serverSide: true,
           ajax: {
-            url: "{{ url_for('coordinator.monitor_payments_data') }}", // Make sure this endpoint exists and returns data in the expected format
+            url: "{{ url_for('coordinator.monitor_payments_data') }}",
             type: "GET",
             dataSrc: function (json) {
-              // Ensure your server returns data in a structure like: { "data": [...] }
-              // or adjust dataSrc accordingly. If json.data is undefined, check your server response.
               if (json && json.data) {
                 return json.data;
               }
@@ -271,17 +269,19 @@
                 "DataTables expected 'data' property in JSON response but not found. Response:",
                 json
               );
-              return []; // Return empty array to prevent further errors
+              return [];
             },
           },
-          dom: "Bfrtip", // 'B' for Buttons
+          dom: "Bfrtip",
           buttons: [
             "copy",
             {
               extend: "csvHtml5",
-              text: "CSV", // Optional: change button text
+              text: "CSV",
               exportOptions: {
-                columns: [0, 1, 2, 3], // Indices for Beneficiary, Sponsor, Amount, Status
+                // Columns to export: Beneficiary, Sponsor, Amount, Status
+                // Indices are now 0, 1, 2, 3 because "Actions" is removed
+                columns: [0, 1, 2, 3], 
               },
             },
             "excelHtml5",
@@ -289,25 +289,23 @@
             "print",
           ],
           columns: [
-            { data: "grantee_name", defaultContent: "N/A" }, // Column 0: Beneficiary
-            { data: "grantor_name", defaultContent: "N/A" }, // Column 1: Sponsor
-            { data: "amount", defaultContent: "N/A" }, // Column 2: Amount
-            {
-              // Column 3: Status
+            { data: "grantee_name", defaultContent: "N/A" }, // Column 0
+            { data: "grantor_name", defaultContent: "N/A" }, // Column 1
+            { data: "amount", defaultContent: "N/A" },       // Column 2
+            {                                                 // Column 3
               data: "status",
               defaultContent: "N/A",
               render: function (data, type, row) {
-                let badgeClass = "secondary"; // Default
+                let badgeClass = "secondary"; 
                 if (data === "Paid") badgeClass = "success";
                 else if (data === "Pending") badgeClass = "warning";
                 else if (data === "Approved")
-                  badgeClass = "primary"; // Example for Approved
-                else if (data === "Rejected") badgeClass = "danger"; // Example for Rejected
+                  badgeClass = "primary"; 
+                else if (data === "Rejected") badgeClass = "danger"; 
                 return `<span class="badge badge-${badgeClass}">${data}</span>`;
               },
             },
-            {
-              // Column 4: Receipt (will not be in CSV from custom button)
+            {                                                 // Column 4
               data: "receipt_url",
               defaultContent: "No Receipt",
               render: function (data, type, row) {
@@ -315,15 +313,15 @@
                   ? `<a href="${data}" target="_blank" class="btn btn-sm btn-info">Download Receipt</a>`
                   : "No Receipt";
               },
-              orderable: false, // Typically, receipt column isn't ordered
-              searchable: false, // Or searched
+              orderable: false, 
+              searchable: false, 
             },
+            // REMOVE THE ACTIONS COLUMN DEFINITION
+            /* 
             {
-              // Column 5: Actions (will not be in CSV from custom button)
               data: "payment_id",
               defaultContent: "",
               render: function (data, type, row) {
-                // Ensure row.status is available and correct
                 const isPending = row.status === "Pending";
                 const isPaid = row.status === "Paid";
                 const isApproved = row.status === "Approved";
@@ -354,62 +352,19 @@
               orderable: false,
               searchable: false,
             },
+            */
           ],
-          // Optional: Add responsive extension if you have many columns
-          // responsive: true,
-          // Default order if needed
-          // order: [[0, 'asc']]
         });
 
-        // Handle status update button click
+        // The event listener for .update-status will no longer be needed
+        // if the entire column is removed. You can comment it out or remove it.
+        /*
         $(document).on("click", ".update-status", function () {
-          let paymentId = $(this).data("payment-id");
-          let newStatus = $(this)
-            .closest(".input-group")
-            .find(".status-dropdown")
-            .val();
-          // Implement actual AJAX call to your server here
-          console.log(
-            "Attempting to update Payment ID: " +
-              paymentId +
-              " to Status: " +
-              newStatus
-          );
-          alert(
-            "Simulating status update to: " +
-              newStatus +
-              " for Payment ID: " +
-              paymentId +
-              "\nImplement actual AJAX call."
-          );
-
-          // Example of an AJAX call (you need a backend endpoint for this)
-          /*
-                $.ajax({
-                    url: "/update_payment_status_endpoint", // CHANGE TO YOUR ACTUAL ENDPOINT
-                    type: "POST",
-                    data: JSON.stringify({
-                        payment_id: paymentId,
-                        status: newStatus
-                    }),
-                    contentType: "application/json; charset=utf-8",
-                    dataType: "json",
-                    success: function(response) {
-                        alert("Status updated successfully!");
-                        table.ajax.reload(null, false); // Reload table data without resetting page
-                    },
-                    error: function(xhr, status, error) {
-                        alert("Error updating status: " + xhr.responseText);
-                        console.error("Error updating status:", xhr.responseText);
-                    }
-                });
-                */
+          // ... your existing update logic ...
         });
+        */
 
-        // Download CSV button click handler
         $("#downloadCsv").click(function () {
-          // This will trigger the CSV button defined in the 'buttons' array
-          // which already has the exportOptions configured.
           table.button(".buttons-csv").trigger();
         });
       });

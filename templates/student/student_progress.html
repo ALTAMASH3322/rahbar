@@ -162,6 +162,8 @@
                                                     <th>Progress ID</th>
                                                     <th>Marks</th>
                                                     <th>File</th>
+                                                    <th>Session</th>
+                                                    <th>Year</th>
                                                     <th>Date</th>
                                                 </tr>
                                             </thead>
@@ -173,6 +175,8 @@
                                                     <td>
                                                         <a href="{{ url_for('student.uploaded_file', filename=progress.file_path.split('/')[-1]) }}" target="_blank">View File</a>
                                                     </td>
+                                                    <td>{{ progress.session }}</td>
+                                                    <td>{{ progress.year }}</td>
                                                     <td>{{ progress.created_at }}</td>
                                                 </tr>
                                                 {% else %}

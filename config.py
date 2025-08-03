@@ -17,3 +17,5 @@ class Config:
 
     # Flask-Login configuration
     LOGIN_DISABLED = False
+
+    #hello

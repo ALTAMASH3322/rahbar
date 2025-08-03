@@ -186,7 +186,7 @@ def assign_sponsor():
     return redirect(url_for(' coordinator/dashboard.html',coordinator=coordinator))
 
 # Activate/Inactivate Sponsor or Convenor
-@coordinator_bp.route('/update_user_status/<int:user_id>/<status>', methods=['GET'])
+@coordinator_bp.route('/update_user_status/<string:user_id>/<status>', methods=['GET'])
 @login_required
 def update_user_status(user_id, status):
     if current_user.role_id != 3:
@@ -225,7 +225,7 @@ def update_user_status(user_id, status):
     return redirect(url_for('coordinator.co_manage_sponsors'))
 
 # Map Students to Sponsors
-@coordinator_bp.route('/co_map_students_to_sponsors/<int:sponsor_id>', methods=['GET', 'POST'])
+@coordinator_bp.route('/co_map_students_to_sponsors/<string:sponsor_id>', methods=['GET', 'POST'])
 @login_required
 def co_map_students_to_sponsors(sponsor_id):
     print(f"Current User: {current_user}")
@@ -329,7 +329,7 @@ def co_manage_sponsors():
     )
 
 # Appoint Sponsor as Convenor
-@coordinator_bp.route('/appoint_convenor/<int:sponsor_id>', methods=['POST'])
+@coordinator_bp.route('/appoint_convenor/<string:sponsor_id>', methods=['POST'])
 @login_required
 def appoint_convenor(sponsor_id):
     if current_user.role_id != 3:
@@ -361,7 +361,7 @@ def appoint_convenor(sponsor_id):
     return redirect(url_for('coordinator.coordinator_dashboard'))
 
 # Change Region of Sponsor or Convenor
-@coordinator_bp.route('/change_region/<int:user_id>', methods=['POST'])
+@coordinator_bp.route('/change_region/<string:user_id>', methods=['POST'])
 @login_required
 def change_region(user_id):
     if current_user.role_id != 3:

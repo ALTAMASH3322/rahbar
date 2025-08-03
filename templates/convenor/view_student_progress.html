@@ -195,16 +195,16 @@
                     <h4 class="header-title">Student Progress</h4>
                     <div class="mt-3">
                       {% if grantee_id %}
-                      <h5>Progress for Beneficiary ID: {{ grantee_id }}</h5>
+                      <h5>Progress for Student ID: {{ grantee_id }}</h5>
                       {% else %}
                       <h5>
-                        Progress for All Beneficiary in {{ convenor.region }}
+                        Progress for All Student in {{ convenor.region }}
                       </h5>
                       {% endif %}
                       <table class="table table-striped">
                         <thead>
                           <tr>
-                            <th>Beneficiary Name</th>
+                            <th>Student Name</th>
                             <th>Marks</th>
                             <th>Session</th>
                             <th>Year</th>

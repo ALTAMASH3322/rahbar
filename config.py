@@ -8,6 +8,7 @@ class Config:
     MYSQL_USER = 'alta'
     MYSQL_PASSWORD = 'hello'
     MYSQL_HOST = '194.195.87.118'
+    #MYSQL_USER = 'root'
     #MYSQL_PASSWORD = ''
     #MYSQL_HOST = '127.0.0.1'
     MYSQL_DB = 'rahbar'

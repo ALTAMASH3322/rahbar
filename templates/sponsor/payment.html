@@ -97,9 +97,9 @@
                 <div class="card-body">
                   <h4 class="header-title">Make a Payment</h4>
                   <div class="form-group">
-                    <label for="studentSelect">Select Beneficiary</label>
+                    <label for="studentSelect">Select Student</label>
                     <select class="form-control" id="studentSelect" onchange="updateStudentDetails()">
-                      <option value="">-- Select a Beneficiary --</option>
+                      <option value="">-- Select a Student --</option>
                       {% for payment_detail_item in payment_details %}
                         <option value="{{ payment_detail_item.grantee.user_id }}">
                           {{ payment_detail_item.grantee.name }}
@@ -147,7 +147,7 @@
                     <table class="table table-centered mb-0">
                       <thead>
                         <tr>
-                          <th>Beneficiary Name</th>
+                          <th>Student Name</th>
                           <th>Amount</th>
                           <th>Date</th>
                           <th>Receipt</th>
@@ -232,7 +232,7 @@
       
       if (selectedGranteeData && selectedGranteeData.grantee) {
         var grantee = selectedGranteeData.grantee;
-        document.getElementById("beneficiaryName").innerText = "Beneficiary: " + (grantee.name || "N/A");
+        document.getElementById("beneficiaryName").innerText = "Student: " + (grantee.name || "N/A");
         
         var granteeCurrentAcademicYear = grantee.year; // This might be undefined if not sent from backend
         document.getElementById("granteeYearDisplay").innerText = granteeCurrentAcademicYear || "Not Specified";

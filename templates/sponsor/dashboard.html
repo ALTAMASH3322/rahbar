@@ -136,7 +136,7 @@
               </div>
             </div>
 
-            <!-- Sponsor Details & Beneficiary List -->
+            <!-- Sponsor Details & Student List -->
             <div class="row">
               <div class="col-md-6">
                 <div class="card">
@@ -149,7 +149,7 @@
                 </div>
               </div>
 
-              <!-- Beneficiary List with Search & Scroll -->
+              <!-- Student List with Search & Scroll -->
               <div class="col-md-6">
                 <div class="card">
                   <div class="card-body">
@@ -159,7 +159,7 @@
                       id="searchBox"
                       class="form-control mb-2"
                       placeholder="Search beneficiary..."
-                      onkeyup="updateBeneficiaryList()"
+                      onkeyup="updateStudentList()"
                     />
                     <div id="beneficiaryContainer">
                       {% if grantees %}
@@ -250,15 +250,15 @@
     <script src="{{ url_for('static', filename='libs/bootstrap-daterangepicker/daterangepicker.js') }}"></script>
     <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
 
-    <!-- Initialize Flot Charts and Beneficiary Search -->
+    <!-- Initialize Flot Charts and Student Search -->
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        updateBeneficiaryList(); // Filter list on load (in case search box has a value)
+        updateStudentList(); // Filter list on load (in case search box has a value)
         updatePaymentStatusesDynamic(); // Update statuses based on 90-day rule
         initializeCharts(); // Initialize charts
       });
 
-      function updateBeneficiaryList() {
+      function updateStudentList() {
         var inputElement = document.getElementById("searchBox");
         // Ensure inputElement exists before trying to get its value
         var input = inputElement ? inputElement.value.toLowerCase() : "";

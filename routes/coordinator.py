@@ -480,7 +480,7 @@ def monitor_payments():
 
     return render_template('coordinator/monitor_payments.html', coordinator=coordinator)
 
-# Monitor Payments Data (for DataTables)
+# Monitor Payments Data (for DataTables) - CORRECTED
 @coordinator_bp.route('/monitor_payments_data', methods=['GET'])
 @login_required
 def monitor_payments_data():
@@ -497,64 +497,75 @@ def monitor_payments_data():
     draw = request.args.get('draw', default=1, type=int)
     start = request.args.get('start', default=0, type=int)
     length = request.args.get('length', default=10, type=int)
-    search_value = request.args.get('search[value]', default='', type=str)
-    order_column = request.args.get('order[0][column]', default=0, type=int)
+    search_value = request.args.get('search[value]', default='', type=str).strip()
+    order_column_index = request.args.get('order[0][column]', default=0, type=int)
     order_dir = request.args.get('order[0][dir]', default='asc', type=str)
 
-    # Map column index to column name (only required fields)
-    columns = ['grantee_name', 'grantor_name', 'amount', 'status', 'receipt_url']
-    order_by = columns[order_column]  # Map the column index to column name
+    # Map column index to a safe, sortable database field name.
+    columns_map = ['grantee_name', 'grantor_name', 'amount', 'status', 'receipt_url']
+    order_by_column = columns_map[order_column_index]
 
     # Base SQL query
     base_query = """
-        SELECT u1.name AS grantee_name, u2.name AS grantor_name, p.amount, p.status, p.receipt_url
+        SELECT u1.name AS grantee_name, u1.user_id AS grantee_id, u1.phone AS grantee_phone, 
+               u2.name AS grantor_name, u2.user_id AS grantor_id, u2.phone AS grantor_phone, 
+               p.amount, p.status, p.receipt_url, p.payment_id
         FROM payments p
         JOIN users u1 ON p.grantee_id = u1.user_id
         JOIN users u2 ON p.grantor_id = u2.user_id
     """
-
-    # Add search filter
+    
+    query_params = ()
+    # --- UPDATED SEARCH LOGIC ---
     if search_value:
-        base_query += f" WHERE u1.name LIKE %s OR u2.name LIKE %s OR p.status LIKE %s"
+        search_clauses = [
+            "u1.name LIKE %s",
+            "u1.user_id LIKE %s",
+            "u1.phone LIKE %s",
+            "u2.name LIKE %s",
+            "u2.user_id LIKE %s",
+            "u2.phone LIKE %s",
+            "p.status LIKE %s"
+        ]
+        base_query += " WHERE " + " OR ".join(search_clauses)
         search_param = f"%{search_value}%"
-        query_params = (search_param, search_param, search_param)
-    else:
-        query_params = ()
+        query_params = (search_param,) * 7
+    # --- END OF UPDATED SEARCH LOGIC ---
 
-    # Add sorting
-    base_query += f" ORDER BY {order_by} {order_dir}"
-
-    # Get total records count (before pagination)
+    # Get total records count (unfiltered)
+    # This query runs without the WHERE clause to get the true total.
+    cursor.execute("SELECT COUNT(*) AS total FROM payments")
+    total_records = cursor.fetchone()['total']
+    
+    # Get filtered records count
+    # This query includes the WHERE clause (if search is used) to get the filtered count.
     count_query = f"SELECT COUNT(*) AS total FROM ({base_query}) AS subquery"
     cursor.execute(count_query, query_params)
-    total_records = cursor.fetchone()['total']
+    records_filtered = cursor.fetchone()['total']
 
-    # Add pagination
-    paginated_query = base_query + " LIMIT %s, %s"
-    query_params += (start, length)
+    # Add sorting and pagination to the main query
+    final_query = base_query + f" ORDER BY {order_by_column} {order_dir} LIMIT %s, %s"
+    final_params = query_params + (start, length)
 
     try:
-        # Fetch paginated data
-        cursor.execute(paginated_query, query_params)
+        cursor.execute(final_query, final_params)
         payments = cursor.fetchall()
 
-        # Prepare response for DataTables
         response = {
-            "coordinator": coordinator,
             "draw": draw,
             "recordsTotal": total_records,
-            "recordsFiltered": total_records,  # Update if search is applied
+            "recordsFiltered": records_filtered,
             "data": payments
         }
         return jsonify(response)
 
     except Exception as e:
+        print(f"Error executing query: {e}") # Log error to console for debugging
         return jsonify({"error": str(e)}), 500
 
     finally:
         cursor.close()
         conn.close()
-
 
 # View Uploaded File
 @coordinator_bp.route('/uploads/<filename>')

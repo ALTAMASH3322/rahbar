@@ -1,5 +1,5 @@
 import datetime
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, send_from_directory
 from flask_login import login_required, current_user
 import mysql.connector
 from config import Config as c  # Import config values
@@ -25,11 +25,6 @@ def get_db_connection():
 @student_bp.route('/student_dashboard', methods=['GET'])
 @login_required
 def student_dashboard():
-    # Debugging: Print current user details
-    #print(f"Current User Role ID: {current_user.role_id}")  # Debugging
-    #print(f"Current User: {current_user}")  # Debugging
-    #print(f"Current User ID: {current_user.user_id}")  # Debugging
-
     # Ensure only Grantees (Students) can access this route
     if current_user.role_id != 6:
         flash('You do not have permission to access this page.', 'error')
@@ -82,31 +77,46 @@ def student_payments():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    # Fetch payments for the student
-    cursor.execute("SELECT * FROM payments WHERE grantee_id = %s", (current_user.user_id,))
+    # Fetch payments for the student, ordered by date
+    cursor.execute("SELECT * FROM payments WHERE grantee_id = %s ORDER BY payment_date ASC", (current_user.user_id,))
     payments = cursor.fetchall()
 
     # Fetch student details
     cursor.execute("SELECT * FROM users WHERE user_id = %s", (current_user.user_id,))
     student = cursor.fetchone()
 
+    # --- NEW QUERY to fetch course details for schedule generation ---
+    cursor.execute("""
+        SELECT 
+            sic.assigned_at, 
+            c.number_of_semesters,
+            c.fees_per_semester
+        FROM student_institution_courses sic
+        JOIN courses c ON sic.course_id = c.course_id
+        WHERE sic.user_id = %s
+    """, (current_user.user_id,))
+    course_info = cursor.fetchone()
+    # --- END OF NEW QUERY ---
+
     cursor.close()
     conn.close()
 
     bank_details = get_bank_details(current_user.user_id)
     
+    # We now pass 'course_info' to the template for the JavaScript to use
+    return render_template(
+        'student/payment.html', 
+        payments=payments, 
+        bank_details=bank_details, 
+        student=student,
+        course_info=course_info
+    )
 
-    return render_template('student/payment.html', payments=payments , bank_details=bank_details , student=student)
-
-# Student Progress (Upload Marks and Files)
-from flask import send_from_directory
-
+# Serve uploaded files from the 'uploads' directory
 @student_bp.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory('uploads', filename)
 
-
-from flask import jsonify, request
 
 @student_bp.route('/edit_bank_details', methods=['GET', 'POST'])
 @login_required
@@ -118,10 +128,6 @@ def edit_bank_details():
     cursor = conn.cursor(dictionary=True)
 
     if request.method == 'POST':
-        # Fetch form data
-        
-
-
         bank_name = request.json.get('bank_name')
         account_number = request.json.get('account_number')
         ifsc_code = request.json.get('ifsc_code')
@@ -148,16 +154,13 @@ def edit_bank_details():
             print(f"Database Error: {e}")
             conn.rollback()
             return jsonify({'success': False, 'message': 'An error occurred while updating bank details'})
-
+        finally:
+            cursor.close()
+            conn.close()
     else:
-        # Return bank details as JSON
+        # GET request returns current bank details as JSON
         bank_details = get_bank_details(current_user.user_id)
-        print(bank_details)
         return jsonify(bank_details if bank_details else {})
-
-    
-
-            
 
 
 @student_bp.route('/student_progress', methods=['GET', 'POST'])
@@ -188,7 +191,6 @@ def student_progress():
         if not marks or not file:
             flash('Marks and file are required.', 'error')
             return redirect(url_for('student.student_progress', student=student))
-        
 
         original_filename = secure_filename(file.filename)
         file_ext = os.path.splitext(original_filename)[1]  # Get file extension
@@ -196,29 +198,30 @@ def student_progress():
 
         custom_filename = f"{student['user_id']}_session{session}_year{year}_{timestamp}{file_ext}"
 
-
         # Save the file
-        #filename = secure_filename(file.custom_filename)
         file_path = os.path.join('uploads', custom_filename)
-        print(f"Saving file to: {file_path}")  # Debug
         file.save(file_path)
 
         # Insert progress data into the database
         try:
             cursor.execute(
-                "INSERT INTO student_progress (grantee_id, marks, file_path, created_at, updated_at, session, year, updated_by  ) VALUES (%s, %s, %s, NOW(), NOW(), %s,%s,%s)",
+                "INSERT INTO student_progress (grantee_id, marks, file_path, created_at, updated_at, session, year, updated_by) VALUES (%s, %s, %s, NOW(), NOW(), %s, %s, %s)",
                 (current_user.user_id, marks, file_path, session, year, current_user.user_id)
             )
             conn.commit()
             flash('Progress submitted successfully!', 'success')
         except Exception as e:
-            print(f"Database Error: {e}")  # Debug
+            print(f"Database Error: {e}")
             conn.rollback()
             flash('An error occurred while submitting progress.', 'error')
+        finally:
+            # The cursor and connection for the POST should be closed here
+            cursor.close()
+            conn.close()
 
-        return redirect(url_for('student.student_progress', student=student))
+        return redirect(url_for('student.student_progress'))
 
-    else:
+    else: # GET request
         # Fetch progress data for the student
         cursor.execute("SELECT * FROM student_progress WHERE grantee_id = %s", (current_user.user_id,))
         progress_data = cursor.fetchall()
@@ -226,4 +229,4 @@ def student_progress():
         cursor.close()
         conn.close()
 
-        return render_template('student/student_progress.html', progress_data=progress_data , student=student)
+        return render_template('student/student_progress.html', progress_data=progress_data, student=student)

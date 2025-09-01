@@ -3,75 +3,37 @@
 <head>
     <meta charset="utf-8" />
     <title>Payments | Rahbar</title>
+    <!-- ... (keep all your meta and CSS link tags) ... -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta content="Payments for Rahbar Application" name="description" />
     <meta content="Coderthemes" name="author" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-
-    <!-- App favicon -->
     <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
-
-    <!-- App css -->
     <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ url_for('static', filename='css/icons.min.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ url_for('static', filename='css/app.min.css') }}" rel="stylesheet" type="text/css" />
 </head>
 
 <body>
-    <!-- Begin page -->
     <div id="wrapper">
-        <!-- Topbar Start -->
-        <!-- Topbar Start -->
+        <!-- Topbar and Sidebar (No Changes Here) -->
         <div class="navbar-custom">
           <div class="d-flex justify-content-between align-items-center w-100">
-            <!-- Left side - Admin Panel -->
-            <div>
-              <h6 class="page-title mb-0">Student Panel</h6>
-            </div>
-  
-            <!-- Middle - Logo -->
-            <div>
-              <a href="{{ url_for('main.homepage') }}" class="text-success">
-                <h4>Rahbar Scholarship Information Management System</h4>
-              </a>
-            </div>
-  
-            <!-- Right side - User Dropdown -->
+            <div><h6 class="page-title mb-0">Student Panel</h6></div>
+            <div><a href="{{ url_for('main.homepage') }}" class="text-success"><h4>Rahbar Scholarship Information Management System</h4></a></div>
             <ul class="list-unstyled topnav-menu mb-0">
               <li class="dropdown notification-list">
-                <a
-                  class="nav-link dropdown-toggle nav-user waves-effect"
-                  data-toggle="dropdown"
-                  href="#"
-                  role="button"
-                  aria-haspopup="false"
-                  aria-expanded="false"
-                >
-                  <img
-                    src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}"
-                    alt="user-image"
-                    class="rounded-circle"
-                  />
-                  <span class="d-none d-sm-inline-block ml-1"
-                    >{{ student.name }}</span
-                  >
+                <a class="nav-link dropdown-toggle nav-user waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
+                  <img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" alt="user-image" class="rounded-circle"/>
+                  <span class="d-none d-sm-inline-block ml-1">{{ student.name }}</span>
                 </a>
                 <div class="dropdown-menu dropdown-menu-right profile-dropdown">
-                  <a
-                    href="{{ url_for('auth.logout') }}"
-                    class="dropdown-item notify-item"
-                  >
-                    <i class="mdi mdi-logout-variant"></i>
-                    <span>Logout</span>
-                  </a>
+                  <a href="{{ url_for('auth.logout') }}" class="dropdown-item notify-item"><i class="mdi mdi-logout-variant"></i><span>Logout</span></a>
                 </div>
               </li>
             </ul>
           </div>
         </div>
-        <!-- end Topbar -->
-
-        <!-- Left Sidebar Start -->
         <div class="left-side-menu">
             <div class="slimscroll-menu">
                 <div id="sidebar-menu">
@@ -84,7 +46,6 @@
                 </div>
             </div>
         </div>
-        <!-- Left Sidebar End -->
 
         <!-- Start Page Content -->
         <div class="content-page">
@@ -92,21 +53,17 @@
                 <div class="container-fluid">
                     <div class="row">
                         <div class="col-12">
-                            <div class="page-title-box">
-                                <h4 class="page-title">Payments</h4>
-                            </div>
+                            <div class="page-title-box"><h4 class="page-title">Payments</h4></div>
                         </div>
                     </div>
-
-                    <!-- Main Content -->
                     <div class="row">
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-body">
-                                    <h4 class="header-title">Payment History</h4>
-                                    <p class="text-muted">Here you can view your payment history.</p>
+                                    <h4 class="header-title">Payment Schedule</h4>
+                                    <p class="text-muted">Here is your full payment schedule for the duration of your course.</p>
 
-                                    <!-- Bank Details -->
+                                    <!-- Bank Details Button -->
                                     <div class="text-right mb-3">
                                         <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#bankDetailsModal">
                                             <i class="mdi mdi-bank"></i> Edit Bank Details
@@ -115,29 +72,28 @@
 
                                     <!-- Payment Table -->
                                     <div class="table-responsive">
-                                        <table class="table table-centered mb-0">
-                                            <thead>
-                                                <tr><th>Payment ID</th><th>Amount</th><th>Date</th><th>Status</th></tr>
+                                        <table class="table table-centered table-hover mb-0">
+                                            <thead class="thead-light">
+                                                <tr>
+                                                    <th>Installment #</th>
+                                                    <th>Due Date</th>
+                                                    <th>Status</th>
+                                                    <!-- MODIFIED HEADER -->
+                                                    <th>Amount Paid</th>
+                                                    <th>Paid On</th>
+                                                </tr>
                                             </thead>
-                                            <tbody>
-                                                {% for payment in payments %}
-                                                    <tr><td>{{ payment.payment_id }}</td><td>{{ payment.amount }}</td><td>{{ payment.payment_date }}</td><td>{{ payment.status }}</td></tr>
-                                                {% else %}
-                                                    <tr><td colspan="4" class="text-center">No payments found.</td></tr>
-                                                {% endfor %}
+                                            <tbody id="payment-schedule-body">
+                                                <tr><td colspan="5" class="text-center">Generating your payment schedule...</td></tr>
                                             </tbody>
                                         </table>
                                     </div>
                                 </div>
-
-                                <!-- Bank Details Modal -->
+                                <!-- Bank Details Modal (No Changes) -->
                                 <div class="modal fade" id="bankDetailsModal" tabindex="-1">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">Edit Bank Details</h5>
-                                                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                            </div>
+                                            <div class="modal-header"><h5 class="modal-title">Edit Bank Details</h5><button type="button" class="close" data-dismiss="modal">&times;</button></div>
                                             <div class="modal-body">
                                                 <form id="bankDetailsForm">
                                                     <div class="form-group"><label>Bank Name</label><input type="text" class="form-control" id="bank_name"></div>
@@ -146,10 +102,7 @@
                                                     <div class="form-group"><label>IFSC Code</label><input type="text" class="form-control" id="ifsc_code"></div>
                                                 </form>
                                             </div>
-                                            <div class="modal-footer">
-                                                <button class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                                <button class="btn btn-primary" onclick="saveBankDetails()">Save Changes</button>
-                                            </div>
+                                            <div class="modal-footer"><button class="btn btn-secondary" data-dismiss="modal">Close</button><button class="btn btn-primary" onclick="saveBankDetails()">Save Changes</button></div>
                                         </div>
                                     </div>
                                 </div>
@@ -161,34 +114,77 @@
         </div>
     </div>
 
-
     <!-- Footer -->
-        <!-- Footer -->
-        <footer class="footer">
-            <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
-        </footer>
-    
-        <style>
-            .footer {
-                position: fixed;
-                bottom: 0;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 100%;
-                background-color: #f8f9fa;
-                padding: 10px 0;
-                text-align: center;
-                font-size: 14px;
-                color: #6c757d;
-                border-top: 1px solid #ddd;
-            }
-        </style>
+    <footer class="footer">
+        <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
+    </footer>
+    <style>.footer { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; background-color: #f8f9fa; padding: 10px 0; text-align: center; font-size: 14px; color: #6c757d; border-top: 1px solid #ddd; }</style>
 
-    <!-- JavaScript -->
     <script src="{{ url_for('static', filename='js/vendor.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
 
     <script>
+        // --- NEW, CORRECTED SCRIPT FOR DYNAMIC SCHEDULE GENERATION ---
+        document.addEventListener("DOMContentLoaded", function() {
+            const courseInfo = {{ course_info|tojson }};
+            const paidRecords = {{ payments|tojson }};
+            const tableBody = document.getElementById('payment-schedule-body');
+
+            if (!courseInfo || !courseInfo.assigned_at) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-warning">Payment schedule is not available. Your course has not been assigned yet.</td></tr>`;
+                return;
+            }
+
+            tableBody.innerHTML = ''; 
+
+            const baseDate = new Date(courseInfo.assigned_at);
+            const totalSemesters = courseInfo.number_of_semesters;
+            
+            const SEMESTERS_PER_YEAR = 2;
+            const PAYMENTS_PER_YEAR = 4;
+            const totalPayments = Math.floor((totalSemesters / SEMESTERS_PER_YEAR) * PAYMENTS_PER_YEAR);
+            const paidCount = paidRecords.length;
+
+            for (let i = 1; i <= totalPayments; i++) {
+                let dueDate = new Date(baseDate);
+                dueDate.setMonth(dueDate.getMonth() + (3 * i));
+                
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                let status = 'Pending';
+                let statusClass = 'badge-warning';
+                let paidDate = '—';
+                // CORRECTED LOGIC: Amount is only known if it has been paid
+                let amountPaidDisplay = '—';
+
+                if (i <= paidCount) {
+                    status = 'Paid';
+                    statusClass = 'badge-success';
+                    const paymentRecord = paidRecords[i - 1];
+                    paidDate = new Date(paymentRecord.payment_date).toLocaleDateString();
+                    // Take the amount directly from the payment record and format as Rupees
+                    amountPaidDisplay = `₹${parseFloat(paymentRecord.amount).toFixed(2)}`;
+                } else if (dueDate < today) {
+                    status = 'Overdue';
+                    statusClass = 'badge-danger';
+                }
+
+                // The order of columns now matches the corrected header
+                const rowHtml = `
+                    <tr>
+                        <td>${i}</td>
+                        <td>${dueDate.toLocaleDateString()}</td>
+                        <td><span class="badge ${statusClass}">${status}</span></td>
+                        <td>${amountPaidDisplay}</td>
+                        <td>${paidDate}</td>
+                    </tr>
+                `;
+                tableBody.insertAdjacentHTML('beforeend', rowHtml);
+            }
+        });
+
+        // --- EXISTING SCRIPT FOR BANK DETAILS (UNCHANGED) ---
         document.addEventListener("DOMContentLoaded", function() {
             $('#bankDetailsModal').on('show.bs.modal', function () {
                 loadBankDetails();
@@ -223,6 +219,5 @@
             .catch(error => console.error("Error updating bank details:", error));
         }
     </script>
-
 </body>
 </html>

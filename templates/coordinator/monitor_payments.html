@@ -196,8 +196,8 @@
                     >
                       <thead>
                         <tr>
-                          <th>Student</th>
-                          <th>Sponsor</th>
+                          <th>Student Detail</th>
+                          <th>Sponsor Detail</th>
                           <th>Amount</th>
                           <th>Status</th>
                           <th>Receipt</th>
@@ -289,8 +289,38 @@
             "print",
           ],
           columns: [
-            { data: "grantee_name", defaultContent: "N/A" }, // Column 0
-            { data: "grantor_name", defaultContent: "N/A" }, // Column 1
+            { // Column 0: Student Detail
+              data: "grantee_name", // DataTables will use name for sorting
+              defaultContent: "N/A",
+              render: function (data, type, row) {
+                // Ensure default values if data is missing
+                const id = row.grantee_id || 'N/A';
+                const name = row.grantee_name || 'N/A';
+                const phone = row.grantee_phone || 'N/A';
+                // Build the HTML for the cell
+                return `
+                  <strong>ID:</strong> ${id}<br>
+                  <strong>Name:</strong> ${name}<br>
+                  <strong>Phone:</strong> ${phone}
+                `;
+              }
+            },
+            { // Column 1: Sponsor Detail
+              data: "grantor_name", // DataTables will use name for sorting
+              defaultContent: "N/A",
+              render: function(data, type, row) {
+                // Ensure default values if data is missing
+                const id = row.grantor_id || 'N/A';
+                const name = row.grantor_name || 'N/A';
+                const phone = row.grantor_phone || 'N/A';
+                // Build the HTML for the cell
+                return `
+                  <strong>ID:</strong> ${id}<br>
+                  <strong>Name:</strong> ${name}<br>
+                  <strong>Phone:</strong> ${phone}
+                `;
+              }
+            },
             { data: "amount", defaultContent: "N/A" },       // Column 2
             {                                                 // Column 3
               data: "status",

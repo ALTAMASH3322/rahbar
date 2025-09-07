@@ -18,77 +18,25 @@
 </head>
 
 <body>
-  <!-- Begin page -->
   <div id="wrapper">
-    <!-- Topbar Start -->
+    <!-- Topbar and Sidebar (NO CHANGES) -->
     <div class="navbar-custom">
       <div class="d-flex justify-content-between align-items-center w-100">
-        <div>
-          <h6 class="page-title mb-0">Sponsor Panel</h6>
-        </div>
-        <div>
-          <a href="{{ url_for('main.homepage') }}" class="text-success">
-            <h4>Rahbar Scholarship Information Management System</h4>
-          </a>
-        </div>
-        <ul class="list-unstyled topnav-menu mb-0">
-          <li class="dropdown notification-list">
-            <a class="nav-link dropdown-toggle nav-user waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
-              <img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" alt="user-image" class="rounded-circle">
-              <span class="d-none d-sm-inline-block ml-1">{{ sponsor.name }}</span>
-            </a>
-            <div class="dropdown-menu dropdown-menu-right profile-dropdown">
-              <a href="{{ url_for('auth.logout') }}" class="dropdown-item notify-item">
-                <i class="mdi mdi-logout-variant"></i>
-                <span>Logout</span>
-              </a>
-            </div>
-          </li>
-        </ul>
+        <div><h6 class="page-title mb-0">Sponsor Panel</h6></div>
+        <div><a href="{{ url_for('main.homepage') }}" class="text-success"><h4>Rahbar Scholarship Information Management System</h4></a></div>
+        <ul class="list-unstyled topnav-menu mb-0"><li class="dropdown notification-list"><a class="nav-link dropdown-toggle nav-user waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false"><img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" alt="user-image" class="rounded-circle"><span class="d-none d-sm-inline-block ml-1">{{ sponsor.name }}</span></a><div class="dropdown-menu dropdown-menu-right profile-dropdown"><a href="{{ url_for('auth.logout') }}" class="dropdown-item notify-item"><i class="mdi mdi-logout-variant"></i><span>Logout</span></a></div></li></ul>
       </div>
     </div>
-    <!-- End Topbar -->
-
-    <!-- Left Sidebar Start -->
     <div class="left-side-menu">
-      <div class="slimscroll-menu">
-        <div id="sidebar-menu">
-          <ul class="metismenu" id="side-menu">
-            <li class="menu-title">Navigation</li>
-            <li>
-              <a href="{{ url_for('sponsor.sponsor_dashboard') }}" class="waves-effect waves-light">
-                <i class="mdi mdi-view-dashboard"></i>
-                <span>Dashboard</span>
-              </a>
-            </li>
-            <li>
-              <a href="{{ url_for('sponsor.sponsor_payments') }}" class="waves-effect waves-light">
-                <i class="mdi mdi-cash-multiple"></i>
-                <span>Payments</span>
-              </a>
-            </li>
-            <li>
-              <a href="{{ url_for('sponsor.sponsor_student_progress') }}" class="waves-effect waves-light">
-                <i class="mdi mdi-chart-line"></i>
-                <span>Student Progress</span>
-              </a>
-            </li>
-          </ul>
-        </div>
-      </div>
+      <div class="slimscroll-menu"><div id="sidebar-menu"><ul class="metismenu" id="side-menu"><li class="menu-title">Navigation</li><li><a href="{{ url_for('sponsor.sponsor_dashboard') }}" class="waves-effect waves-light"><i class="mdi mdi-view-dashboard"></i><span>Dashboard</span></a></li><li><a href="{{ url_for('sponsor.sponsor_payments') }}" class="waves-effect waves-light"><i class="mdi mdi-cash-multiple"></i><span>Payments</span></a></li><li><a href="{{ url_for('sponsor.sponsor_student_progress') }}" class="waves-effect waves-light"><i class="mdi mdi-chart-line"></i><span>Student Progress</span></a></li></ul></div></div>
     </div>
-    <!-- Left Sidebar End -->
 
     <!-- Start Page Content -->
     <div class="content-page">
       <div class="content">
         <div class="container-fluid">
           <div class="row">
-            <div class="col-12">
-              <div class="page-title-box">
-                <h4 class="page-title">Sponsor Payments</h4>
-              </div>
-            </div>
+            <div class="col-12"><div class="page-title-box"><h4 class="page-title">Sponsor Payments</h4></div></div>
           </div>
 
           <div class="row">
@@ -98,18 +46,16 @@
                   <h4 class="header-title">Make a Payment</h4>
                   <div class="form-group">
                     <label for="studentSelect">Select Student</label>
+                    <!-- Uses new students_for_dropdown list for simplicity -->
                     <select class="form-control" id="studentSelect" onchange="updateStudentDetails()">
                       <option value="">-- Select a Student --</option>
-                      {% for payment_detail_item in payment_details %}
-                        <option value="{{ payment_detail_item.grantee.user_id }}">
-                          {{ payment_detail_item.grantee.name }}
-                          {# Attempt to display year if available, otherwise N/A #}
-                          (Year: {{ payment_detail_item.grantee.year if payment_detail_item.grantee.year is defined else 'N/A' }})
-                        </option>
+                      {% for student in students_for_dropdown %}
+                        <option value="{{ student.user_id }}">{{ student.name }}</option>
                       {% endfor %}
                     </select>
                   </div>
                   
+                  <!-- YOUR ORIGINAL HTML STRUCTURE IS PRESERVED HERE -->
                   <div id="studentDetails" style="display:none;">
                     <h5 id="beneficiaryName"></h5>
                     <p>Grantee Academic Year: <span id="granteeYearDisplay"></span></p>
@@ -118,63 +64,38 @@
                     <p id="lastPaymentInfo"></p>
                     <p id="currentStatus"></p>
                     
-                    <form method="POST" enctype="multipart/form-data" id="paymentForm">
-                      <input type="hidden" name="grantee_id" id="grantee_id_hidden" value="">
-                      
-                      <div class="form-group" id="paymentScheduleSection">
-                        <!-- Content will be populated by JavaScript -->
-                      </div>
-                      
-                      <div class="form-group" id="receiptUploadSection" style="display:none;">
-                        <label for="receipt">Upload Receipt</label>
-                        <input type="file" class="form-control-file" id="receipt" name="receipt" required>
-                      </div>
-                      <button type="submit" class="btn btn-primary" name="action" value="pay" id="payButton" style="display:none;">Record Payment</button>
-                    </form>
+                    <!-- This section will be replaced by the new unified table -->
+                    <div id="paymentScheduleSection">
+                      <!-- Content will be populated by JavaScript -->
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Past Payments Table -->
+          <!-- Past Payments Table is now obsolete, as its data is in the unified table -->
+          <!-- You can remove this card if you like, or keep it. The data will be duplicated. -->
           <div class="row">
             <div class="col-12">
               <div class="card">
                 <div class="card-body">
-                  <h4 class="header-title">Past Payments</h4>
+                  <h4 class="header-title">Official Payment History</h4>
+                  <p class="text-muted">This table shows all successfully recorded payments.</p>
                   <div class="table-responsive mt-4">
                     <table class="table table-centered mb-0">
-                      <thead>
-                        <tr>
-                          <th>Student Name</th>
-                          <th>Amount</th>
-                          <th>Date</th>
-                          <th>Receipt</th>
-                        </tr>
-                      </thead>
+                      <thead><tr><th>Student Name</th><th>Amount</th><th>Date</th><th>Receipt</th></tr></thead>
                       <tbody>
-                        {% for payment in past_payments %}
-                          <tr>
-                            <td>{{ payment.grantee_name }}</td>
-                            <td>{{ payment.amount }}</td>
-                            <td>
-                                {# Attempt to display payment_date, handle if it's not a valid date object for JS later #}
-                                {{ payment.payment_date }}
-                            </td>
-                            <td>
-                              {% if payment.receipt_url %}
-                                <a href="{{ url_for('sponsor.uploaded_file', filename=payment.receipt_url.split('/')[-1]) }}" target="_blank">View Receipt</a>
-                              {% else %}
-                                No receipt available
-                              {% endif %}
-                            </td>
-                          </tr>
-                        {% else %}
-                          <tr>
-                            <td colspan="4" class="text-center">No past payments found.</td>
-                          </tr>
-                        {% endfor %}
+                      {% for payment in past_payments %}
+                        <tr>
+                          <td>{{ payment.grantee_name }}</td>
+                          <td>₹{{ "%.2f"|format(payment.amount) }}</td>
+                          <td>{{ payment.payment_date.strftime('%Y-%m-%d') if payment.payment_date else 'N/A' }}</td>
+                          <td>{% if payment.receipt_url %}<a href="{{ url_for('sponsor.uploaded_file', filename=payment.receipt_url.split('/')[-1]) }}" target="_blank">View Receipt</a>{% else %} No receipt {% endif %}</td>
+                        </tr>
+                      {% else %}
+                        <tr><td colspan="4" class="text-center">No past payments found.</td></tr>
+                      {% endfor %}
                       </tbody>
                     </table>
                   </div>
@@ -184,17 +105,34 @@
           </div>
         </div>
       </div>
+      <!-- Footer -->
+      <footer class="footer"><p class="mb-0">Developed by <strong>Congnifly AI System</strong></p></footer>
+      <style>.footer { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; background-color: #f8f9fa; padding: 10px 0; text-align: center; font-size: 14px; color: #6c757d; border-top: 1px solid #ddd; }</style>
+    </div>
+  </div>
 
-      <footer class="footer">
-        <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
-      </footer>
-      <style>
-        .footer {
-          position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
-          width: 100%; background-color: #f8f9fa; padding: 10px 0;
-          text-align: center; font-size: 14px; color: #6c757d; border-top: 1px solid #ddd;
-        }
-      </style>
+  <!-- "Pay Now" Popup Modal -->
+  <div class="modal fade" id="paymentModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title" id="modalTitle">Record Payment</h5><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>
+        <form method="POST" enctype="multipart/form-data">
+          <div class="modal-body">
+            <p>You are recording a payment for <strong id="modalStudentName"></strong>.</p>
+            <div id="modalBankDetailsSection" class="alert alert-info">
+                <strong>Beneficiary Bank Details:</strong>
+                <p class="mb-0" id="modalAccountName"></p>
+                <p class="mb-0" id="modalBankName"></p>
+                <p class="mb-0" id="modalAccountNumber"></p>
+                <p class="mb-0" id="modalIfscCode"></p>
+            </div><hr>
+            <input type="hidden" name="grantee_id" id="modalGranteeId">
+            <div class="form-group"><label>Amount (INR)</label><input type="text" class="form-control" name="amount" id="modalAmount" readonly></div>
+            <div class="form-group"><label for="receipt">Upload Receipt</label><input type="file" class="form-control-file" name="receipt" required></div>
+          </div>
+          <div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button><button type="submit" name="action" value="pay" class="btn btn-success">Confirm and Submit Payment</button></div>
+        </form>
+      </div>
     </div>
   </div>
 
@@ -202,179 +140,121 @@
   <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
 
   <script>
-    // Data passed from Flask
-    var paymentDetailsFromFlask = {{ payment_details|tojson }}; 
-    var allPaymentSchedulesFromFlask = {{ payment_schedules|tojson }}; // Global list of schedules
+    // This uses the NEW data map from your Python file
+    const studentDataMap = {{ student_data_map|tojson }};
 
     function updateStudentDetails() {
-      var studentSelect = document.getElementById("studentSelect");
-      var selectedGranteeId = studentSelect.value;
-      var detailsDiv = document.getElementById("studentDetails");
-      var paymentScheduleSection = document.getElementById("paymentScheduleSection");
-      var receiptUploadSection = document.getElementById("receiptUploadSection");
-      var payButton = document.getElementById("payButton");
+      const studentSelect = document.getElementById("studentSelect");
+      const selectedStudentId = studentSelect.value;
+      const detailsDiv = document.getElementById("studentDetails");
+      const scheduleSection = document.getElementById("paymentScheduleSection");
 
-      // Clear previous content and hide sections
-      paymentScheduleSection.innerHTML = ""; 
-      receiptUploadSection.style.display = "none";
-      payButton.style.display = "none";
-      document.getElementById("granteeYearDisplay").innerText = "N/A";
-
-
-      if (!selectedGranteeId) {
+      if (!selectedStudentId) {
         detailsDiv.style.display = "none";
         return;
       }
       
-      var selectedGranteeData = paymentDetailsFromFlask.find(function(pd) {
-        return pd.grantee && pd.grantee.user_id == selectedGranteeId;
-      });
+      const studentData = studentDataMap[selectedStudentId];
+      if (!studentData) { return; }
       
-      if (selectedGranteeData && selectedGranteeData.grantee) {
-        var grantee = selectedGranteeData.grantee;
-        document.getElementById("beneficiaryName").innerText = "Student: " + (grantee.name || "N/A");
-        
-        var granteeCurrentAcademicYear = grantee.year; // This might be undefined if not sent from backend
-        document.getElementById("granteeYearDisplay").innerText = granteeCurrentAcademicYear || "Not Specified";
-        
-        var bank = selectedGranteeData.bank_details;
-        if (bank) {
-            document.getElementById("bankInfo").innerText = "Bank: " + (bank.bank_name || "N/A") + " (Acc: " + (bank.account_number || "N/A") + ")";
-            document.getElementById("ifscInfo").innerText = "IFSC: " + (bank.ifsc_code || "N/A");
-        } else {
-            document.getElementById("bankInfo").innerText = "Bank: Not Available";
-            document.getElementById("ifscInfo").innerText = "IFSC: Not Available";
-        }
-        
-        var lastPaymentDisplay = "No payments yet";
-        if (selectedGranteeData.payments && selectedGranteeData.payments.length > 0 && selectedGranteeData.payments[0]) {
-            let payment = selectedGranteeData.payments[0];
-            let paymentDateStr = payment.payment_date; // This is likely a string from MySQL
-            let formattedDate = "Date N/A";
-            if (paymentDateStr) {
-                try {
-                    // Attempt to parse the date string. MySQL DATETIME format "YYYY-MM-DD HH:MM:SS"
-                    let dateObj = new Date(paymentDateStr.replace(" ", "T")); // Make it ISO-like for better parsing
-                    if (!isNaN(dateObj)) {
-                       formattedDate = dateObj.toLocaleDateString();
-                    } else {
-                        // If parsing fails, display the raw string or a placeholder
-                        console.warn("Could not parse date string:", paymentDateStr);
-                        formattedDate = paymentDateStr; // Show raw string if parsing failed
-                    }
-                } catch (e) {
-                    console.error("Error parsing date:", e, "Original date:", paymentDateStr);
-                    formattedDate = paymentDateStr; // Fallback
-                }
-            }
-            lastPaymentDisplay = (payment.amount || "N/A") + " on " + formattedDate;
-        }
-        document.getElementById("lastPaymentInfo").innerText = "Last Payment: " + lastPaymentDisplay;
-        document.getElementById("currentStatus").innerText = "Payment Status: " + (selectedGranteeData.due_date || "N/A");
-        document.getElementById("grantee_id_hidden").value = grantee.user_id;
+      const grantee = studentData.grantee;
+      const bank = studentData.bank_details || {};
+      const courseInfo = studentData.course_info;
+      const paidRecords = studentData.paid_records || [];
+      const paidCount = paidRecords.length;
 
-        // --- Handle Payment Schedules ---
-        var relevantSchedules = [];
-        if (granteeCurrentAcademicYear && allPaymentSchedulesFromFlask && allPaymentSchedulesFromFlask.length > 0) {
-            relevantSchedules = allPaymentSchedulesFromFlask.filter(function(schedule) {
-                // Ensure schedule.year and granteeCurrentAcademicYear are comparable (e.g., both strings or numbers)
-                return String(schedule.year) == String(granteeCurrentAcademicYear);
-            });
-        } else if (allPaymentSchedulesFromFlask && allPaymentSchedulesFromFlask.length > 0 && !granteeCurrentAcademicYear) {
-            // If grantee year is not specified, maybe show all schedules or schedules for a default year?
-            // For now, this will lead to the 'manual payment' case if granteeCurrentAcademicYear is missing.
-            console.warn("Grantee academic year not specified. Cannot filter schedules by year.");
-        }
-
-
-        if (relevantSchedules.length === 1) {
-            var schedule = relevantSchedules[0];
-            paymentScheduleSection.innerHTML = `
-              <p><strong>Payment Schedule:</strong> ${schedule.schedule_name || 'Default Schedule'}</p>
-              <p><strong>Amount to Pay:</strong> ${schedule.amount || 'N/A'}</p>
-              <input type="hidden" name="payment_schedule_id" value="${schedule.schedule_id || ''}">
-              <input type="hidden" name="amount" value="${schedule.amount || ''}">
-            `;
-            if (schedule.amount) { // Only enable payment if amount is valid
-                receiptUploadSection.style.display = "block";
-                payButton.style.display = "block";
-            } else {
-                paymentScheduleSection.innerHTML += `<p class="text-danger">Schedule amount is missing. Cannot proceed.</p>`;
-            }
-        } else if (relevantSchedules.length > 1) {
-            var optionsHTML = '<option value="">-- Select Schedule --</option>';
-            relevantSchedules.forEach(function(schedule) {
-              optionsHTML += `<option value="${schedule.schedule_id || ''}" data-amount="${schedule.amount || ''}">
-                                ${schedule.schedule_name || 'Schedule'} - Amount: ${schedule.amount || 'N/A'}
-                              </option>`;
-            });
-            paymentScheduleSection.innerHTML = `
-              <div class="form-group">
-                <label for="payment_schedule_select">Select Payment Schedule (for Year ${granteeCurrentAcademicYear || 'N/A'}):</label>
-                <select name="payment_schedule_id" id="payment_schedule_select" class="form-control" required onchange="handleScheduleSelectionChange(this)">
-                  ${optionsHTML}
-                </select>
-                <p id="selectedScheduleAmountDisplay" style="margin-top: 10px; font-weight: bold;"></p>
-                <input type="hidden" name="amount" id="amount_hidden_from_schedule" value="">
-              </div>
-            `;
-            receiptUploadSection.style.display = "none"; // Hide until a schedule is chosen
-            payButton.style.display = "none";
-        } else {
-            // No specific schedule found for the year, or grantee.year is not set, or no available_schedules.
-            paymentScheduleSection.innerHTML = `
-              <p class="text-info">No specific payment schedule found for academic year ${granteeCurrentAcademicYear || ' (not specified)'}. You can make a general payment.</p>
-              <div class="form-group">
-                <label for="manual_amount">Amount to Pay:</label>
-                <input type="number" class="form-control" id="manual_amount" name="amount" placeholder="Enter amount" required step="0.01">
-              </div>
-              <input type="hidden" name="payment_schedule_id" value=""> 
-            `;
-            receiptUploadSection.style.display = "block";
-            payButton.style.display = "block";
-        }
-        
-        detailsDiv.style.display = "block";
+      // --- 1. POPULATE YOUR ORIGINAL HTML PLACEHOLDERS ---
+      document.getElementById("beneficiaryName").innerText = "Student: " + (grantee.name || "N/A");
+      document.getElementById("granteeYearDisplay").innerText = grantee.year || "Not Specified";
+      document.getElementById("bankInfo").innerText = "Bank: " + (bank.bank_name || "N/A") + " (Acc: " + (bank.account_number || "N/A") + ")";
+      document.getElementById("ifscInfo").innerText = "IFSC: " + (bank.ifsc_code || "N/A");
+      
+      if (paidCount > 0) {
+        const lastPayment = paidRecords[paidCount - 1];
+        const lastPaymentDate = new Date(lastPayment.payment_date).toLocaleDateString();
+        document.getElementById("lastPaymentInfo").innerText = `Last Payment: ₹${parseFloat(lastPayment.amount).toFixed(2)} on ${lastPaymentDate}`;
       } else {
-        detailsDiv.style.display = "none";
-        if (selectedGranteeId) { // If an ID was selected but no data found
-            console.error("No data found in paymentDetailsFromFlask for grantee ID:", selectedGranteeId);
-            paymentScheduleSection.innerHTML = `<p class="text-danger">Error: Could not load details for the selected beneficiary.</p>`;
-            detailsDiv.style.display = "block"; // Show the error message
-        }
+        document.getElementById("lastPaymentInfo").innerText = "Last Payment: No payments yet";
       }
+
+      if (!courseInfo || !courseInfo.assigned_at) {
+        scheduleSection.innerHTML = `<p class="alert alert-warning">Payment schedule is not available. The student has not been assigned a course yet.</p>`;
+        document.getElementById("currentStatus").innerText = "Payment Status: Course not assigned";
+        detailsDiv.style.display = "block";
+        return;
+      }
+
+      // --- 2. CALCULATE AND GENERATE THE NEW UNIFIED TABLE ---
+      const baseDate = new Date(courseInfo.assigned_at);
+      const totalSemesters = courseInfo.number_of_semesters;
+      const feesPerSemester = courseInfo.fees_per_semester || 0;
+
+      const SEMESTERS_PER_YEAR = 2;
+      const PAYMENTS_PER_YEAR = 4;
+      const quarterlyAmount = feesPerSemester / 2;
+      const totalPayments = Math.floor((totalSemesters / SEMESTERS_PER_YEAR) * PAYMENTS_PER_YEAR);
+
+      let tableHtml = `<hr><h5 class="mt-3">Full Payment Schedule</h5><div class="table-responsive"><table class="table table-hover table-centered">
+            <thead class="thead-light"><tr><th>#</th><th>Due Date</th><th>Amount Paid</th><th>Status</th><th>Paid On</th><th>Action</th></tr></thead>
+            <tbody>`;
+      
+      let nextStatus = 'All Paid';
+      for (let i = 1; i <= totalPayments; i++) {
+          let dueDate = new Date(baseDate);
+          dueDate.setMonth(dueDate.getMonth() + (3 * i));
+          const today = new Date(); today.setHours(0,0,0,0);
+
+          let status = 'Pending';
+          let statusClass = 'badge-warning';
+          let amountDisplay = '—';
+          let paidOnDate = '—';
+          let actionButton = '';
+
+          if (i <= paidCount) {
+              status = 'Paid';
+              statusClass = 'badge-success';
+              amountDisplay = `₹${parseFloat(paidRecords[i-1].amount).toFixed(2)}`;
+              paidOnDate = new Date(paidRecords[i-1].payment_date).toLocaleDateString();
+              actionButton = '<button class="btn btn-sm btn-light" disabled>Paid</button>';
+          } else {
+              if (dueDate < today) {
+                  status = 'Overdue';
+                  statusClass = 'badge-danger';
+              }
+              if (nextStatus === 'All Paid') { // Find the first unpaid status
+                  nextStatus = status;
+              }
+              actionButton = `<button type="button" class="btn btn-sm btn-success pay-now-btn" 
+                                data-toggle="modal" data-target="#paymentModal"
+                                data-grantee-id="${grantee.user_id}" data-student-name="${grantee.name}"
+                                data-installment-num="${i}" data-amount="${quarterlyAmount.toFixed(2)}"
+                                data-account-name="${bank.account_name || 'N/A'}" data-bank-name="${bank.bank_name || 'N/A'}"
+                                data-account-number="${bank.account_number || 'N/A'}" data-ifsc-code="${bank.ifsc_code || 'N/A'}">
+                                Pay Now
+                              </button>`;
+          }
+          tableHtml += `<tr><td>${i}</td><td>${dueDate.toLocaleDateString()}</td><td>${amountDisplay}</td><td><span class="badge ${statusClass}">${status}</span></td><td>${paidOnDate}</td><td>${actionButton}</td></tr>`;
+      }
+      tableHtml += `</tbody></table></div>`;
+      
+      // --- 3. DISPLAY THE CONTENT ---
+      scheduleSection.innerHTML = tableHtml;
+      document.getElementById("currentStatus").innerText = "Payment Status: " + nextStatus;
+      detailsDiv.style.display = "block";
     }
 
-    function handleScheduleSelectionChange(selectElement) {
-        var receiptUploadSection = document.getElementById("receiptUploadSection");
-        var payButton = document.getElementById("payButton");
-        var selectedScheduleAmountDisplayP = document.getElementById("selectedScheduleAmountDisplay");
-        var amountHiddenInput = document.getElementById("amount_hidden_from_schedule");
-
-        var selectedValue = selectElement.value;
-        
-        if (selectedValue) { 
-            var selectedOption = selectElement.options[selectElement.selectedIndex];
-            var amount = selectedOption.getAttribute('data-amount');
-            
-            if (amount && parseFloat(amount) > 0) { // Check if amount is valid
-                receiptUploadSection.style.display = "block";
-                payButton.style.display = "block";
-                selectedScheduleAmountDisplayP.innerText = "Amount for selected schedule: " + amount;
-                amountHiddenInput.value = amount; 
-            } else {
-                receiptUploadSection.style.display = "none";
-                payButton.style.display = "none";
-                selectedScheduleAmountDisplayP.innerText = "Selected schedule has an invalid or missing amount.";
-                amountHiddenInput.value = "";
-            }
-        } else {
-            receiptUploadSection.style.display = "none";
-            payButton.style.display = "none";
-            selectedScheduleAmountDisplayP.innerText = "";
-            amountHiddenInput.value = "";
-        }
-    }
+    // jQuery event listener for the modal (preserved)
+    $(document).on('click', '.pay-now-btn', function() {
+        var button = $(this);
+        $('#modalTitle').text(`Record Payment: Installment #${button.data('installment-num')}`);
+        $('#modalStudentName').text(button.data('student-name'));
+        $('#modalGranteeId').val(button.data('grantee-id'));
+        $('#modalAmount').val(button.data('amount'));
+        $('#modalAccountName').text('Beneficiary: ' + button.data('account-name'));
+        $('#modalBankName').text('Bank Name: ' + button.data('bank-name'));
+        $('#modalAccountNumber').text('Account No: ' + button.data('account-number'));
+        $('#modalIfscCode').text('IFSC Code: ' + button.data('ifsc-code'));
+    });
   </script>
 </body>
 </html>

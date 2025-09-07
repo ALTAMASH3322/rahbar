@@ -4,120 +4,48 @@
     <meta charset="utf-8" />
     <title>Sponsor Dashboard | Rahbar</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      content="Sponsor Dashboard for Rahbar Application"
-      name="description"
-    />
+    <meta content="Sponsor Dashboard for Rahbar Application" name="description" />
     <meta content="Coderthemes" name="author" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
     <!-- App favicon -->
-    <link
-      rel="shortcut icon"
-      href="{{ url_for('static', filename='images/favicon.ico') }}"
-    />
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}" />
 
     <!-- App CSS -->
-    <link
-      href="{{ url_for('static', filename='css/bootstrap.min.css') }}"
-      rel="stylesheet"
-      type="text/css"
-    />
-    <link
-      href="{{ url_for('static', filename='css/icons.min.css') }}"
-      rel="stylesheet"
-      type="text/css"
-    />
-    <link
-      href="{{ url_for('static', filename='css/app.min.css') }}"
-      rel="stylesheet"
-      type="text/css"
-    />
-    <link
-      href="{{ url_for('static', filename='libs/bootstrap-daterangepicker/daterangepicker.css') }}"
-      rel="stylesheet"
-      type="text/css"
-    />
-
-    <style>
-      /* Container style: if more than 3 beneficiaries exist, scrollbar appears */
-      #beneficiaryContainer {
-        max-height: 200px; /* Adjust as needed */
-        overflow-y: auto;
-      }
-      .status-badge {
-        font-weight: bold;
-      }
-    </style>
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ url_for('static', filename='css/icons.min.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ url_for('static', filename='css/app.min.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ url_for('static', filename='libs/bootstrap-daterangepicker/daterangepicker.css') }}" rel="stylesheet" type="text/css" />
   </head>
 
   <body>
     <div id="wrapper">
-      <!-- Topbar -->
+      <!-- Topbar and Sidebar (NO CHANGES) -->
       <div class="navbar-custom">
         <div class="d-flex justify-content-between align-items-center w-100">
           <h6 class="page-title mb-0">Sponsor Panel</h6>
-          <a href="{{ url_for('main.homepage') }}" class="text-success">
-            <h4>Rahbar Scholarship Information Management System</h4>
-          </a>
+          <a href="{{ url_for('main.homepage') }}" class="text-success"><h4>Rahbar Scholarship Information Management System</h4></a>
           <ul class="list-unstyled topnav-menu mb-0">
             <li class="dropdown notification-list">
-              <a
-                class="nav-link dropdown-toggle nav-user waves-effect"
-                data-toggle="dropdown"
-                href="#"
-                role="button"
-                aria-haspopup="false"
-                aria-expanded="false"
-              >
-                <img
-                  src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}"
-                  alt="user-image"
-                  class="rounded-circle"
-                />
-                <span class="d-none d-sm-inline-block ml-1"
-                  >{{ sponsor.name }}</span
-                >
+              <a class="nav-link dropdown-toggle nav-user waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
+                <img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" alt="user-image" class="rounded-circle"/>
+                <span class="d-none d-sm-inline-block ml-1">{{ sponsor.name }}</span>
               </a>
               <div class="dropdown-menu dropdown-menu-right profile-dropdown">
-                <a
-                  href="{{ url_for('auth.logout') }}"
-                  class="dropdown-item notify-item"
-                >
-                  <i class="mdi mdi-logout-variant"></i>
-                  <span>Logout</span>
-                </a>
+                <a href="{{ url_for('auth.logout') }}" class="dropdown-item notify-item"><i class="mdi mdi-logout-variant"></i><span>Logout</span></a>
               </div>
             </li>
           </ul>
         </div>
       </div>
-      <!-- End Topbar -->
-
-      <!-- Left Sidebar -->
       <div class="left-side-menu">
         <div class="slimscroll-menu">
           <div id="sidebar-menu">
             <ul class="metismenu" id="side-menu">
               <li class="menu-title">Navigation</li>
-              <li>
-                <a href="{{ url_for('sponsor.sponsor_dashboard') }}" class="waves-effect waves-light"
-                  ><i class="mdi mdi-view-dashboard"></i>
-                  <span>Dashboard</span></a
-                >
-              </li>
-              <li>
-                <a href="{{ url_for('sponsor.sponsor_payments') }}" class="waves-effect waves-light"
-                  ><i class="mdi mdi-cash-multiple"></i>
-                  <span>Payments</span></a
-                >
-              </li>
-              <li>
-                <a href="{{ url_for('sponsor.sponsor_student_progress') }}" class="waves-effect waves-light"
-                  ><i class="mdi mdi-chart-line"></i>
-                  <span>Student Progress</span></a
-                >
-              </li>
+              <li><a href="{{ url_for('sponsor.sponsor_dashboard') }}" class="waves-effect waves-light"><i class="mdi mdi-view-dashboard"></i><span>Dashboard</span></a></li>
+              <li><a href="{{ url_for('sponsor.sponsor_payments') }}" class="waves-effect waves-light"><i class="mdi mdi-cash-multiple"></i><span>Payments</span></a></li>
+              <li><a href="{{ url_for('sponsor.sponsor_student_progress') }}" class="waves-effect waves-light"><i class="mdi mdi-chart-line"></i><span>Student Progress</span></a></li>
             </ul>
           </div>
         </div>
@@ -129,16 +57,12 @@
           <div class="container-fluid">
             <!-- Page Title -->
             <div class="row">
-              <div class="col-12">
-                <div class="page-title-box">
-                    <h4 class="page-title">Sponsor Dashboard</h4>
-                </div>
-              </div>
+              <div class="col-12"><div class="page-title-box"><h4 class="page-title">Sponsor Dashboard</h4></div></div>
             </div>
 
             <!-- Sponsor Details & Student List -->
             <div class="row">
-              <div class="col-md-6">
+              <div class="col-lg-6">
                 <div class="card">
                   <div class="card-body">
                     <h4 class="header-title">Sponsor Details</h4>
@@ -149,100 +73,77 @@
                 </div>
               </div>
 
-              <!-- Student List with Search & Scroll -->
-              <div class="col-md-6">
+              <!-- "Assigned Beneficiaries" CARD - MODIFIED -->
+              <div class="col-lg-6">
                 <div class="card">
                   <div class="card-body">
                     <h4 class="header-title">Assigned Beneficiaries</h4>
-                    <input
-                      type="text"
-                      id="searchBox"
-                      class="form-control mb-2"
-                      placeholder="Search beneficiary..."
-                      onkeyup="updateStudentList()"
-                    />
-                    <div id="beneficiaryContainer">
-                      {% if grantees %}
-                      <ul class="list-group" id="beneficiaryList">
-                        {% for grantee in grantees %}
-                        <li class="list-group-item beneficiary">
-                          <strong>{{ grantee.user.name }}</strong>
-                          {% if grantee.user.email %}- {{ grantee.user.email }}{% endif %}
-                          {% if grantee.user.phone %}- {{ grantee.user.phone }}{% endif %}
-                          -
-                          <span
-                            id="status-badge-{{ grantee.user.user_id }}"
-                            data-payment-date="{{ grantee.latest_payment.payment_date if grantee.latest_payment and grantee.latest_payment.payment_date else (grantee.latest_payment.created_at if grantee.latest_payment and grantee.latest_payment.created_at else '') }}"
-                            class="status-badge {% if grantee.latest_payment and grantee.latest_payment.status == 'paid' %}text-success{% else %}text-danger{% endif %}"
-                          >
-                            {{ grantee.latest_payment.status if grantee.latest_payment else 'No Payment' }}
-                          </span>
-                        </li>
-                        {% endfor %}
-                      </ul>
-                      {% else %}
-                      <p class="text-muted">No beneficiaries assigned yet.</p>
-                      {% endif %}
+                    <!-- YOUR ORIGINAL SEARCH BOX IS PRESERVED -->
+                    <input type="text" id="searchBox" class="form-control mb-3" placeholder="Search by name..." onkeyup="filterTable()" />
+                    
+                    <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                      <table class="table table-hover table-centered mb-0" id="beneficiaryTable">
+                        <thead class="thead-light">
+                          <tr>
+                            <th>Student Name</th>
+                            <th>Payment Status</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% if grantees %}
+                            {% for grantee_detail in grantees %}
+                              <tr>
+                                <td>
+                                  <strong>{{ grantee_detail.user.name }}</strong>
+                                  <br>
+                                  <small class="text-muted">{{ grantee_detail.user.email }}</small>
+                                </td>
+                                <td>
+                                  <!-- THIS IS THE UPDATED JINJA2 LOGIC FOR DISPLAYING THE SMART STATUS -->
+                                  {% if grantee_detail.payment_status == 'Overdue' %}
+                                    <span class="badge badge-danger" style="font-size: 13px;">{{ grantee_detail.payment_status }}</span>
+                                  {% elif grantee_detail.payment_status == 'Due Soon' %}
+                                    <span class="badge badge-warning" style="font-size: 13px;">{{ grantee_detail.payment_status }}</span>
+                                  {% elif grantee_detail.payment_status == 'On Schedule' or grantee_detail.payment_status == 'Completed' %}
+                                    <span class="badge badge-success" style="font-size: 13px;">{{ grantee_detail.payment_status }}</span>
+                                  {% else %}
+                                    <span class="badge badge-secondary" style="font-size: 13px;">{{ grantee_detail.payment_status }}</span>
+                                  {% endif %}
+                                </td>
+                                <td>
+                                  <a href="{{ url_for('sponsor.sponsor_payments') }}" class="btn btn-sm btn-info">View Payments</a>
+                                </td>
+                              </tr>
+                            {% endfor %}
+                          {% else %}
+                            <tr>
+                              <td colspan="3" class="text-center text-muted">No beneficiaries assigned yet.</td>
+                            </tr>
+                          {% endif %}
+                        </tbody>
+                      </table>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Charts Section -->
+            <!-- Charts Section (NO CHANGES) -->
             <div class="row">
-              <div class="col-xl-6">
-                <div class="card-box">
-                  <h4 class="header-title">
-                    Marks Comparison Between Grantors
-                  </h4>
-                  <div
-                    id="website-stats"
-                    class="flot-chart"
-                    style="height: 320px"
-                  ></div>
-                </div>
-              </div>
-
-              <div class="col-xl-6">
-                <div class="card-box">
-                  <h4 class="header-title">Marks Distribution</h4>
-                  <div
-                    id="donut-chart-container"
-                    class="flot-chart"
-                    style="height: 246px"
-                  ></div>
-                  <p class="text-muted mt-3">
-                    Pie chart showing marks distribution on various exam types
-                  </p>
-                </div>
-              </div>
+                <div class="col-xl-6"><div class="card-box"><h4 class="header-title">Marks Comparison Between Grantors</h4><div id="website-stats" class="flot-chart" style="height: 320px"></div></div></div>
+                <div class="col-xl-6"><div class="card-box"><h4 class="header-title">Marks Distribution</h4><div id="donut-chart-container" class="flot-chart" style="height: 246px"></div><p class="text-muted mt-3">Pie chart showing marks distribution on various exam types</p></div></div>
             </div>
           </div>
         </div>
 
-        <footer class="footer">
-          <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
-        </footer>
-         <style>
-            .footer {
-                position: fixed;
-                bottom: 0;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 100%;
-                background-color: #f8f9fa;
-                padding: 10px 0;
-                text-align: center;
-                font-size: 14px;
-                color: #6c757d;
-                border-top: 1px solid #ddd;
-            }
-        </style>
+        <!-- Footer (NO CHANGES) -->
+        <footer class="footer"><p class="mb-0">Developed by <strong>Congnifly AI System</strong></p></footer>
+        <style>.footer { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; background-color: #f8f9fa; padding: 10px 0; text-align: center; font-size: 14px; color: #6c757d; border-top: 1px solid #ddd; }</style>
       </div>
     </div>
 
-    <!-- Vendor JS -->
+    <!-- Vendor JS (NO CHANGES) -->
     <script src="{{ url_for('static', filename='js/vendor.min.js') }}"></script>
     <script src="{{ url_for('static', filename='libs/flot-charts/jquery.flot.js') }}"></script>
     <script src="{{ url_for('static', filename='libs/flot-charts/jquery.flot.pie.js') }}"></script>
@@ -250,157 +151,46 @@
     <script src="{{ url_for('static', filename='libs/bootstrap-daterangepicker/daterangepicker.js') }}"></script>
     <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
 
-    <!-- Initialize Flot Charts and Student Search -->
+    <!-- The old complex JavaScript is removed, and replaced with this simpler version -->
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        updateStudentList(); // Filter list on load (in case search box has a value)
-        updatePaymentStatusesDynamic(); // Update statuses based on 90-day rule
-        initializeCharts(); // Initialize charts
+        initializeCharts(); // Your chart logic is preserved
       });
 
-      function updateStudentList() {
-        var inputElement = document.getElementById("searchBox");
-        // Ensure inputElement exists before trying to get its value
-        var input = inputElement ? inputElement.value.toLowerCase() : "";
-        var beneficiaries = document.querySelectorAll("#beneficiaryList .beneficiary"); // More specific selector
+      // New, simpler search function that works on the table
+      function filterTable() {
+        const input = document.getElementById("searchBox");
+        const filter = input.value.toLowerCase();
+        const table = document.getElementById("beneficiaryTable");
+        const tr = table.getElementsByTagName("tr");
 
-        beneficiaries.forEach(function (item) {
-          var text = item.textContent.toLowerCase();
-          if (text.includes(input)) {
-            item.style.display = "block";
-          } else {
-            item.style.display = "none";
-          }
-        });
-      }
-
-      function updatePaymentStatusesDynamic() {
-        var statusBadges = document.querySelectorAll(".status-badge");
-
-        statusBadges.forEach(function(badge) {
-          var paymentDateStr = badge.getAttribute("data-payment-date");
-          var newPaymentStatusText = badge.textContent; // Keep original text if no date
-          var newStatusClassName = ""; // Will be determined
-
-          // Determine initial class for removal logic, based on current text if needed
-          var initialClasses = Array.from(badge.classList);
-
-
-          if (paymentDateStr && paymentDateStr.trim() !== "") {
-            try {
-              // Adding 'Z' assumes UTC if your backend stores dates in UTC.
-              // If your backend stores local server time, and you want to compare with local client time,
-              // you might not add 'Z', but be aware of timezone differences.
-              // For financial/timestamped events, UTC is generally best practice.
-              let lastPaymentDate = new Date(paymentDateStr.replace(" ", "T") + "Z");
-
-              if (!isNaN(lastPaymentDate.getTime())) { // Check if date is valid
-                let currentDate = new Date();
-                let ninetyDaysAgo = new Date();
-                ninetyDaysAgo.setDate(currentDate.getDate() - 90);
-
-                if (lastPaymentDate >= ninetyDaysAgo) {
-                  newPaymentStatusText = "Paid";
-                  newStatusClassName = "text-success";
-                } else {
-                  newPaymentStatusText = "Unpaid";
-                  newStatusClassName = "text-danger";
-                }
-              } else {
-                console.warn("Could not parse payment date for status badge:", paymentDateStr, "for badge id:", badge.id);
-                // Keep initial text, but maybe change color to warning
-                newPaymentStatusText = badge.textContent.includes("No Payment") ? "No Payment" : "Unpaid (date error)";
-                newStatusClassName = "text-warning";
-              }
-            } catch (e) {
-              console.error("Error processing payment date for status badge:", e, "Original date:", paymentDateStr);
-              newPaymentStatusText = badge.textContent.includes("No Payment") ? "No Payment" : "Unpaid (error)";
-              newStatusClassName = "text-warning";
-            }
-          } else {
-            // No payment date string found. The initial Jinja render will stand for text.
-            // We might still want to ensure the class is text-danger if it implies "No Payment".
-            if (badge.textContent.trim().toLowerCase().includes('no payment')) {
-                newPaymentStatusText = 'No Payment';
-                newStatusClassName = 'text-danger'; // Or text-muted
+        for (let i = 1; i < tr.length; i++) { // Start from 1 to skip the header row
+          const td = tr[i].getElementsByTagName("td")[0]; // Search in the first column (Student Name)
+          if (td) {
+            const txtValue = td.textContent || td.innerText;
+            if (txtValue.toLowerCase().indexOf(filter) > -1) {
+              tr[i].style.display = "";
             } else {
-                // If date is missing but text isn't "No Payment", it implies an issue
-                newPaymentStatusText = badge.textContent; // Keep Jinja's text
-                newStatusClassName = 'text-warning'; // Indicate data might be missing
+              tr[i].style.display = "none";
             }
           }
-
-          // Update the badge's text and class
-          badge.textContent = newPaymentStatusText;
-          // Remove only color classes, preserve 'status-badge'
-          badge.classList.remove("text-success", "text-danger", "text-warning", "text-muted");
-          if (newStatusClassName) { // Add new class if one was determined
-            badge.classList.add(newStatusClassName);
-          }
-        });
+        }
       }
 
+      // Your original chart initialization function is preserved
       function initializeCharts() {
-        // Ensure flot chart containers exist before trying to plot
         if (document.getElementById("donut-chart-container")) {
             var donutData = [
               { label: "Exam A", data: 20, color: "#44a0cb" },
               { label: "Exam B", data: 30, color: "#f7d766" },
               { label: "Exam C", data: 50, color: "#a4d65e" },
             ];
-            $.plot("#donut-chart-container", donutData, {
-              series: {
-                pie: {
-                  innerRadius: 0.5,
-                  show: true,
-                },
-              },
-              legend: {
-                show: true,
-              },
-              grid: {
-                hoverable: true,
-                clickable: true
-              }
-            });
+            $.plot("#donut-chart-container", donutData, { series: { pie: { innerRadius: 0.5, show: true, } }, legend: { show: true }, grid: { hoverable: true, clickable: true } });
         }
-
         if (document.getElementById("website-stats")) {
             var lineData = [];
-            for (var i = 0; i <= 10; i += 1) { // Sample data generation
-                lineData.push([i, Math.sin(i / 1.5) * 10 + 20 + Math.random() * 5]);
-            }
-            $.plot("#website-stats", [{ data: lineData, label: "Grantor A Marks", color: "#44a0cb" }], {
-              series: {
-                lines: { show: true, fill: true, lineWidth: 2 },
-                points: { show: true, radius: 3 },
-                shadowSize: 0
-              },
-              grid: {
-                hoverable: true,
-                clickable: true,
-                borderColor: "#f1f1f1",
-                borderWidth: 1,
-                labelMargin: 15,
-                backgroundColor: "#fff"
-              },
-              yaxis: {
-                min: 0,
-                max: 40, // Adjust as per your data range
-                color: "rgba(0,0,0,0.1)"
-              },
-              xaxis: {
-                color: "rgba(0,0,0,0.1)"
-              },
-              tooltip: true, // Requires jquery.flot.tooltip.js if you want tooltips
-              tooltipOpts: {
-                  content: "X: %x, Y: %y",
-                  shifts: {
-                      x: -60,
-                      y: 25
-                  }
-              }
-            });
+            for (var i = 0; i <= 10; i += 1) { lineData.push([i, Math.sin(i / 1.5) * 10 + 20 + Math.random() * 5]); }
+            $.plot("#website-stats", [{ data: lineData, label: "Grantor A Marks", color: "#44a0cb" }], { series: { lines: { show: true, fill: true, lineWidth: 2 }, points: { show: true, radius: 3 }, shadowSize: 0 }, grid: { hoverable: true, clickable: true, borderColor: "#f1f1f1", borderWidth: 1, labelMargin: 15, backgroundColor: "#fff" }, yaxis: { min: 0, max: 40, color: "rgba(0,0,0,0.1)" }, xaxis: { color: "rgba(0,0,0,0.1)" }, tooltip: true, tooltipOpts: { content: "X: %x, Y: %y", shifts: { x: -60, y: 25 } } });
         }
       }
     </script>

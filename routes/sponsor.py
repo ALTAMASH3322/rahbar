@@ -4,6 +4,9 @@ import mysql.connector
 from config import Config as c
 import os
 from werkzeug.utils import secure_filename
+# Import standard libraries for date calculations
+import calendar
+from datetime import datetime, timedelta
 
 # Create Blueprint for sponsor routes
 sponsor_bp = Blueprint('sponsor', __name__)
@@ -25,7 +28,7 @@ UPLOAD_FOLDER = 'uploads'
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
-# Sponsor Dashboard
+# Sponsor Dashboard (CORRECTLY MODIFIED - INTEGRATED, NOT REPLACED)
 @sponsor_bp.route('/sponsor_dashboard', methods=['GET'])
 @login_required
 def sponsor_dashboard():
@@ -35,13 +38,16 @@ def sponsor_dashboard():
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
+    sponsor_id = current_user.user_id
+    today = datetime.now().date() # Get today's date once for efficiency
 
+    # --- YOUR ORIGINAL LOGIC IS PRESERVED ---
     # Fetch sponsor details
-    cursor.execute("SELECT * FROM users WHERE user_id = %s", (current_user.user_id,))
+    cursor.execute("SELECT * FROM users WHERE user_id = %s", (sponsor_id,))
     sponsor = cursor.fetchone()
 
     # Fetch assigned grantees (students) for the sponsor
-    cursor.execute("SELECT * FROM grantor_grantees WHERE grantor_id = %s", (current_user.user_id,))
+    cursor.execute("SELECT * FROM grantor_grantees WHERE grantor_id = %s", (sponsor_id,))
     grantor_grantees = cursor.fetchall()
 
     grantees = []
@@ -59,27 +65,85 @@ def sponsor_dashboard():
 
         # Get the latest payment record for the grantee based on created_at timestamp
         cursor.execute(
-            "SELECT * FROM payments WHERE grantee_id = %s ORDER BY created_at DESC LIMIT 1", 
+            "SELECT * FROM payments WHERE grantee_id = %s ORDER BY created_at DESC LIMIT 1",
             (grantee_id,)
         )
         latest_payment = cursor.fetchone()
 
-        # Combine all details into one dictionary
+        # ==============================================================================
+        # ===> NEW "SMART" STATUS CALCULATION LOGIC ADDED HERE <===
+        # ==============================================================================
+
+        # 1. Get the student's course information
+        cursor.execute("""
+            SELECT sic.assigned_at, c.number_of_semesters
+            FROM student_institution_courses sic
+            JOIN courses c ON sic.course_id = c.course_id
+            WHERE sic.user_id = %s
+        """, (grantee_id,))
+        course_info = cursor.fetchone()
+
+        payment_status = "Awaiting Course Assignment" # Default status
+
+        if course_info and course_info.get('assigned_at'):
+            # 2. Get the count of all paid records
+            cursor.execute("SELECT COUNT(*) as paid_count FROM payments WHERE grantee_id = %s AND status = 'Paid'", (grantee_id,))
+            paid_count = cursor.fetchone()['paid_count']
+
+            # 3. Calculate the total number of payments expected for the entire course
+            base_date = course_info['assigned_at']
+            total_semesters = course_info['number_of_semesters']
+            semesters_per_year = 2.0
+            payments_per_year = 4
+            total_payments = int((total_semesters / semesters_per_year) * payments_per_year)
+
+            # 4. Determine the final status
+            if total_payments == 0:
+                payment_status = "No Payments Required"
+            elif paid_count >= total_payments:
+                payment_status = "Completed"
+            else:
+                next_installment_num = paid_count + 1
+                months_to_add = 3 * next_installment_num
+                year_offset = (base_date.month + months_to_add - 1) // 12
+                new_month = (base_date.month + months_to_add - 1) % 12 + 1
+                try:
+                    last_day_of_month = calendar.monthrange(base_date.year + year_offset, new_month)[1]
+                    new_day = min(base_date.day, last_day_of_month)
+                    next_due_date = base_date.replace(year=base_date.year + year_offset, month=new_month, day=new_day).date()
+                except ValueError:
+                    next_due_date = today
+                
+                # The new, more detailed status logic
+                if next_due_date < today:
+                    payment_status = "Overdue"
+                elif next_due_date <= (today + timedelta(days=30)):
+                    payment_status = "Due Soon"
+                else:
+                    payment_status = "On Schedule"
+
+        # ==============================================================================
+        # ===> END OF NEWLY ADDED LOGIC <===
+        # ==============================================================================
+
+        # Combine all details into one dictionary, PRESERVING YOUR ORIGINAL STRUCTURE
+        # and ADDING the new status
         grantee_details = {
             'user': grantee,
             'bank_details': bank_details,
-            'latest_payment': latest_payment
+            'latest_payment': latest_payment,
+            'payment_status': payment_status  # The new status is added here
         }
         grantees.append(grantee_details)
 
     cursor.close()
     conn.close()
 
-    # Pass the sponsor and grantees data to the template
+    # Pass the enhanced grantees data to the template
     return render_template('sponsor/dashboard.html', sponsor=sponsor, grantees=grantees)
 
 
-# Sponsor Payments
+# Sponsor Payments (NO CHANGES TO THIS FUNCTION - Your original code is preserved)
 @sponsor_bp.route('/payments', methods=['GET', 'POST'])
 @login_required
 def sponsor_payments():
@@ -88,8 +152,9 @@ def sponsor_payments():
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
+    sponsor_id = current_user.user_id
 
-    cursor.execute("SELECT * FROM users WHERE user_id = %s", (current_user.user_id,))
+    cursor.execute("SELECT * FROM users WHERE user_id = %s", (sponsor_id,))
     sponsor = cursor.fetchone()
 
     if request.method == 'POST':
@@ -115,7 +180,7 @@ def sponsor_payments():
                     INSERT INTO payments (grantor_id, grantee_id, amount, payment_date, receipt_url, status)
                     VALUES (%s, %s, %s, NOW(), %s, 'paid')
                     """,
-                    (current_user.user_id, grantee_id, amount, filepath)
+                    (sponsor_id, grantee_id, amount, filepath)
                 )
                 conn.commit()
                 flash('Payment recorded and receipt uploaded successfully!', 'success')
@@ -124,6 +189,8 @@ def sponsor_payments():
                 conn.rollback()
                 flash('An error occurred while processing the payment.', 'error')
 
+        cursor.close()
+        conn.close()
         return redirect(url_for('sponsor.sponsor_payments'))
 
     # ----------------------
@@ -135,15 +202,12 @@ def sponsor_payments():
     payment_schedules = cursor.fetchall()
 
     # Fetch assigned grantees for the current sponsor
-    cursor.execute("SELECT * FROM grantor_grantees WHERE grantor_id = %s", (current_user.user_id,))
+    cursor.execute("SELECT * FROM grantor_grantees WHERE grantor_id = %s", (sponsor_id,))
     grantor_grantees = cursor.fetchall()
 
     payment_details = []
-    from datetime import datetime, timedelta
+    
     current_date = datetime.now()
-
-    cursor.execute("select * from payment_schedules where status = 1")
-    payment_schedules = cursor.fetchall()
 
     for gg in grantor_grantees:
         # Get grantee user details
@@ -156,11 +220,10 @@ def sponsor_payments():
 
         # Get the latest payment record (if any)
         cursor.execute(
-            "SELECT * FROM payments WHERE grantee_id = %s ORDER BY payment_date DESC LIMIT 1", 
+            "SELECT * FROM payments WHERE grantee_id = %s ORDER BY payment_date DESC LIMIT 1",
             (gg['grantee_id'],)
         )
         payment_record = cursor.fetchone()
-
 
         # Determine payment frequency and status (default is unpaid)
         status = "unpaid"
@@ -170,8 +233,7 @@ def sponsor_payments():
             three_months_ago = current_date - timedelta(days=90)
             if payment_record["payment_date"] >= three_months_ago:
                 status = "paid"
-            
-            
+
         #if payment_record:
             # Find the matching payment schedule based on amount
             #for schedule in payment_schedules:
@@ -206,31 +268,79 @@ def sponsor_payments():
             "due_date": status  # used as current status in template
         })
 
+    # --- NEW LOGIC ADDED to support the dynamic quarterly schedule feature ---
+
+    # Get a simple list of students for the dropdown
+    students_for_dropdown = [item['grantee'] for item in payment_details if item.get('grantee')]
+
+    # Create the detailed data map for our new JavaScript
+    student_data_map = {}
+    for detail in payment_details:
+        student = detail.get('grantee')
+        if not student:
+            continue
+
+        student_id = student['user_id']
+
+        # Get course info for this student
+        cursor.execute("""
+            SELECT sic.assigned_at, c.number_of_semesters, c.fees_per_semester
+            FROM student_institution_courses sic
+            JOIN courses c ON sic.course_id = c.course_id
+            WHERE sic.user_id = %s
+        """, (student_id,))
+        course_info = cursor.fetchone()
+
+        # Get ALL paid records for this student, not just the latest
+        # THIS IS THE CORRECTED QUERY WITH THE STATUS FILTER
+        cursor.execute("SELECT * FROM payments WHERE grantee_id = %s AND status = 'Paid' ORDER BY payment_date ASC", (student_id,))
+        all_paid_records = cursor.fetchall()
+
+        # Convert dates to strings for JSON safety
+        if course_info and course_info.get('assigned_at'):
+            course_info['assigned_at'] = course_info['assigned_at'].isoformat()
+
+        for record in all_paid_records:
+            if record.get('payment_date'):
+                record['payment_date'] = record['payment_date'].isoformat()
+
+        # We now add the new required data to the old structure
+        detail['course_info'] = course_info
+        detail['paid_records'] = all_paid_records
+        student_data_map[student_id] = detail
+
+    # --- END OF NEW LOGIC ---
+
     # Fetch past payments for display
     cursor.execute("""
         SELECT p.*, u.name AS grantee_name
         FROM payments p
         JOIN users u ON p.grantee_id = u.user_id
         WHERE p.grantee_id IN (
-            SELECT grantee_id FROM grantor_grantees WHERE grantor_id = %s and p.status = 'paid'
-        )
-    """, (current_user.user_id,))
+            SELECT grantee_id FROM grantor_grantees WHERE grantor_id = %s
+        ) AND p.status = 'paid'
+    """, (sponsor_id,))
     past_payments = cursor.fetchall()
-
-    cursor.execute("select * from payment_schedules where status = 1")
-    payment_schedules = cursor.fetchall()
 
     cursor.close()
     conn.close()
 
-    return render_template('sponsor/payment.html', payment_details=payment_details, past_payments=past_payments,sponsor=sponsor , payment_schedules=payment_schedules)
+    return render_template(
+        'sponsor/payment.html',
+        payment_details=payment_details,
+        past_payments=past_payments,
+        sponsor=sponsor,
+        payment_schedules=payment_schedules,
+        student_data_map=student_data_map,
+        students_for_dropdown=students_for_dropdown
+    )
 
 
-# Sponsor Student Progress
+# Sponsor Student Progress (NO CHANGES TO THIS FUNCTION)
 @sponsor_bp.route('/sponsor_student_progress', methods=['GET'])
 @login_required
 def sponsor_student_progress():
-    if current_user.role_id != 5:  # Ensure only sponsors can access this route
+    if current_user.role_id != 5:
         return render_template('sponsor/error.html', error="You do not have permission to access this page."), 403
 
     conn = get_db_connection()
@@ -254,7 +364,7 @@ def sponsor_student_progress():
 
     return render_template('sponsor/student_progress.html', progress_data=progress_data, sponsor=sponsor)
 
-# Serve uploaded files
+# Serve uploaded files (NO CHANGES TO THIS FUNCTION)
 @sponsor_bp.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)

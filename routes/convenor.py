@@ -533,14 +533,18 @@ def update_profile():
 @convenor_bp.route('/convenor_payments', methods=['GET', 'POST'])
 @login_required
 def convenor_payments():
-    if current_user.role_id != 4:  # Ensure only sponsors can access this route
+    # --- Authorization and Initial Setup ---
+    if current_user.role_id != 4:  # Ensure only convenors can access
         return render_template('convenor/error.html', error="You do not have permission to access this page."), 403
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM users WHERE user_id = %s", (current_user.user_id,))
+    convenor_id = current_user.user_id
+
+    cursor.execute("SELECT * FROM users WHERE user_id = %s", (convenor_id,))
     convenor = cursor.fetchone()
 
+    # --- POST Method: Handle Payment Form Submission ---
     if request.method == 'POST':
         action = request.form.get('action')
         grantee_id = request.form.get('grantee_id')
@@ -557,103 +561,122 @@ def convenor_payments():
             filepath = os.path.join(UPLOAD_FOLDER, filename)
             receipt.save(filepath)
 
-            # Insert payment record
+            # Insert payment record with 'pending' status for convenor
             try:
                 cursor.execute(
                     """
                     INSERT INTO payments (grantor_id, grantee_id, amount, payment_date, receipt_url, status)
                     VALUES (%s, %s, %s, NOW(), %s, 'pending')
                     """,
-                    (current_user.user_id, grantee_id, amount, filepath)
+                    (convenor_id, grantee_id, amount, filepath)
                 )
                 conn.commit()
-                flash('Payment recorded and receipt uploaded successfully!', 'success')
+                flash('Payment recorded and is now pending approval.', 'success')
             except Exception as e:
                 print(f"Database Error: {e}")
                 conn.rollback()
                 flash('An error occurred while processing the payment.', 'error')
 
-        return redirect(url_for('convenor.convenor_payments', convenor=convenor))
+        cursor.close()
+        conn.close()
+        return redirect(url_for('convenor.convenor_payments'))
 
-    # Fetch assigned grantees and payment details
-    cursor.execute("SELECT * FROM grantor_grantees WHERE grantor_id = %s", (current_user.user_id,))
-    grantor_grantee = cursor.fetchall()
+    # -----------------------------------------------------------------
+    # GET Method: Display Page and Prepare Data for JavaScript Frontend
+    # -----------------------------------------------------------------
 
-    payment_details = []
-    for gg in grantor_grantee:
-        cursor.execute("SELECT * FROM users WHERE user_id = %s", (gg['grantee_id'],))
-        grantee = cursor.fetchone()
+    # 1. Fetch all grantees assigned to this convenor
+    cursor.execute("SELECT grantee_id FROM grantor_grantees WHERE grantor_id = %s", (convenor_id,))
+    grantor_grantees = cursor.fetchall()
+    student_ids = [gg['grantee_id'] for gg in grantor_grantees]
 
-        cursor.execute("SELECT * FROM bank_details WHERE user_id = %s", (gg['grantee_id'],))
-        bank_details = cursor.fetchone()
+    students_for_dropdown = []
+    student_data_map = {}
 
-        cursor.execute("SELECT * FROM payments WHERE grantee_id = %s order by payment_date DESC LIMIT 1", (gg['grantee_id'],))
-        payments = cursor.fetchall()
+    # Proceed only if the convenor has assigned students
+    if student_ids:
+        # Create a placeholder string for the IN clause (e.g., "%s,%s,%s")
+        id_placeholders = ','.join(['%s'] * len(student_ids))
 
-        cursor.execute("Select * from payment_schedules")
-        payment_schedules = cursor.fetchall()
-        frequency = 1
-        status = "pending"
-        print(payments, end=" ")
-        print(payment_schedules)
-        for i in payment_schedules:
-            if payments[0]["amount"] == i["amount"]:
-                frequency = i["schedule_id"]
+        # 2. Fetch all required data in bulk to avoid N+1 query problem
+        
+        # Get all student user details at once
+        cursor.execute(f"SELECT * FROM users WHERE user_id IN ({id_placeholders})", tuple(student_ids))
+        all_students = {s['user_id']: s for s in cursor.fetchall()}
+        
+        # Get all bank details at once
+        cursor.execute(f"SELECT * FROM bank_details WHERE user_id IN ({id_placeholders})", tuple(student_ids))
+        all_bank_details = {b['user_id']: b for b in cursor.fetchall()}
 
-        from datetime import datetime, timedelta
+        # Get all course info at once using a JOIN
+        cursor.execute(f"""
+            SELECT sic.user_id, sic.assigned_at, c.number_of_semesters, c.fees_per_semester
+            FROM student_institution_courses sic
+            JOIN courses c ON sic.course_id = c.course_id
+            WHERE sic.user_id IN ({id_placeholders})
+        """, tuple(student_ids))
+        all_course_info = {ci['user_id']: ci for ci in cursor.fetchall()}
 
-        # Get the current date
-        current_date = datetime.now()
+        # Get all 'Paid' AND 'pending' records for all students at once
+        # This is important so the convenor can see payments they just submitted
+        cursor.execute(f"""
+            SELECT * FROM payments 
+            WHERE grantee_id IN ({id_placeholders}) AND (status = 'Paid' OR status = 'pending')
+            ORDER BY payment_date ASC
+        """, tuple(student_ids))
+        all_payment_records = cursor.fetchall()
 
-        # Initialize status
-        status = "unpaid"
+        # Organize payments by student for easy lookup
+        payments_by_student = {}
+        for p in all_payment_records:
+            gid = p['grantee_id']
+            if gid not in payments_by_student:
+                payments_by_student[gid] = []
+            payments_by_student[gid].append(p)
 
-        # Define the time periods based on frequency
-        if frequency == 1:
-            # Check if payment_date is within the last year
-            one_year_ago = current_date - timedelta(days=365)
-            if payments[0]["payment_date"] >= one_year_ago:
-                status = "paid"
-        elif frequency == 2:
-            # Check if payment_date is within the last 6 months
-            six_months_ago = current_date - timedelta(days=180)
-            if payments[0]["payment_date"] >= six_months_ago:
-                status = "paid"
-        elif frequency == 3:
-            # Check if payment_date is within the last 3 months
-            three_months_ago = current_date - timedelta(days=90)
-            if payments[0]["payment_date"] >= three_months_ago:
-                status = "paid"
-        elif frequency == 4:
-            # Check if payment_date is within the last month
-            one_month_ago = current_date - timedelta(days=30)
-            if payments[0]["payment_date"] >= one_month_ago   and payments[0]["payment_date"] >= payment_schedules[3]["updated_at"]:
-                status = "paid"
+        # 3. Assemble the final data structures for the template
+        for student_id in student_ids:
+            student = all_students.get(student_id)
+            if not student:
+                continue
+            
+            students_for_dropdown.append(student) # For the <select> dropdown
 
+            course_info = all_course_info.get(student_id)
+            paid_and_pending_records = payments_by_student.get(student_id, [])
 
+            # Convert datetime objects to ISO strings for safe JSON serialization
+            if course_info and course_info.get('assigned_at'):
+                course_info['assigned_at'] = course_info['assigned_at'].isoformat()
+            for record in paid_and_pending_records:
+                if record.get('payment_date'):
+                    record['payment_date'] = record['payment_date'].isoformat()
+            
+            # Build the final map for JavaScript
+            student_data_map[student_id] = {
+                "grantee": student,
+                "bank_details": all_bank_details.get(student_id),
+                "course_info": course_info,
+                "paid_records": paid_and_pending_records # This name is kept for template consistency
+            }
 
-        cursor.execute("SELECT due_date FROM payments WHERE grantee_id = %s ORDER BY due_date DESC LIMIT 1", (gg['grantee_id'],))
-        due_date = cursor.fetchone()
-
-        payment_details.append({
-            "grantee": grantee,
-            "bank_details": bank_details,
-            "payments": payments,
-            "due_date": status
-        })
-
-    # Fetch past payments
+    # Fetch past payments for the simple history table at the bottom of the page
     cursor.execute("""
         SELECT p.*, u.name AS grantee_name
         FROM payments p
         JOIN users u ON p.grantee_id = u.user_id
-        WHERE p.grantee_id IN (
-            SELECT grantee_id FROM grantor_grantees WHERE grantor_id = %s
-        )
-    """, (current_user.user_id,))
+        WHERE p.grantor_id = %s
+    """, (convenor_id,))
     past_payments = cursor.fetchall()
 
     cursor.close()
     conn.close()
 
-    return render_template('convenor/payment.html', payment_details=payment_details, past_payments=past_payments , convenor=convenor)
+    # 4. Render the template with the new, structured data
+    return render_template(
+        'convenor/payment.html',
+        convenor=convenor,
+        past_payments=past_payments,
+        student_data_map=student_data_map,
+        students_for_dropdown=students_for_dropdown
+    )

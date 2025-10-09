@@ -1,245 +1,478 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
+  <head>
     <meta charset="utf-8" />
-    <title>Sponsor Payments | Rahbar</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta content="Sponsor Payments for Rahbar Application" name="description" />
+    <title>Convenor Payments | Rahbar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      content="Convenor Payments for Rahbar Application"
+      name="description"
+    />
     <meta content="Coderthemes" name="author" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
     <!-- App favicon -->
-    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <link
+      rel="shortcut icon"
+      href="{{ url_for('static', filename='images/favicon.ico') }}"
+    />
 
     <!-- App css -->
-    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" id="bootstrap-stylesheet" />
-    <link href="{{ url_for('static', filename='css/icons.min.css') }}" rel="stylesheet" type="text/css" />
-    <link href="{{ url_for('static', filename='css/app.min.css') }}" rel="stylesheet" type="text/css" id="app-stylesheet" />
-</head>
+    <link
+      href="{{ url_for('static', filename='css/bootstrap.min.css') }}"
+      rel="stylesheet"
+      type="text/css"
+      id="bootstrap-stylesheet"
+    />
+    <link
+      href="{{ url_for('static', filename='css/icons.min.css') }}"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="{{ url_for('static', filename='css/app.min.css') }}"
+      rel="stylesheet"
+      type="text/css"
+      id="app-stylesheet"
+    />
+  </head>
 
-<body>
-    <!-- Begin page -->
+  <body>
     <div id="wrapper">
-
-        <!-- Topbar Start -->
-        <div id="wrapper">
-            <!-- Topbar Start -->
-            <div class="navbar-custom">
-              <div class="d-flex justify-content-between align-items-center w-100">
-                  <!-- Left side - Admin Panel -->
-                  <div>
-                      <h6 class="page-title mb-0">Sponsor Panel</h6>
-                  </div>
-
-                  <!-- Middle - Logo -->
-                  <div>
-                    <a href="{{ url_for('main.homepage') }}" class="text-success">
-                        <h4>Rahbar Scholarship Information Management System</h4>
-                        </a>
-                  </div>
-
-                  <!-- Right side - User Dropdown -->
-                  <ul class="list-unstyled topnav-menu mb-0">
-                      <li class="dropdown notification-list">
-                          <a class="nav-link dropdown-toggle nav-user waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
-                              <img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" alt="user-image" class="rounded-circle">
-                              <span class="d-none d-sm-inline-block ml-1">{{ current_user.name }}</span>
-                          </a>
-                          <div class="dropdown-menu dropdown-menu-right profile-dropdown">
-                              <a href="{{ url_for('auth.logout') }}" class="dropdown-item notify-item">
-                                  <i class="mdi mdi-logout-variant"></i>
-                                  <span>Logout</span>
-                              </a>
-                          </div>
-                      </li>
-                  </ul>
-              </div>
+      <!-- Topbar and Sidebar (Adjusted for Convenor) -->
+      <div class="navbar-custom">
+        <div class="d-flex justify-content-between align-items-center w-100">
+          <div><h6 class="page-title mb-0">Convenor Panel</h6></div>
+          <div>
+            <a href="{{ url_for('main.homepage') }}" class="text-success"
+              ><h4>Rahbar Scholarship Information Management System</h4></a
+            >
           </div>
-        <!-- end Topbar -->
-
-        <!-- ========== Left Sidebar Start ========== -->
-        <div class="left-side-menu">
-            <div class="slimscroll-menu">
-                <!--- Sidemenu -->
-                <div id="sidebar-menu">
-                    <ul class="metismenu" id="side-menu">
-                        <li class="menu-title">Navigation</li>
-                        <!-- Dashboard -->
-                        <li>
-                            <a href="{{ url_for('convenor.convenor_dashboard') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-view-dashboard"></i>
-                                <span>Dashboard</span>
-                            </a>
-                        </li>
-                        <!-- Applications -->
-                        <li>
-                            <a href="{{ url_for('admin.view_applications') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-file-document"></i>
-                                <span>View Applications</span>
-                            </a>
-                        </li>
-                        <!-- Sponsors -->
-                        <li>
-                            <a href="{{ url_for('convenor.manage_sponsors') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-account-multiple"></i>
-                                <span>Manage Sponsors</span>
-                            </a>
-                        </li>
-                        <!-- Student Progress -->
-                        <li>
-                            <a href="{{ url_for('convenor.view_student_progress') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-chart-line"></i>
-                                <span>Student Progress</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{{ url_for('convenor.convenor_payments') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-account-multiple"></i>
-                                <span>Payments</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-                <!-- End Sidebar -->
-            </div>
+          <ul class="list-unstyled topnav-menu mb-0">
+            <li class="dropdown notification-list">
+              <a
+                class="nav-link dropdown-toggle nav-user waves-effect"
+                data-toggle="dropdown"
+                href="#"
+                role="button"
+                aria-haspopup="false"
+                aria-expanded="false"
+              >
+                <img
+                  src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}"
+                  alt="user-image"
+                  class="rounded-circle"
+                />
+                <span class="d-none d-sm-inline-block ml-1"
+                  >{{ convenor.name }}</span
+                >
+              </a>
+              <div class="dropdown-menu dropdown-menu-right profile-dropdown">
+                <a
+                  href="{{ url_for('auth.logout') }}"
+                  class="dropdown-item notify-item"
+                  ><i class="mdi mdi-logout-variant"></i><span>Logout</span></a
+                >
+              </div>
+            </li>
+          </ul>
         </div>
-        <!-- Left Sidebar End -->
+      </div>
+      <div class="left-side-menu">
+        <div class="slimscroll-menu">
+          <div id="sidebar-menu">
+            <ul class="metismenu" id="side-menu">
+              <li class="menu-title">Navigation</li>
+              <li>
+                <a
+                  href="{{ url_for('convenor.convenor_dashboard') }}"
+                  class="waves-effect waves-light"
+                  ><i class="mdi mdi-view-dashboard"></i
+                  ><span>Dashboard</span></a
+                >
+              </li>
+              <li>
+                <a
+                  href="{{ url_for('admin.view_applications') }}"
+                  class="waves-effect waves-light"
+                  ><i class="mdi mdi-file-document"></i
+                  ><span>View Applications</span></a
+                >
+              </li>
+              <li>
+                <a
+                  href="{{ url_for('convenor.manage_sponsors') }}"
+                  class="waves-effect waves-light"
+                  ><i class="mdi mdi-account-multiple"></i
+                  ><span>Manage Sponsors</span></a
+                >
+              </li>
+              <li>
+                <a
+                  href="{{ url_for('convenor.view_student_progress') }}"
+                  class="waves-effect waves-light"
+                  ><i class="mdi mdi-chart-line"></i
+                  ><span>Student Progress</span></a
+                >
+              </li>
+              <li>
+                <a
+                  href="{{ url_for('convenor.convenor_payments') }}"
+                  class="waves-effect waves-light"
+                  ><i class="mdi mdi-cash-multiple"></i><span>Payments</span></a
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
 
-        <!-- ============================================================== -->
-        <!-- Start Page Content here -->
-        <!-- ============================================================== -->
-
-        <div class="content-page">
-            <div class="content">
-                <!-- Start Content-->
-                <div class="container-fluid">
-                    <!-- start page title -->
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="page-title-box">
-                                <h4 class="page-title">Sponsor Payments</h4>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- end page title -->
-
-                    <!-- Payment Details -->
-                    <div class="row">
-                        {% for payment in payment_details %}
-                            <div class="col-md-6">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <h4 class="header-title">Student: {{ payment.bank_details.account_name }}</h4>
-                                        <div class="mt-3">
-                                            <p><strong>Bank Details:</strong> {{ payment.bank_details.bank_name }} ({{ payment.bank_details.account_number }})</p>
-                                            <p><strong>Last Payment:</strong> {{ payment.payments[0].amount if payment.payments else 'No payments yet' }}</p>
-                                            <p><strong>Current Status</strong> {{ payment.due_date }}</p>
-                                        </div>
-
-                                        <!-- Pay and Upload Buttons -->
-                                        <div class="mt-3">
-                                            <form method="POST" enctype="multipart/form-data">
-                                                <input type="hidden" name="grantee_id" value="{{ payment.grantee.user_id }}">
-                                                <div class="form-group">
-                                                    <label for="amount">Amount</label>
-                                                    <input type="number" class="form-control" id="amount" name="amount" required>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label for="receipt">Upload Receipt</label>
-                                                    <input type="file" class="form-control-file" id="receipt" name="receipt" required>
-                                                </div>
-                                                <button type="submit" class="btn btn-primary" name="action" value="pay">Pay</button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                    <!-- End Payment Details -->
-
-                    <!-- Past Payments Table -->
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h4 class="header-title">Past Payments</h4>
-                                    <div class="table-responsive mt-4">
-                                        <table class="table table-centered mb-0">
-                                            <thead>
-                                                <tr>
-                                                    <th>Student Name</th>
-                                                    <th>Amount</th>
-                                                    <th>Date</th>
-                                                    <th>Receipt</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {% for payment in past_payments %}
-                                                <tr>
-                                                    <td>{{ payment.grantee_name }}</td>
-                                                    <td>{{ payment.amount }}</td>
-                                                    <td>{{ payment.payment_date }}</td>
-                                                    <td>
-                                                        {% if payment.receipt_url %}
-                                                            <a href="{{ url_for('sponsor.uploaded_file', filename=payment.receipt_url.split('/')[-1]) }}" target="_blank">View Receipt</a>
-                                                        {% else %}
-                                                            No receipt available
-                                                        {% endif %}
-                                                    </td>
-                                                </tr>
-                                                {% else %}
-                                                <tr>
-                                                    <td colspan="4" class="text-center">No past payments found.</td>
-                                                </tr>
-                                                {% endfor %}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- End Past Payments Table -->
+      <!-- ============================================================== -->
+      <!-- Start Page Content here -->
+      <!-- ============================================================== -->
+      <div class="content-page">
+        <div class="content">
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col-12">
+                <div class="page-title-box">
+                  <h4 class="page-title">Convenor Payments</h4>
                 </div>
-                <!-- end container-fluid -->
+              </div>
             </div>
-            <!-- end content -->
 
-            <!-- Footer Start -->
-            <!-- Footer -->
+            <!-- NEW DYNAMIC PAYMENT SECTION -->
+            <div class="row">
+              <div class="col-md-12">
+                <div class="card" id="paymentCard">
+                  <div class="card-body">
+                    <h4 class="header-title">Make a Payment</h4>
+                    <p class="text-muted">
+                      Select a student to view their payment schedule and record
+                      a new payment.
+                    </p>
+                    <div class="form-group">
+                      <label for="studentSelect">Select Student</label>
+                      <select
+                        class="form-control"
+                        id="studentSelect"
+                        onchange="updateStudentDetails()"
+                      >
+                        <option value="">-- Select a Student --</option>
+                        {% for student in students_for_dropdown %}
+                        <option value="{{ student.user_id }}">
+                          {{ student.name }}
+                        </option>
+                        {% endfor %}
+                      </select>
+                    </div>
+
+                    <div id="studentDetails" style="display: none">
+                      <h5 id="beneficiaryName"></h5>
+                      <p>
+                        Grantee Academic Year:
+                        <span id="granteeYearDisplay"></span>
+                      </p>
+                      <p id="bankInfo"></p>
+                      <p id="ifscInfo"></p>
+                      <p id="lastPaymentInfo"></p>
+                      <p id="currentStatus"></p>
+
+                      <div id="paymentScheduleSection">
+                        <!-- Content will be populated by JavaScript -->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- END NEW DYNAMIC PAYMENT SECTION -->
+
+            <!-- Past Payments History Table -->
+            <div class="row">
+              <div class="col-12">
+                <div class="card">
+                  <div class="card-body">
+                    <h4 class="header-title">Official Payment History</h4>
+                    <p class="text-muted">
+                      This table shows all payments recorded by you.
+                    </p>
+                    <div class="table-responsive mt-4">
+                      <table class="table table-centered mb-0">
+                        <thead>
+                          <tr>
+                            <th>Student Name</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Receipt</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for payment in past_payments %}
+                          <tr>
+                            <td>{{ payment.grantee_name }}</td>
+                            <td>₹{{ "%.2f"|format(payment.amount) }}</td>
+                            <td>
+                              {{ payment.payment_date.strftime('%Y-%m-%d') if
+                              payment.payment_date else 'N/A' }}
+                            </td>
+                            <td>
+                              {% if payment.status|lower == 'paid' %}
+                              <span class="badge badge-success">Paid</span>
+                              {% elif payment.status|lower == 'pending' %}
+                              <span class="badge badge-info">Pending</span>
+                              {% else %}
+                              <span class="badge badge-secondary"
+                                >{{ payment.status }}</span
+                              >
+                              {% endif %}
+                            </td>
+                            <td>
+                              <!-- NOTE: You must have a 'convenor.uploaded_file' route for this link to work -->
+                              {% if payment.receipt_url %}<a
+                                href="{{ url_for('convenor.uploaded_file', filename=payment.receipt_url.split('/')[-1]) }}"
+                                target="_blank"
+                                >View Receipt</a
+                              >{% else %} No receipt {% endif %}
+                            </td>
+                          </tr>
+                          {% else %}
+                          <tr>
+                            <td colspan="5" class="text-center">
+                              No past payments found.
+                            </td>
+                          </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
         <!-- Footer -->
         <footer class="footer">
-            <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
+          <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
         </footer>
-    
         <style>
-            .footer {
-                position: fixed;
-                bottom: 0;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 100%;
-                background-color: #f8f9fa;
-                padding: 10px 0;
-                text-align: center;
-                font-size: 14px;
-                color: #6c757d;
-                border-top: 1px solid #ddd;
-            }
+          .footer {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            background-color: #f8f9fa;
+            padding: 10px 0;
+            text-align: center;
+            font-size: 14px;
+            color: #6c757d;
+            border-top: 1px solid #ddd;
+          }
         </style>
-            <!-- end Footer -->
-        </div>
-        <!-- End Page content -->
+      </div>
     </div>
-    <!-- END wrapper -->
 
-    <!-- Vendor js -->
+    <!-- "Pay Now" Popup Modal -->
+    <div class="modal fade" id="paymentModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalTitle">Record Payment</h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <form method="POST" enctype="multipart/form-data">
+            <div class="modal-body">
+              <p>
+                You are recording a payment for
+                <strong id="modalStudentName"></strong>.
+              </p>
+              <div id="modalBankDetailsSection" class="alert alert-info">
+                <strong>Beneficiary Bank Details:</strong>
+                <p class="mb-0" id="modalAccountName"></p>
+                <p class="mb-0" id="modalBankName"></p>
+                <p class="mb-0" id="modalAccountNumber"></p>
+                <p class="mb-0" id="modalIfscCode"></p>
+              </div>
+              <hr />
+              <input type="hidden" name="grantee_id" id="modalGranteeId" />
+              <div class="form-group">
+                <label>Amount (INR)</label
+                ><input
+                  type="text"
+                  class="form-control"
+                  name="amount"
+                  id="modalAmount"
+                  readonly
+                />
+              </div>
+              <div class="form-group">
+                <label for="receipt">Upload Receipt</label
+                ><input
+                  type="file"
+                  class="form-control-file"
+                  name="receipt"
+                  required
+                />
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-dismiss="modal"
+              >
+                Cancel</button
+              ><button
+                type="submit"
+                name="action"
+                value="pay"
+                class="btn btn-success"
+              >
+                Confirm and Submit
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
     <script src="{{ url_for('static', filename='js/vendor.min.js') }}"></script>
-
-    <!-- App js -->
     <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
-</body>
 
+    <!-- THE DYNAMIC JAVASCRIPT LOGIC -->
+    <script>
+      // Data is injected here from the Python backend
+      const studentDataMap = {{ student_data_map|tojson }};
+
+      function updateStudentDetails() {
+        const studentSelect = document.getElementById("studentSelect");
+        const selectedStudentId = studentSelect.value;
+        const detailsDiv = document.getElementById("studentDetails");
+        const scheduleSection = document.getElementById("paymentScheduleSection");
+
+        if (!selectedStudentId) {
+          detailsDiv.style.display = "none";
+          return;
+        }
+
+        const studentData = studentDataMap[selectedStudentId];
+        if (!studentData) { return; }
+
+        const grantee = studentData.grantee;
+        const bank = studentData.bank_details || {};
+        const courseInfo = studentData.course_info;
+        const paidRecords = studentData.paid_records || []; // Contains both 'Paid' and 'pending' records
+        const paidCount = paidRecords.length;
+
+        // Populate basic student info
+        document.getElementById("beneficiaryName").innerText = "Student: " + (grantee.name || "N/A");
+        document.getElementById("granteeYearDisplay").innerText = grantee.year || "Not Specified";
+        document.getElementById("bankInfo").innerText = "Bank: " + (bank.bank_name || "N/A") + " (Acc: " + (bank.account_number || "N/A") + ")";
+        document.getElementById("ifscInfo").innerText = "IFSC: " + (bank.ifsc_code || "N/A");
+
+        if (paidCount > 0) {
+          const lastPayment = paidRecords[paidCount - 1];
+          const lastPaymentDate = new Date(lastPayment.payment_date).toLocaleDateString();
+          document.getElementById("lastPaymentInfo").innerText = `Last Payment: ₹${parseFloat(lastPayment.amount).toFixed(2)} on ${lastPaymentDate} (Status: ${lastPayment.status})`;
+        } else {
+          document.getElementById("lastPaymentInfo").innerText = "Last Payment: No payments yet";
+        }
+
+        // Handle case where student has no assigned course
+        if (!courseInfo || !courseInfo.assigned_at) {
+          scheduleSection.innerHTML = `<p class="alert alert-warning">Payment schedule is not available. The student has not been assigned a course yet.</p>`;
+          document.getElementById("currentStatus").innerText = "Payment Status: Course not assigned";
+          detailsDiv.style.display = "block";
+          return;
+        }
+
+        // Calculate payment schedule details
+        const baseDate = new Date(courseInfo.assigned_at);
+        const totalSemesters = courseInfo.number_of_semesters;
+        const feesPerSemester = courseInfo.fees_per_semester || 0;
+        const quarterlyAmount = feesPerSemester / 2;
+        const totalPayments = Math.floor((totalSemesters / 2) * 4);
+
+        // Build the unified payment schedule table
+        let tableHtml = `<hr><h5 class="mt-3">Full Payment Schedule</h5><div class="table-responsive"><table class="table table-hover table-centered">
+              <thead class="thead-light"><tr><th>#</th><th>Due Date</th><th>Amount Paid</th><th>Status</th><th>Paid On</th><th>Action</th></tr></thead>
+              <tbody>`;
+
+        let nextStatus = 'All Paid';
+        for (let i = 1; i <= totalPayments; i++) {
+            let dueDate = new Date(baseDate);
+            dueDate.setMonth(dueDate.getMonth() + (3 * i));
+            const today = new Date(); today.setHours(0,0,0,0);
+
+            let status = 'Pending';
+            let statusClass = 'badge-warning';
+            let amountDisplay = '—';
+            let paidOnDate = '—';
+            let actionButton = '';
+
+            if (i <= paidCount) {
+                const record = paidRecords[i-1];
+                status = record.status.charAt(0).toUpperCase() + record.status.slice(1);
+
+                // *** KEY CHANGE FOR CONVENOR ***
+                // Set badge color based on 'Paid' or 'pending' status
+                if (record.status.toLowerCase() === 'paid') {
+                    statusClass = 'badge-success';
+                } else if (record.status.toLowerCase() === 'pending') {
+                    statusClass = 'badge-info';
+                }
+
+                amountDisplay = `₹${parseFloat(record.amount).toFixed(2)}`;
+                paidOnDate = new Date(record.payment_date).toLocaleDateString();
+                actionButton = `<button class="btn btn-sm btn-light" disabled>${status}</button>`;
+            } else {
+                if (dueDate < today) {
+                    status = 'Overdue';
+                    statusClass = 'badge-danger';
+                }
+                if (nextStatus === 'All Paid') { // Find the first unpaid status
+                    nextStatus = status;
+                }
+                actionButton = `<button type="button" class="btn btn-sm btn-success pay-now-btn"
+                                  data-toggle="modal" data-target="#paymentModal"
+                                  data-grantee-id="${grantee.user_id}" data-student-name="${grantee.name}"
+                                  data-installment-num="${i}" data-amount="${quarterlyAmount.toFixed(2)}"
+                                  data-account-name="${bank.account_name || 'N/A'}" data-bank-name="${bank.bank_name || 'N/A'}"
+                                  data-account-number="${bank.account_number || 'N/A'}" data-ifsc-code="${bank.ifsc_code || 'N/A'}">
+                                  Record Payment
+                                </button>`;
+            }
+            tableHtml += `<tr><td>${i}</td><td>${dueDate.toLocaleDateString()}</td><td>${amountDisplay}</td><td><span class="badge ${statusClass}">${status}</span></td><td>${paidOnDate}</td><td>${actionButton}</td></tr>`;
+        }
+        tableHtml += `</tbody></table></div>`;
+
+        scheduleSection.innerHTML = tableHtml;
+        document.getElementById("currentStatus").innerText = "Payment Status: " + nextStatus;
+        detailsDiv.style.display = "block";
+      }
+
+      // jQuery event listener for the modal (no changes needed)
+      $(document).on('click', '.pay-now-btn', function() {
+          var button = $(this);
+          $('#modalTitle').text(`Record Payment: Installment #${button.data('installment-num')}`);
+          $('#modalStudentName').text(button.data('student-name'));
+          $('#modalGranteeId').val(button.data('grantee-id'));
+          $('#modalAmount').val(button.data('amount'));
+          $('#modalAccountName').text('Beneficiary: ' + button.data('account-name'));
+          $('#modalBankName').text('Bank Name: ' + button.data('bank-name'));
+          $('#modalAccountNumber').text('Account No: ' + button.data('account-number'));
+          $('#modalIfscCode').text('IFSC Code: ' + button.data('ifsc-code'));
+      });
+    </script>
+  </body>
 </html>

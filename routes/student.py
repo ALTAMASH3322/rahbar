@@ -77,15 +77,28 @@ def student_payments():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    # Fetch payments for the student, ordered by date
+    # 1. Fetch payments for the student
     cursor.execute("SELECT * FROM payments WHERE grantee_id = %s ORDER BY payment_date ASC", (current_user.user_id,))
     payments = cursor.fetchall()
+
+    # --- NEW LOGIC: Pre-generate receipt URLs in the backend ---
+    for payment in payments:
+        # Check if a receipt_url exists for this payment record
+        if payment.get('receipt_url'):
+            # Use os.path.basename to safely get just the filename from the path
+            filename = os.path.basename(payment['receipt_url'])
+            # Use url_for to generate the secure link and add it to the dictionary
+            payment['receipt_link'] = url_for('student.uploaded_file', filename=filename)
+        else:
+            # If no receipt exists, set the link to None
+            payment['receipt_link'] = None
+    # --- END OF NEW LOGIC ---
 
     # Fetch student details
     cursor.execute("SELECT * FROM users WHERE user_id = %s", (current_user.user_id,))
     student = cursor.fetchone()
 
-    # --- NEW QUERY to fetch course details for schedule generation ---
+    # Fetch course details for schedule generation
     cursor.execute("""
         SELECT 
             sic.assigned_at, 
@@ -96,14 +109,15 @@ def student_payments():
         WHERE sic.user_id = %s
     """, (current_user.user_id,))
     course_info = cursor.fetchone()
-    # --- END OF NEW QUERY ---
+
+    # Fetch bank details
+    cursor.execute("SELECT * FROM bank_details WHERE user_id = %s", (current_user.user_id,))
+    bank_details = cursor.fetchone()
 
     cursor.close()
     conn.close()
-
-    bank_details = get_bank_details(current_user.user_id)
     
-    # We now pass 'course_info' to the template for the JavaScript to use
+    # The 'payments' list now contains the extra 'receipt_link' key for each payment
     return render_template(
         'student/payment.html', 
         payments=payments, 

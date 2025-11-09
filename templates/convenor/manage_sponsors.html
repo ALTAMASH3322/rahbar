@@ -153,7 +153,7 @@
                                                             {% endif %}
                                                         </td>
                                                         <td>
-                                                            <!-- Activate/Deactivate Button -->
+                                                            <!-- Activate/Deactivate Button 
                                                             {% if sponsor.status == 'Active' %}
                                                                 <a href="{{ url_for('convenor.update_sponsor_status', sponsor_id=sponsor.user_id, status='Inactive') }}" class="btn btn-sm btn-danger">
                                                                     Deactivate
@@ -162,7 +162,7 @@
                                                                 <a href="{{ url_for('convenor.update_sponsor_status', sponsor_id=sponsor.user_id, status='Active') }}" class="btn btn-sm btn-success">
                                                                     Activate
                                                                 </a>
-                                                            {% endif %}
+                                                            {% endif %}-->
 
                                                             <!-- Map Students Button -->
                                                             <a href="{{ url_for('convenor.map_students', sponsor_id=sponsor.user_id) }}" class="btn btn-sm btn-primary">

@@ -1310,6 +1310,7 @@ def manage_students():
             u.user_id, 
             u.name AS student_name,
             u.email AS student_email,
+            u.phone AS student_phone,
             u.region,
             sponsor.name AS sponsor_name,
             inst.institution_name,
@@ -1382,6 +1383,117 @@ def manage_students():
 
     return render_template('admin/manage_students.html',students=students,institutions=institutions, courses=courses)
 
+
+
+@admin_bp.route('/admin_map_students_to_sponsors/<string:sponsor_id>', methods=['GET', 'POST'])
+@login_required
+def admin_map_students_to_sponsors(sponsor_id):
+    # Permission Check
+    if current_user.role_id not in [1, 2]:
+        flash('Permission denied', 'error')
+        return redirect(url_for('auth.login'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # A. Fetch Sponsor Details
+    cursor.execute("SELECT user_id, name FROM users WHERE user_id = %s", (sponsor_id,))
+    sponsor = cursor.fetchone()
+
+    if not sponsor:
+        flash('Sponsor not found.', 'error')
+        conn.close()
+        return redirect(url_for('admin.manage_sponsorships'))
+
+    # B. Handle POST (Saving changes)
+    if request.method == 'POST':
+        try:
+            student_ids = request.form.getlist('student_ids')
+
+            # Upsert Logic: Insert if new, Update if exists
+            query = """
+                INSERT INTO grantor_grantees (grantee_id, grantor_id) 
+                VALUES (%s, %s)
+                ON DUPLICATE KEY UPDATE grantor_id = VALUES(grantor_id)
+            """
+            
+            for student_id in student_ids:
+                cursor.execute(query, (student_id, sponsor_id))
+            
+            conn.commit()
+            flash(f'Students successfully mapped to {sponsor["name"]}!', 'success')
+            return redirect(url_for('admin.admin_map_students_to_sponsors', sponsor_id=sponsor_id))
+
+        except Exception as e:
+            conn.rollback()
+            print(f"Error mapping students: {e}")
+            flash('An error occurred while mapping students.', 'error')
+
+    # C. Handle GET (Fetching Data)
+    
+    # 1. Fetch Mapped Students (Already assigned to THIS sponsor)
+    cursor.execute("""
+        SELECT u.user_id, u.name, u.email, u.phone, u.region
+        FROM users u
+        JOIN grantor_grantees gg ON u.user_id = gg.grantee_id
+        WHERE gg.grantor_id = %s AND u.status = 'active'
+    """, (sponsor_id,))
+    mapped_students = cursor.fetchall()
+
+    mapped_ids = [s['user_id'] for s in mapped_students]
+
+    # 2. Fetch Available Students (Unassigned, Open Pool, or Assigned to OTHERS)
+    # Crucial: We select gg.grantor_id to distinguish Open Pool (12) from others
+    cursor.execute("""
+        SELECT u.user_id, u.name, u.email, u.phone, u.region, 
+               gg.grantor_id, 
+               current_sponsor.name as current_sponsor_name
+        FROM users u
+        LEFT JOIN grantor_grantees gg ON u.user_id = gg.grantee_id
+        LEFT JOIN users current_sponsor ON gg.grantor_id = current_sponsor.user_id
+        WHERE u.role_id = 6 
+        AND u.status = 'active'
+        AND (gg.grantor_id != %s OR gg.grantor_id IS NULL)
+    """, (sponsor_id,))
+    
+    available_students = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return render_template(
+        'admin/map_students_to_sponsor.html',
+        sponsor=sponsor,
+        students=available_students,
+        mapped_students=mapped_students,
+        mapped_student_ids=mapped_ids
+    )
+
+@admin_bp.route('/manage_sponsorships', methods=['GET'])
+@login_required
+def manage_sponsorships():
+    # Permission Check
+    if current_user.role_id not in [1, 2]:
+        flash('Permission denied', 'error')
+        return redirect(url_for('auth.login'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Fetch Sponsors, Convenors, and Coordinators (Roles 3, 4, 5)
+    cursor.execute("""
+        SELECT u.user_id, u.name, u.email, u.phone, u.status, u.region, r.role_name
+        FROM users u
+        JOIN roles r ON u.role_id = r.role_id
+        WHERE u.role_id IN (3, 4, 5) AND u.status = 'active'
+        ORDER BY u.name ASC
+    """)
+    sponsors = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return render_template('admin/manage_sponsorships.html', sponsors=sponsors)
 
 @admin_bp.route('/get_courses/<int:institution_id>')
 @login_required

@@ -141,6 +141,15 @@
                   <span>Manage Students</span>
                 </a>
               </li>
+              <li>
+                <a
+                  href="{{ url_for('admin.manage_sponsorships') }}"
+                  class="waves-effect waves-light active"
+                >
+                  <i class="mdi mdi-account-switch"></i>
+                  <span>Manage Sponsorships</span>
+                </a>
+              </li>
             </ul>
           </div>
           <!-- End Sidebar -->
@@ -166,14 +175,23 @@
                     </div>
                     <!-- end page title -->
 
-                    <!-- Filter Section -->
+                    <!-- Filter & Search Section -->
                     <div class="row">
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-body">
-                                    <h4 class="header-title">Filters</h4>
+                                    <h4 class="header-title">Filters & Search</h4>
                                     <div class="row">
-                                        <div class="col-md-4">
+                                        <!-- Search Field (New) -->
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label>Search (Any Field)</label>
+                                                <input type="text" id="searchInput" class="form-control" placeholder="Name, Email, Phone...">
+                                            </div>
+                                        </div>
+
+                                        <!-- Institution Filter -->
+                                        <div class="col-md-3">
                                             <div class="form-group">
                                                 <label>Institution</label>
                                                 <select id="filterInstitution" class="form-control">
@@ -184,7 +202,9 @@
                                                 </select>
                                             </div>
                                         </div>
-                                        <div class="col-md-4">
+
+                                        <!-- Course Filter -->
+                                        <div class="col-md-3">
                                             <div class="form-group">
                                                 <label>Course</label>
                                                 <select id="filterCourse" class="form-control">
@@ -195,7 +215,9 @@
                                                 </select>
                                             </div>
                                         </div>
-                                        <div class="col-md-4">
+
+                                        <!-- Buttons -->
+                                        <div class="col-md-3">
                                             <div class="form-group" style="margin-top: 28px;">
                                                 <button class="btn btn-primary" onclick="applyFilters()">Apply</button>
                                                 <button class="btn btn-secondary" onclick="resetFilters()">Reset</button>
@@ -218,6 +240,7 @@
                                                 <tr>
                                                     <th>Student Name</th>
                                                     <th>Email</th>
+                                                    <th> Student Phone</th>
                                                     <th>Region</th>
                                                     <th>Sponsor</th>
                                                     <th>Institution</th>
@@ -230,6 +253,7 @@
                                                 <tr data-institution="{{ student.institution_id }}" data-course="{{ student.course_id }}">
                                                     <td>{{ student.student_name }}</td>
                                                     <td>{{ student.student_email }}</td>
+                                                    <td>{{ student.student_phone }}</td>
                                                     <td>{{ student.region }}</td>
                                                     <td>{{ student.sponsor_name or 'Unassigned' }}</td>
                                                     <td>{{ student.institution_name or 'Unassigned' }}</td>
@@ -320,26 +344,42 @@
     const allStudents = Array.from(document.querySelectorAll('#studentsTable tbody tr'));
     const institutions = {{ institutions|tojson|safe }};
     const courses = {{ courses|tojson|safe if courses else '[]' }};
+    
+    // Add event listener for Search Input (Trigger on typing)
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('keyup', applyFilters);
 
-    // Filter functions
+    // Filter functions (Now includes Search Logic)
     function applyFilters() {
         const institutionId = document.getElementById('filterInstitution').value;
         const courseId = document.getElementById('filterCourse').value;
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
 
         allStudents.forEach(row => {
             const rowInstitution = row.dataset.institution;
             const rowCourse = row.dataset.course;
             
+            // Get all text content from the row for searching (includes Name, Email, Phone, Region, etc.)
+            const rowText = row.innerText.toLowerCase();
+            
+            // 1. Check Institution Filter
             const institutionMatch = !institutionId || rowInstitution === institutionId;
+            
+            // 2. Check Course Filter
             const courseMatch = !courseId || rowCourse === courseId;
             
-            row.style.display = (institutionMatch && courseMatch) ? '' : 'none';
+            // 3. Check Search Filter (matches any text in the row)
+            const searchMatch = !searchTerm || rowText.includes(searchTerm);
+            
+            // Show row ONLY if ALL conditions are met
+            row.style.display = (institutionMatch && courseMatch && searchMatch) ? '' : 'none';
         });
     }
 
     function resetFilters() {
         document.getElementById('filterInstitution').value = '';
         document.getElementById('filterCourse').value = '';
+        document.getElementById('searchInput').value = ''; // Reset search input
         allStudents.forEach(row => row.style.display = '');
     }
 

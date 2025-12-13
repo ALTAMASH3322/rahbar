@@ -230,7 +230,7 @@ def update_user_status(user_id, status):
 def co_map_students_to_sponsors(sponsor_id):
     print(f"Current User: {current_user}")
     print(f"Current User Role ID: {current_user.role_id}")
-    if current_user.role_id not in [3, 4]:
+    if current_user.role_id not in [1,2,3, 4]:
         print("I am failing")
         flash('You do not have permission to access this page.', 'error')
         return redirect(url_for('auth.login'))

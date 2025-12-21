@@ -1512,3 +1512,345 @@ def get_courses(institution_id):
     conn.close()
     
     return jsonify(courses)
+
+
+
+
+
+
+
+
+# ==============================================================================
+# ADMIN STUDENT MANAGEMENT API (Search, View Details, Edit, Actions)
+# ==============================================================================
+
+@admin_bp.route('/api/students/list', methods=['GET'])
+@login_required
+def get_all_students_data():
+    """
+    API to fetch a list of students with search capabilities for the Admin Table.
+    Searches: Name, Email, Phone, Sponsor Name, Region.
+    """
+    if current_user.role_id not in [1, 2]:
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    draw = request.args.get('draw', 1, type=int)
+    start = request.args.get('start', 0, type=int)
+    length = request.args.get('length', 10, type=int)
+    search_value = request.args.get('search[value]', '', type=str).strip()
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Base Query
+    query = """
+        SELECT 
+            u.user_id, u.name, u.email, u.phone, u.status, u.region,
+            gd.grantee_detail_id, gd.course_applied,
+            sponsor.name AS sponsor_name
+        FROM users u
+        LEFT JOIN grantee_details gd ON u.user_id = gd.user_id
+        LEFT JOIN grantor_grantees gg ON u.user_id = gg.grantee_id
+        LEFT JOIN users sponsor ON gg.grantor_id = sponsor.user_id
+        WHERE u.role_id = 6
+    """
+
+    params = []
+    
+    # Search Logic
+    if search_value:
+        query += """ 
+            AND (
+                u.name LIKE %s OR 
+                u.email LIKE %s OR 
+                u.phone LIKE %s OR 
+                u.user_id LIKE %s OR
+                sponsor.name LIKE %s
+            )
+        """
+        wildcard = f"%{search_value}%"
+        params.extend([wildcard, wildcard, wildcard, wildcard, wildcard])
+
+    # Count filtered records
+    count_query = f"SELECT COUNT(*) as count FROM ({query}) as sub"
+    cursor.execute(count_query, tuple(params))
+    records_filtered = cursor.fetchone()['count']
+
+    # Total records (without search)
+    cursor.execute("SELECT COUNT(*) as count FROM users WHERE role_id = 6")
+    records_total = cursor.fetchone()['count']
+
+    # Pagination and Ordering
+    query += " ORDER BY u.user_id DESC LIMIT %s, %s"
+    params.extend([start, length])
+
+    cursor.execute(query, tuple(params))
+    data = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return jsonify({
+        "draw": draw,
+        "recordsTotal": records_total,
+        "recordsFiltered": records_filtered,
+        "data": data
+    })
+
+
+import json
+
+import json
+
+@admin_bp.route('/api/student/details/<user_id>', methods=['GET'])
+@login_required
+def get_student_full_details(user_id):
+    """
+    API to fetch COMPLETE details.
+    FIX: Ensures 'name' is read strictly from the USERS table, ignoring the grantee_details table.
+    """
+    if current_user.role_id not in [1, 2]:
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        # 1. Basic User & Grantee Details
+        # We select 'u.name AS user_real_name' to ensure we grab the Login/User name.
+        # We also grab 'gd.*', but we will overwrite the 'name' key in Python below.
+        cursor.execute("""
+            SELECT u.user_id, u.name AS user_real_name, u.email, u.phone, u.status, u.region,
+                   gd.* 
+            FROM users u
+            LEFT JOIN grantee_details gd ON u.user_id = gd.user_id
+            WHERE u.user_id = %s
+        """, (user_id,))
+        profile = cursor.fetchone()
+
+        if not profile:
+             return jsonify({'error': 'Student not found'}), 404
+        
+        # CRITICAL FIX: 
+        # The dictionary currently holds the 'name' from grantee_details (due to gd.*).
+        # We FORCE it to use the 'user_real_name' from the users table.
+        profile['name'] = profile['user_real_name']
+
+        # 2. Bank Details
+        cursor.execute("SELECT * FROM bank_details WHERE user_id = %s", (user_id,))
+        bank = cursor.fetchone()
+
+        # 3. Current Course Assignment
+        cursor.execute("""
+            SELECT sic.assigned_at, 
+                   i.institution_name, i.institution_id,
+                   c.course_name, c.course_id, c.fees_per_semester, c.number_of_semesters
+            FROM student_institution_courses sic
+            JOIN institutions i ON sic.institution_id = i.institution_id
+            JOIN courses c ON sic.course_id = c.course_id
+            WHERE sic.user_id = %s
+        """, (user_id,))
+        course_info = cursor.fetchone()
+
+        # 4. Sponsor Info
+        cursor.execute("""
+            SELECT u.user_id, u.name, u.email, u.phone
+            FROM grantor_grantees gg
+            JOIN users u ON gg.grantor_id = u.user_id
+            WHERE gg.grantee_id = %s
+        """, (user_id,))
+        sponsor = cursor.fetchone()
+
+        # 5. Payment History
+        cursor.execute("""
+            SELECT p.*, u.name as grantor_name
+            FROM payments p
+            LEFT JOIN users u ON p.grantor_id = u.user_id
+            WHERE p.grantee_id = %s
+            ORDER BY p.payment_date DESC
+        """, (user_id,))
+        payments = cursor.fetchall()
+
+        # 6. Student Progress / Uploaded Documents
+        cursor.execute("""
+            SELECT sp.* 
+            FROM student_progress sp
+            WHERE sp.grantee_id = %s
+            ORDER BY sp.created_at DESC
+        """, (user_id,))
+        documents = cursor.fetchall()
+
+        response_data = {
+            "profile": profile,
+            "bank": bank,
+            "course": course_info,
+            "sponsor": sponsor,
+            "payments": payments,
+            "documents": documents
+        }
+
+        # Date Serialization Helper
+        def default_converter(o):
+            if isinstance(o, (datetime.date, datetime.datetime)):
+                return o.isoformat()
+            return str(o)
+
+        json_response = json.dumps(response_data, default=default_converter)
+        return current_app.response_class(json_response, mimetype='application/json')
+
+    except Exception as e:
+        print(f"Error fetching student details: {e}")
+        return jsonify({'error': str(e)}), 500
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+
+
+@admin_bp.route('/api/student/update', methods=['POST'])
+@login_required
+def update_student_full_details():
+    """
+    API to update student details.
+    FIX: Handles INSERT for bank details by manually generating 'bank_detail_id'.
+    """
+    if current_user.role_id not in [1, 2]:
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    data = request.json
+    user_id = data.get('user_id')
+    
+    if not user_id:
+        return jsonify({'error': 'User ID missing'}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        # 1. Update USERS table
+        cursor.execute("""
+            UPDATE users 
+            SET name = %s, email = %s, phone = %s, status = %s, region = %s, updated_at = NOW()
+            WHERE user_id = %s
+        """, (
+            data.get('name'), data.get('email'), data.get('phone'), 
+            data.get('status'), data.get('region'), user_id
+        ))
+
+        # 2. Update GRANTEE_DETAILS table
+        cursor.execute("""
+            UPDATE grantee_details
+            SET father_name = %s, mother_name = %s, address = %s, 
+                father_mobile = %s, mother_mobile = %s, updated_at = NOW()
+            WHERE user_id = %s
+        """, (
+            data.get('father_name'), data.get('mother_name'), data.get('address'), 
+            data.get('father_mobile'), data.get('mother_mobile'), user_id
+        ))
+
+        # 3. Update OR Insert BANK_DETAILS
+        cursor.execute("SELECT * FROM bank_details WHERE user_id = %s", (user_id,))
+        existing_bank = cursor.fetchone()
+
+        if existing_bank:
+            # Case A: Record exists -> UPDATE
+            cursor.execute("""
+                UPDATE bank_details
+                SET bank_name = %s, account_number = %s, ifsc_code = %s, account_name = %s
+                WHERE user_id = %s
+            """, (
+                data.get('bank_name'), data.get('account_number'), 
+                data.get('ifsc_code'), data.get('account_name'), user_id
+            ))
+        else:
+            # Case B: No record exists -> INSERT
+            if data.get('account_number'): # Only insert if data is provided
+                
+                # CRITICAL FIX: Calculate the next available ID manually
+                cursor.execute("SELECT COALESCE(MAX(bank_detail_id), 0) + 1 AS next_id FROM bank_details")
+                result = cursor.fetchone()
+                next_id = result['next_id']
+
+                # Insert providing the explicit ID
+                cursor.execute("""
+                    INSERT INTO bank_details (bank_detail_id, user_id, bank_name, account_number, ifsc_code, account_name)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                """, (
+                    next_id, user_id, 
+                    data.get('bank_name'), data.get('account_number'), 
+                    data.get('ifsc_code'), data.get('account_name')
+                ))
+
+        conn.commit()
+        return jsonify({'success': True, 'message': 'Student details updated successfully.'})
+
+    except Exception as e:
+        conn.rollback()
+        print(f"Error updating student: {e}")
+        return jsonify({'error': str(e)}), 500
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+
+
+@admin_bp.route('/api/student/action', methods=['POST'])
+@login_required
+def perform_student_action():
+    """
+    API to perform specific actions like Deactivate, Activate, or Unmap Sponsor.
+    """
+    if current_user.role_id not in [1, 2]:
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    data = request.json
+    user_id = data.get('user_id')
+    action = data.get('action') # 'activate', 'deactivate', 'unassign_sponsor'
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    try:
+        if action == 'deactivate':
+            cursor.execute("UPDATE users SET status = 'Inactive' WHERE user_id = %s", (user_id,))
+            msg = "Student deactivated successfully."
+        
+        elif action == 'activate':
+            cursor.execute("UPDATE users SET status = 'Active' WHERE user_id = %s", (user_id,))
+            msg = "Student activated successfully."
+        
+        elif action == 'unassign_sponsor':
+            # Set to default pool (e.g., ID 12 or NULL based on your logic)
+            cursor.execute("UPDATE grantor_grantees SET grantor_id = 12, status = 'Unassigned' WHERE grantee_id = %s", (user_id,))
+            msg = "Student unassigned from sponsor."
+            
+        else:
+            return jsonify({'error': 'Invalid action'}), 400
+
+        conn.commit()
+        return jsonify({'success': True, 'message': msg})
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+
+# Route for the NEW Student Directory/Edit Page
+@admin_bp.route('/student_directory', methods=['GET'])
+@login_required
+def student_directory():
+    if current_user.role_id not in [1, 2]:
+        flash('Permission denied', 'error')
+        return redirect(url_for('auth.login'))
+    
+    # We fetch admin details for the sidebar name display
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM users WHERE user_id = %s", (current_user.user_id,))
+    admin = cursor.fetchone()
+    cursor.close()
+    conn.close()
+
+    return render_template('admin/student_directory.html', admin=admin)

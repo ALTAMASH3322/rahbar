@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Student Directory | Rahbar Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta content="Admin Student Directory for Rahbar Application" name="description" />
+    <meta content="Coderthemes" name="author" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- App favicon -->
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}" />
+
+    <!-- App css -->
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" id="bootstrap-stylesheet" />
+    <link href="{{ url_for('static', filename='css/icons.min.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ url_for('static', filename='css/app.min.css') }}" rel="stylesheet" type="text/css" id="app-stylesheet" />
+
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap4.min.css">
+
+    <style>
+      .footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background-color: #f8f9fa;
+        padding: 10px 20px;
+        text-align: center;
+        font-size: 14px;
+        color: #6c757d;
+        border-top: 1px solid #ddd;
+        z-index: 1030;
+      }
+      .content-page { padding-bottom: 70px; }
+
+      /* --- Glassy Modal Styles --- */
+      .glassy-modal .modal-content {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        border-radius: 15px;
+      }
+      .glassy-modal .modal-header {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        background: rgba(248, 249, 250, 0.8);
+        border-top-left-radius: 15px;
+        border-top-right-radius: 15px;
+      }
+      .glassy-modal .modal-footer {
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+        background: rgba(248, 249, 250, 0.8);
+        border-bottom-left-radius: 15px;
+        border-bottom-right-radius: 15px;
+      }
+      
+      /* Tabs in Modal */
+      .nav-pills .nav-link.active, .nav-pills .show>.nav-link {
+        background-color: #28a745;
+        box-shadow: 0 4px 6px rgba(40, 167, 69, 0.3);
+      }
+      .nav-pills .nav-link {
+        color: #495057;
+        font-weight: 600;
+        border-radius: 8px;
+        margin-right: 5px;
+      }
+      
+      /* Input Fields in Edit Mode */
+      .editable-field:disabled {
+        background-color: transparent;
+        border: none;
+        font-weight: 600;
+        color: #333;
+        padding-left: 0;
+      }
+      .editable-field:not(:disabled) {
+        background-color: #fff;
+        border: 1px solid #ced4da;
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.075);
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="wrapper">
+      <!-- Topbar Start -->
+      <div class="navbar-custom">
+        <div class="d-flex justify-content-between align-items-center w-100">
+          <div><h6 class="page-title mb-0">Admin Panel</h6></div>
+          <div><a href="{{ url_for('main.homepage') }}" class="text-success"><h4>Rahbar Scholarship Information Management System</h4></a></div>
+          <ul class="list-unstyled topnav-menu mb-0">
+            <li class="dropdown notification-list">
+              <a class="nav-link dropdown-toggle nav-user waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
+                <img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" alt="user-image" class="rounded-circle" />
+                <span class="d-none d-sm-inline-block ml-1">{{ admin.name }}</span>
+              </a>
+              <div class="dropdown-menu dropdown-menu-right profile-dropdown">
+                <a href="{{ url_for('auth.logout') }}" class="dropdown-item notify-item"><i class="mdi mdi-logout-variant"></i><span>Logout</span></a>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- ========== Left Sidebar Start ========== -->
+      <div class="left-side-menu">
+        <div class="slimscroll-menu">
+          <div id="sidebar-menu">
+            <ul class="metismenu" id="side-menu">
+              <li class="menu-title">Navigation</li>
+              <li><a href="{{ url_for('admin.admin_dashboard') }}" class="waves-effect waves-light"><i class="mdi mdi-view-dashboard"></i><span>Dashboard</span></a></li>
+              <li><a href="{{ url_for('admin.manage_users') }}" class="waves-effect waves-light"><i class="mdi mdi-account-multiple"></i><span>Manage Users</span></a></li>
+              <li><a href="{{ url_for('admin.system_configuration') }}" class="waves-effect waves-light"><i class="mdi mdi-settings"></i><span>Payment Config</span></a></li>
+              <li><a href="{{ url_for('admin.admin_generate_reports') }}" class="waves-effect waves-light"><i class="mdi mdi-chart-bar"></i><span>Reports</span></a></li>
+              <li><a href="{{ url_for('admin.manage_application_period') }}" class="waves-effect waves-light"><i class="mdi mdi-calendar"></i><span>App Period</span></a></li>
+              <li><a href="{{ url_for('admin.manage_rcc_centers') }}" class="waves-effect waves-light"><i class="mdi mdi-bank"></i><span>RCC Centers</span></a></li>
+              <li><a href="{{ url_for('admin.manage_courses') }}" class="waves-effect waves-light"><i class="mdi mdi-book-open"></i><span>Courses</span></a></li>
+              
+              <!-- Assignments -->
+              <li><a href="{{ url_for('admin.manage_students') }}" class="waves-effect waves-light"><i class="mdi mdi-account-school"></i><span>Assign Courses</span></a></li>
+              
+              <!-- Student Directory (Active) -->
+              <li><a href="{{ url_for('admin.student_directory') }}" class="waves-effect waves-light active"><i class="mdi mdi-account-details"></i><span>Student Directory</span></a></li>
+              
+              <li><a href="{{ url_for('admin.manage_sponsorships') }}" class="waves-effect waves-light"><i class="mdi mdi-account-switch"></i><span>Sponsorships</span></a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- Start Page Content here -->
+      <!-- ============================================================== -->
+      <div class="content-page">
+        <div class="content">
+          <div class="container-fluid">
+            <!-- Page Title -->
+            <div class="row">
+              <div class="col-12">
+                <div class="page-title-box">
+                  <h4 class="page-title">Student Directory & Full Details</h4>
+                </div>
+              </div>
+            </div>
+
+            <!-- Student List Table -->
+            <div class="row">
+              <div class="col-12">
+                <div class="card">
+                  <div class="card-body">
+                    <h4 class="header-title mb-4">All Registered Students</h4>
+                    <p class="text-muted font-13 mb-4">
+                        Search by ID, Name, Email, Phone, or Sponsor. Click "View Details" to see full history and edit.
+                    </p>
+                    <table id="studentsTable" class="table table-bordered table-striped dt-responsive nowrap" style="width:100%">
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Name</th>
+                          <th>Email</th>
+                          <th>Phone</th>
+                          <th>Region</th>
+                          <th>Sponsor</th>
+                          <th>Status</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody></tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div> <!-- container-fluid -->
+        </div> <!-- content -->
+
+        <footer class="footer">
+          <p class="mb-0">Developed by <strong>Cognifly AI System</strong></p>
+        </footer>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- GLASSY MODAL FOR STUDENT DETAILS -->
+    <!-- ============================================================== -->
+    <div class="modal fade glassy-modal" id="studentDetailsModal" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title text-success"><i class="mdi mdi-account-details"></i> Student Profile: <span id="modalTitleName"></span></h4>
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+          </div>
+          <div class="modal-body">
+            
+            <!-- Navigation Tabs -->
+            <ul class="nav nav-pills nav-fill mb-3" id="pills-tab" role="tablist">
+              <li class="nav-item">
+                <a class="nav-link active" id="pills-profile-tab" data-toggle="pill" href="#pills-profile" role="tab">Personal Info</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="pills-course-tab" data-toggle="pill" href="#pills-course" role="tab">Course & Sponsor</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="pills-bank-tab" data-toggle="pill" href="#pills-bank" role="tab">Bank Details</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="pills-payment-tab" data-toggle="pill" href="#pills-payment" role="tab">Payments & Schedule</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="pills-docs-tab" data-toggle="pill" href="#pills-docs" role="tab">Documents</a>
+              </li>
+            </ul>
+
+            <div class="tab-content" id="pills-tabContent">
+              <!-- TAB 1: Profile (Editable) -->
+              <div class="tab-pane fade show active" id="pills-profile" role="tabpanel">
+                <form id="editStudentForm">
+                  <!-- IMPORTANT: We do not rely on this hidden input for saving anymore, but keeping it for reference -->
+                  <input type="hidden" id="editUserId">
+                  <div class="row">
+                    <div class="col-md-6 form-group">
+                      <label>Full Name</label>
+                      <input type="text" class="form-control editable-field" id="editName" disabled>
+                    </div>
+                    <div class="col-md-6 form-group">
+                      <label>Email</label>
+                      <input type="email" class="form-control editable-field" id="editEmail" disabled>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-6 form-group">
+                      <label>Phone</label>
+                      <input type="text" class="form-control editable-field" id="editPhone" disabled>
+                    </div>
+                    <div class="col-md-6 form-group">
+                      <label>Region</label>
+                      <select class="form-control editable-field" id="editRegion" disabled>
+                        <option value="North">North</option>
+                        <option value="South">South</option>
+                        <option value="East">East</option>
+                        <option value="West">West</option>
+                        <option value="Central">Central</option>
+                        <option value="Jeddah">Jeddah</option>
+                        <option value="Riyadh">Riyadh</option>
+                        <option value="Dammam">Dammam</option>
+                      </select>
+                    </div>
+                  </div>
+                  <hr>
+                  <!-- <h5 class="text-primary">Family Details</h5>
+                  <div class="row">
+                    <div class="col-md-6 form-group">
+                      <label>Father's Name</label>
+                      <input type="text" class="form-control editable-field" id="editFatherName" disabled>
+                    </div>
+                    <div class="col-md-6 form-group">
+                      <label>Mother's Name</label>
+                      <input type="text" class="form-control editable-field" id="editMotherName" disabled>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-12 form-group">
+                      <label>Address</label>
+                      <textarea class="form-control editable-field" id="editAddress" rows="2" disabled></textarea>
+                    </div>
+                  </div> -->
+                </form>
+              </div>
+
+              <!-- TAB 2: Course & Sponsor (Read Only Mostly) -->
+              <div class="tab-pane fade" id="pills-course" role="tabpanel">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="card bg-light">
+                      <div class="card-body">
+                        <h5 class="card-title text-success">Current Course Assignment</h5>
+                        <p><strong>Course:</strong> <span id="viewCourseName">Not Assigned</span></p>
+                        <p><strong>Institution:</strong> <span id="viewInstName">Not Assigned</span></p>
+                        <p><strong>Assigned Date:</strong> <span id="viewAssignedAt">N/A</span></p>
+                        <p><strong>Duration:</strong> <span id="viewSemesters">0</span> Semesters</p>
+                        <p><strong>Fees (Per Sem):</strong> ₹<span id="viewFees">0</span></p>
+                        <button class="btn btn-sm btn-outline-success mt-2" onclick="location.href='{{ url_for('admin.manage_students') }}'">Go to Assignments Page</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="card bg-light">
+                      <div class="card-body">
+                        <h5 class="card-title text-info">Sponsorship Details</h5>
+                        <p><strong>Sponsor Name:</strong> <span id="viewSponsorName">Unassigned</span></p>
+                        <p><strong>Email:</strong> <span id="viewSponsorEmail">--</span></p>
+                        <p><strong>Phone:</strong> <span id="viewSponsorPhone">--</span></p>
+                        <div class="mt-3">
+                          <button class="btn btn-sm btn-outline-danger" id="unmapSponsorBtn">Unassign Sponsor</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- TAB 3: Bank Details (Editable) -->
+              <div class="tab-pane fade" id="pills-bank" role="tabpanel">
+                <form id="editBankForm">
+                  <div class="row">
+                    <div class="col-md-6 form-group">
+                      <label>Account Holder Name</label>
+                      <input type="text" class="form-control editable-field" id="editBankAcName" disabled>
+                    </div>
+                    <div class="col-md-6 form-group">
+                      <label>Bank Name</label>
+                      <input type="text" class="form-control editable-field" id="editBankName" disabled>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-6 form-group">
+                      <label>Account Number</label>
+                      <input type="text" class="form-control editable-field" id="editBankAcNum" disabled>
+                    </div>
+                    <div class="col-md-6 form-group">
+                      <label>IFSC Code</label>
+                      <input type="text" class="form-control editable-field" id="editBankIfsc" disabled>
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+              <!-- TAB 4: Payments & Schedule (Calculated) -->
+              <div class="tab-pane fade" id="pills-payment" role="tabpanel">
+                <h5 class="text-primary">Calculated Payment Schedule</h5>
+                <div id="paymentScheduleContainer">
+                    <div class="alert alert-info">Loading schedule...</div>
+                </div>
+                
+                <hr class="mt-4">
+                <h5 class="text-dark">Transaction History</h5>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead><tr><th>Date</th><th>Amount</th><th>Status</th><th>By</th><th>Receipt</th></tr></thead>
+                        <tbody id="paymentHistoryBody"></tbody>
+                    </table>
+                </div>
+              </div>
+
+              <!-- TAB 5: Documents -->
+              <div class="tab-pane fade" id="pills-docs" role="tabpanel">
+                <div class="table-responsive">
+                  <table class="table table-striped">
+                    <thead><tr><th>Date</th><th>Year/Session</th><th>Marks</th><th>File</th></tr></thead>
+                    <tbody id="docsTableBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <div class="modal-footer justify-content-between">
+            <div>
+                <button type="button" class="btn btn-danger" id="deactivateBtn" style="display:none;">Deactivate User</button>
+                <button type="button" class="btn btn-success" id="activateBtn" style="display:none;">Activate User</button>
+            </div>
+            <div>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-info" id="enableEditBtn"><i class="mdi mdi-pencil"></i> Edit Details</button>
+                <button type="button" class="btn btn-success" id="saveChangesBtn" style="display:none;"><i class="mdi mdi-content-save"></i> Save Changes</button>
+                <button type="button" class="btn btn-warning" id="cancelEditBtn" style="display:none;">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vendor js -->
+    <script src="{{ url_for('static', filename='js/vendor.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
+
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap4.min.js"></script>
+
+    <!-- Page Logic -->
+    <script>
+      $(document).ready(function() {
+        
+        // Define Base URL for Uploads (assuming uploads are served at /admin/uploads/filename)
+        var uploadsBaseUrl = "{{ url_for('admin.uploaded_file', filename='') }}";
+
+        // 1. Initialize DataTable
+        var table = $('#studentsTable').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "ajax": "{{ url_for('admin.get_all_students_data') }}",
+            "columns": [
+                { "data": "user_id" },
+                { "data": "name" },
+                { "data": "email" },
+                { "data": "phone" },
+                { "data": "region" },
+                { "data": "sponsor_name", "render": function(data) { return data ? data : '<span class="text-danger">Unassigned</span>'; }},
+                { "data": "status", "render": function(data) {
+                    return data === 'active' || data === 'Active' 
+                        ? '<span class="badge badge-success">Active</span>' 
+                        : '<span class="badge badge-danger">Inactive</span>';
+                }},
+                { "data": null, "orderable": false, "render": function(data, type, row) {
+                    return `<button class="btn btn-sm btn-primary view-details-btn" data-id="${row.user_id}">
+                              <i class="mdi mdi-eye"></i> View Details
+                            </button>`;
+                }}
+            ]
+        });
+
+        // 2. View Details Click Handler
+        $('#studentsTable tbody').on('click', '.view-details-btn', function () {
+            var userId = $(this).data('id');
+            loadStudentDetails(userId);
+        });
+
+        // Global variable to hold the ID of the student currently being viewed
+        var currentStudentId = null;
+
+        // 3. Fetch and Populate Modal
+        function loadStudentDetails(userId) {
+            currentStudentId = userId; // Store globally
+            
+            // Reset UI State
+            $('#studentDetailsModal input, #studentDetailsModal select, #studentDetailsModal textarea').prop('disabled', true);
+            $('#saveChangesBtn, #cancelEditBtn').hide();
+            $('#enableEditBtn').show();
+            
+            // FIX: Dynamic URL Generation to handle string IDs (like M007-2024)
+            var baseUrl = "{{ url_for('admin.get_student_full_details', user_id='PLACEHOLDER') }}";
+            var finalUrl = baseUrl.replace('PLACEHOLDER', userId);
+
+            $.ajax({
+                url: finalUrl,
+                method: 'GET',
+                success: function(response) {
+                    const p = response.profile || {};
+                    const b = response.bank || {};
+                    const c = response.course || {};
+                    const s = response.sponsor || {};
+                    const payments = response.payments || [];
+                    const docs = response.documents || [];
+
+                    // -- Profile Tab --
+                    $('#modalTitleName').text(p.name);
+                    $('#editUserId').val(p.user_id);
+                    $('#editName').val(p.name);
+                    $('#editEmail').val(p.email);
+                    $('#editPhone').val(p.phone);
+                    $('#editRegion').val(p.region);
+                    $('#editFatherName').val(p.father_name);
+                    $('#editMotherName').val(p.mother_name);
+                    $('#editAddress').val(p.address);
+
+                    // -- Action Buttons --
+                    if (p.status === 'Active' || p.status === 'active') {
+                        $('#deactivateBtn').show(); $('#activateBtn').hide();
+                    } else {
+                        $('#deactivateBtn').hide(); $('#activateBtn').show();
+                    }
+
+                    // -- Course Tab --
+                    $('#viewCourseName').text(c.course_name || 'Not Assigned');
+                    $('#viewInstName').text(c.institution_name || 'Not Assigned');
+                    $('#viewAssignedAt').text(c.assigned_at ? new Date(c.assigned_at).toLocaleDateString() : 'N/A');
+                    $('#viewSemesters').text(c.number_of_semesters || 0);
+                    $('#viewFees').text(c.fees_per_semester || 0);
+
+                    // -- Sponsor Tab --
+                    $('#viewSponsorName').text(s.name || 'Unassigned');
+                    $('#viewSponsorEmail').text(s.email || '--');
+                    $('#viewSponsorPhone').text(s.phone || '--');
+                    if(s.user_id) $('#unmapSponsorBtn').show(); else $('#unmapSponsorBtn').hide();
+
+                    // -- Bank Tab --
+                    $('#editBankAcName').val(b.account_name);
+                    $('#editBankName').val(b.bank_name);
+                    $('#editBankAcNum').val(b.account_number);
+                    $('#editBankIfsc').val(b.ifsc_code);
+
+                    // -- Payments Tab --
+                    let historyHtml = '';
+                    if(payments.length === 0) historyHtml = '<tr><td colspan="5" class="text-center">No payment history.</td></tr>';
+                    payments.forEach(pay => {
+                        let link = '-';
+                        if(pay.receipt_url) {
+                            let filename = pay.receipt_url.split('/').pop();
+                            link = `<a href="${uploadsBaseUrl}${filename}" target="_blank">View</a>`;
+                        }
+                        historyHtml += `<tr>
+                            <td>${new Date(pay.payment_date).toLocaleDateString()}</td>
+                            <td>₹${pay.amount}</td>
+                            <td><span class="badge badge-${pay.status==='Paid'?'success':'warning'}">${pay.status}</span></td>
+                            <td>${pay.grantor_name || 'System'}</td>
+                            <td>${link}</td>
+                        </tr>`;
+                    });
+                    $('#paymentHistoryBody').html(historyHtml);
+
+                    // -- Future Schedule --
+                    generateSchedule(c, payments);
+
+                    // -- Documents Tab --
+                    let docsHtml = '';
+                    if(docs.length === 0) docsHtml = '<tr><td colspan="4" class="text-center">No documents uploaded.</td></tr>';
+                    docs.forEach(d => {
+                        let docLink = '#';
+                        if (d.file_path) {
+                             let filename = d.file_path.split('/').pop();
+                             docLink = `${uploadsBaseUrl}${filename}`;
+                        }
+                        docsHtml += `<tr>
+                            <td>${new Date(d.created_at).toLocaleDateString()}</td>
+                            <td>${d.year} (Session: ${d.session})</td>
+                            <td>${d.marks}</td>
+                            <td><a href="${docLink}" target="_blank" class="btn btn-xs btn-primary">Download</a></td>
+                        </tr>`;
+                    });
+                    $('#docsTableBody').html(docsHtml);
+
+                    // Show Modal
+                    $('#studentDetailsModal').modal('show');
+                },
+                error: function(err) { console.error(err); alert('Error fetching details'); }
+            });
+        }
+
+        // 4. Generate Schedule (Logic same as Sponsor View)
+        function generateSchedule(course, payments) {
+            const container = $('#paymentScheduleContainer');
+            if (!course.assigned_at) {
+                container.html('<div class="alert alert-warning">Course not assigned, cannot generate schedule.</div>');
+                return;
+            }
+
+            const paidCount = payments.filter(p => p.status === 'Paid' || p.status === 'paid').length;
+            const baseDate = new Date(course.assigned_at);
+            const totalSems = parseInt(course.number_of_semesters) || 0;
+            const totalPayments = Math.floor((totalSems / 2.0) * 4.0);
+            
+            let html = `<table class="table table-bordered table-sm text-center bg-white">
+                        <thead class="thead-light"><tr><th>Inst #</th><th>Due Date</th><th>Status</th></tr></thead><tbody>`;
+
+            for (let i = 1; i <= totalPayments; i++) {
+                let dueDate = new Date(baseDate);
+                dueDate.setMonth(dueDate.getMonth() + (3 * i));
+                
+                let status = '<span class="badge badge-secondary">Future</span>';
+                let rowClass = '';
+                const today = new Date();
+
+                if (i <= paidCount) {
+                    status = '<span class="badge badge-success">Paid</span>';
+                    rowClass = 'table-success';
+                } else if (dueDate < today) {
+                    status = '<span class="badge badge-danger">Overdue</span>';
+                    rowClass = 'text-danger font-weight-bold';
+                } else if (dueDate <= new Date(today.setDate(today.getDate() + 30))) {
+                     status = '<span class="badge badge-warning">Due Soon</span>';
+                }
+
+                html += `<tr class="${rowClass}"><td>${i}</td><td>${dueDate.toLocaleDateString()}</td><td>${status}</td></tr>`;
+            }
+            html += '</tbody></table>';
+            container.html(html);
+        }
+
+        // 5. Edit Controls
+        $('#enableEditBtn').click(function() {
+            $('#studentDetailsModal .editable-field').prop('disabled', false);
+            $(this).hide();
+            $('#saveChangesBtn, #cancelEditBtn').show();
+        });
+        $('#cancelEditBtn').click(function() { loadStudentDetails(currentStudentId); });
+
+        // 6. Save Changes
+        $('#saveChangesBtn').click(function() {
+            // FIX: Use the global currentStudentId variable
+            if (!currentStudentId) { alert("No student selected."); return; }
+
+            const data = {
+                user_id: currentStudentId, // <--- Key Fix here
+                name: $('#editName').val(),
+                email: $('#editEmail').val(),
+                phone: $('#editPhone').val(),
+                region: $('#editRegion').val(),
+                father_name: $('#editFatherName').val(),
+                mother_name: $('#editMotherName').val(),
+                address: $('#editAddress').val(),
+                status: $('#deactivateBtn').is(':visible') ? 'Active' : 'Inactive',
+                account_name: $('#editBankAcName').val(),
+                bank_name: $('#editBankName').val(),
+                account_number: $('#editBankAcNum').val(),
+                ifsc_code: $('#editBankIfsc').val()
+            };
+            $.ajax({
+                url: "{{ url_for('admin.update_student_full_details') }}",
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function() { 
+                    alert('Updated successfully!'); 
+                    loadStudentDetails(currentStudentId); 
+                    table.ajax.reload(null, false); 
+                },
+                error: function(err) { alert('Error: ' + err.responseJSON.error); }
+            });
+        });
+
+        // 7. Actions (Activate/Deactivate/Unmap)
+        function performAction(action) {
+            if(!confirm("Are you sure?")) return;
+            $.ajax({
+                url: "{{ url_for('admin.perform_student_action') }}",
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ user_id: currentStudentId, action: action }),
+                success: function(res) { 
+                    alert(res.message); 
+                    loadStudentDetails(currentStudentId); 
+                    table.ajax.reload(null, false); 
+                }
+            });
+        }
+        $('#deactivateBtn').click(() => performAction('deactivate'));
+        $('#activateBtn').click(() => performAction('activate'));
+        $('#unmapSponsorBtn').click(() => performAction('unassign_sponsor'));
+      });
+    </script>
+  </body>
+</html>

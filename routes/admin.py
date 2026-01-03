@@ -8,6 +8,8 @@ import pandas as pd
 from io import BytesIO
 from datetime import datetime
 import datetime
+from werkzeug.utils import secure_filename
+
 
 # Create Blueprint for admin routes
 admin_bp = Blueprint('admin', __name__)
@@ -1854,3 +1856,90 @@ def student_directory():
     conn.close()
 
     return render_template('admin/student_directory.html', admin=admin)
+
+
+
+
+
+# ==============================================================================
+# ADMIN PAYMENT ACTION API (Record New Payment)
+# ==============================================================================
+
+@admin_bp.route('/api/payment/record_action', methods=['POST'])
+@login_required
+def admin_record_payment():
+    if current_user.role_id not in [1, 2]:
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    # FIX: Import datetime class locally to avoid 'module object has no attribute now' error
+    from datetime import datetime 
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        # 1. Get Form Data
+        action_type = request.form.get('action_type') # 'create' or 'edit'
+        payment_id = request.form.get('payment_id') # Only for edits
+        grantee_id = request.form.get('grantee_id')
+        amount = request.form.get('amount')
+        payment_date = request.form.get('payment_date') # YYYY-MM-DD
+        status = request.form.get('status', 'Paid')
+        
+        # 2. Handle File Upload (Receipt)
+        receipt_file = request.files.get('receipt')
+        receipt_path = None
+        
+        if receipt_file and receipt_file.filename != '':
+            # FIX: Used datetime.now() safely here
+            timestamp = datetime.now().timestamp()
+            filename = secure_filename(f"admin_pay_{grantee_id}_{timestamp}_{receipt_file.filename}")
+            
+            filepath = os.path.join(UPLOAD_FOLDER, filename) # Use the global UPLOAD_FOLDER var
+            receipt_file.save(filepath)
+            receipt_path = filename 
+
+        # 3. Database Logic
+        if action_type == 'create':
+            if not grantee_id or not amount:
+                return jsonify({'error': 'Missing required fields'}), 400
+            
+            # Handle empty date by using current date
+            final_date = payment_date if payment_date else datetime.now().strftime('%Y-%m-%d')
+
+            cursor.execute("""
+                INSERT INTO payments (grantor_id, grantee_id, amount, payment_date, status, receipt_url, created_at)
+                VALUES (%s, %s, %s, %s, %s, %s, NOW())
+            """, (current_user.user_id, grantee_id, amount, final_date, status, receipt_path))
+            
+            msg = "Payment recorded successfully."
+
+        elif action_type == 'edit':
+            if not payment_id:
+                return jsonify({'error': 'Payment ID missing for edit'}), 400
+            
+            # Dynamic Update Query building
+            query = "UPDATE payments SET amount=%s, payment_date=%s, status=%s, updated_at=NOW()"
+            params = [amount, payment_date, status]
+            
+            if receipt_path:
+                query += ", receipt_url=%s"
+                params.append(receipt_path)
+            
+            query += " WHERE payment_id=%s"
+            params.append(payment_id)
+            
+            cursor.execute(query, tuple(params))
+            msg = "Payment updated successfully."
+
+        conn.commit()
+        return jsonify({'success': True, 'message': msg})
+
+    except Exception as e:
+        conn.rollback()
+        # Print the error to console for easier debugging
+        print(f"Payment Error: {e}")
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()

@@ -221,7 +221,6 @@
               <!-- TAB 1: Profile (Editable) -->
               <div class="tab-pane fade show active" id="pills-profile" role="tabpanel">
                 <form id="editStudentForm">
-                  <!-- IMPORTANT: We do not rely on this hidden input for saving anymore, but keeping it for reference -->
                   <input type="hidden" id="editUserId">
                   <div class="row">
                     <div class="col-md-6 form-group">
@@ -253,27 +252,10 @@
                     </div>
                   </div>
                   <hr>
-                  <!-- <h5 class="text-primary">Family Details</h5>
-                  <div class="row">
-                    <div class="col-md-6 form-group">
-                      <label>Father's Name</label>
-                      <input type="text" class="form-control editable-field" id="editFatherName" disabled>
-                    </div>
-                    <div class="col-md-6 form-group">
-                      <label>Mother's Name</label>
-                      <input type="text" class="form-control editable-field" id="editMotherName" disabled>
-                    </div>
-                  </div>
-                  <div class="row">
-                    <div class="col-md-12 form-group">
-                      <label>Address</label>
-                      <textarea class="form-control editable-field" id="editAddress" rows="2" disabled></textarea>
-                    </div>
-                  </div> -->
                 </form>
               </div>
 
-              <!-- TAB 2: Course & Sponsor (Read Only Mostly) -->
+              <!-- TAB 2: Course & Sponsor -->
               <div class="tab-pane fade" id="pills-course" role="tabpanel">
                 <div class="row">
                   <div class="col-md-6">
@@ -305,7 +287,7 @@
                 </div>
               </div>
 
-              <!-- TAB 3: Bank Details (Editable) -->
+              <!-- TAB 3: Bank Details -->
               <div class="tab-pane fade" id="pills-bank" role="tabpanel">
                 <form id="editBankForm">
                   <div class="row">
@@ -331,7 +313,7 @@
                 </form>
               </div>
 
-              <!-- TAB 4: Payments & Schedule (Calculated) -->
+              <!-- TAB 4: Payments & Schedule -->
               <div class="tab-pane fade" id="pills-payment" role="tabpanel">
                 <h5 class="text-primary">Calculated Payment Schedule</h5>
                 <div id="paymentScheduleContainer">
@@ -376,6 +358,63 @@
       </div>
     </div>
 
+    <!-- ============================================================== -->
+    <!-- NEW ADMIN PAYMENT MODAL (Create & Edit) -->
+    <!-- ============================================================== -->
+    <div class="modal fade" id="adminPaymentModal" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-success text-white">
+            <h5 class="modal-title" id="paymentModalTitle">Record Payment</h5>
+            <button type="button" class="close text-white" data-dismiss="modal" aria-hidden="true">×</button>
+          </div>
+          <form id="adminPaymentForm" enctype="multipart/form-data">
+            <div class="modal-body">
+              <input type="hidden" name="action_type" id="payActionType" value="create">
+              <input type="hidden" name="payment_id" id="payPaymentId">
+              <input type="hidden" name="grantee_id" id="payGranteeId">
+    
+              <!-- Bank Context (Visual Only) -->
+              <div class="alert alert-light border">
+                <small class="text-muted text-uppercase font-weight-bold">Beneficiary Details</small>
+                <div id="payBankDetailsText" class="font-13 mt-1">Loading...</div>
+              </div>
+    
+              <div class="form-group">
+                <label>Amount (INR) <span class="text-danger">*</span></label>
+                <input type="number" step="0.01" class="form-control" name="amount" id="payAmount" required>
+              </div>
+    
+              <div class="form-group">
+                <label>Payment Date</label>
+                <input type="date" class="form-control" name="payment_date" id="payDate" required>
+              </div>
+    
+              <div class="form-group">
+                <label>Status</label>
+                <select class="form-control" name="status" id="payStatus">
+                  <option value="Paid">Paid</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Overdue">Overdue</option>
+                </select>
+              </div>
+    
+              <div class="form-group">
+                <label>Upload Receipt (Optional)</label>
+                <input type="file" class="form-control-file" name="receipt" id="payReceipt">
+                <small class="text-muted">Allowed: jpg, png, pdf</small>
+              </div>
+    
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-success" id="btnSubmitPayment">Confirm & Save</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
     <!-- Vendor js -->
     <script src="{{ url_for('static', filename='js/vendor.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
@@ -390,7 +429,7 @@
     <script>
       $(document).ready(function() {
         
-        // Define Base URL for Uploads (assuming uploads are served at /admin/uploads/filename)
+        // Define Base URL for Uploads
         var uploadsBaseUrl = "{{ url_for('admin.uploaded_file', filename='') }}";
 
         // 1. Initialize DataTable
@@ -424,19 +463,18 @@
             loadStudentDetails(userId);
         });
 
-        // Global variable to hold the ID of the student currently being viewed
+        // Global variable
         var currentStudentId = null;
 
         // 3. Fetch and Populate Modal
         function loadStudentDetails(userId) {
-            currentStudentId = userId; // Store globally
+            currentStudentId = userId; 
             
             // Reset UI State
             $('#studentDetailsModal input, #studentDetailsModal select, #studentDetailsModal textarea').prop('disabled', true);
             $('#saveChangesBtn, #cancelEditBtn').hide();
             $('#enableEditBtn').show();
             
-            // FIX: Dynamic URL Generation to handle string IDs (like M007-2024)
             var baseUrl = "{{ url_for('admin.get_student_full_details', user_id='PLACEHOLDER') }}";
             var finalUrl = baseUrl.replace('PLACEHOLDER', userId);
 
@@ -451,7 +489,7 @@
                     const payments = response.payments || [];
                     const docs = response.documents || [];
 
-                    // -- Profile Tab --
+                    // -- Profile --
                     $('#modalTitleName').text(p.name);
                     $('#editUserId').val(p.user_id);
                     $('#editName').val(p.name);
@@ -469,26 +507,26 @@
                         $('#deactivateBtn').hide(); $('#activateBtn').show();
                     }
 
-                    // -- Course Tab --
+                    // -- Course --
                     $('#viewCourseName').text(c.course_name || 'Not Assigned');
                     $('#viewInstName').text(c.institution_name || 'Not Assigned');
                     $('#viewAssignedAt').text(c.assigned_at ? new Date(c.assigned_at).toLocaleDateString() : 'N/A');
                     $('#viewSemesters').text(c.number_of_semesters || 0);
                     $('#viewFees').text(c.fees_per_semester || 0);
 
-                    // -- Sponsor Tab --
+                    // -- Sponsor --
                     $('#viewSponsorName').text(s.name || 'Unassigned');
                     $('#viewSponsorEmail').text(s.email || '--');
                     $('#viewSponsorPhone').text(s.phone || '--');
                     if(s.user_id) $('#unmapSponsorBtn').show(); else $('#unmapSponsorBtn').hide();
 
-                    // -- Bank Tab --
+                    // -- Bank --
                     $('#editBankAcName').val(b.account_name);
                     $('#editBankName').val(b.bank_name);
                     $('#editBankAcNum').val(b.account_number);
                     $('#editBankIfsc').val(b.ifsc_code);
 
-                    // -- Payments Tab --
+                    // -- Payments History --
                     let historyHtml = '';
                     if(payments.length === 0) historyHtml = '<tr><td colspan="5" class="text-center">No payment history.</td></tr>';
                     payments.forEach(pay => {
@@ -507,10 +545,10 @@
                     });
                     $('#paymentHistoryBody').html(historyHtml);
 
-                    // -- Future Schedule --
-                    generateSchedule(c, payments);
+                    // -- Calculate Schedule (Pass Bank Details Now) --
+                    generateSchedule(c, payments, b);
 
-                    // -- Documents Tab --
+                    // -- Documents --
                     let docsHtml = '';
                     if(docs.length === 0) docsHtml = '<tr><td colspan="4" class="text-center">No documents uploaded.</td></tr>';
                     docs.forEach(d => {
@@ -528,54 +566,201 @@
                     });
                     $('#docsTableBody').html(docsHtml);
 
-                    // Show Modal
                     $('#studentDetailsModal').modal('show');
                 },
                 error: function(err) { console.error(err); alert('Error fetching details'); }
             });
         }
 
-        // 4. Generate Schedule (Logic same as Sponsor View)
-        function generateSchedule(course, payments) {
+        // 4. UPDATED GENERATE SCHEDULE FUNCTION WITH PAY BUTTONS
+        function generateSchedule(course, payments, bankDetails) {
             const container = $('#paymentScheduleContainer');
+            
             if (!course.assigned_at) {
                 container.html('<div class="alert alert-warning">Course not assigned, cannot generate schedule.</div>');
                 return;
             }
 
-            const paidCount = payments.filter(p => p.status === 'Paid' || p.status === 'paid').length;
+            // Filter only PAID status for the count logic
+            const paidRecords = payments.filter(p => p.status === 'Paid' || p.status === 'paid');
+            // Sort by payment ID or Date to map them correctly to installments
+            paidRecords.sort((a, b) => new Date(a.payment_date) - new Date(b.payment_date));
+            const paidCount = paidRecords.length;
+
             const baseDate = new Date(course.assigned_at);
             const totalSems = parseInt(course.number_of_semesters) || 0;
-            const totalPayments = Math.floor((totalSems / 2.0) * 4.0);
+            const feesPerSem = parseFloat(course.fees_per_semester) || 0;
             
-            let html = `<table class="table table-bordered table-sm text-center bg-white">
-                        <thead class="thead-light"><tr><th>Inst #</th><th>Due Date</th><th>Status</th></tr></thead><tbody>`;
+            // Logic: 2 Semesters per year, 4 Payments per year (Quarterly)
+            const quarterlyAmount = (feesPerSem / 2).toFixed(2);
+            const totalPayments = Math.floor((totalSems / 2.0) * 4.0);
+
+            let html = `<div class="table-responsive">
+                        <table class="table table-bordered table-centered mb-0 text-center">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Due Date</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+            let nextActionFound = false;
 
             for (let i = 1; i <= totalPayments; i++) {
                 let dueDate = new Date(baseDate);
                 dueDate.setMonth(dueDate.getMonth() + (3 * i));
                 
-                let status = '<span class="badge badge-secondary">Future</span>';
-                let rowClass = '';
                 const today = new Date();
+                today.setHours(0,0,0,0);
+                dueDate.setHours(0,0,0,0);
 
+                let statusBadge = '';
+                let actionBtn = '';
+                let rowClass = '';
+                
+                // --- CASE 1: ALREADY PAID ---
                 if (i <= paidCount) {
-                    status = '<span class="badge badge-success">Paid</span>';
+                    let record = paidRecords[i-1]; 
+                    let payDate = record ? new Date(record.payment_date).toLocaleDateString() : 'N/A';
+                    let payId = record ? record.payment_id : '';
+                    let payAmt = record ? record.amount : quarterlyAmount;
+                    let paySts = record ? record.status : 'Paid';
+                    let payRawDate = record ? new Date(record.payment_date).toISOString().split('T')[0] : '';
+
+                    statusBadge = `<span class="badge badge-success font-12">Paid</span><br><small class="text-muted">${payDate}</small>`;
                     rowClass = 'table-success';
-                } else if (dueDate < today) {
-                    status = '<span class="badge badge-danger">Overdue</span>';
-                    rowClass = 'text-danger font-weight-bold';
-                } else if (dueDate <= new Date(today.setDate(today.getDate() + 30))) {
-                     status = '<span class="badge badge-warning">Due Soon</span>';
+                    
+                    if (record) {
+                        actionBtn = `<button type="button" class="btn btn-xs btn-outline-secondary edit-payment-btn"
+                                        data-pay-id="${payId}"
+                                        data-amount="${payAmt}"
+                                        data-date="${payRawDate}"
+                                        data-status="${paySts}">
+                                        <i class="mdi mdi-pencil"></i> Edit
+                                     </button>`;
+                    }
+                } 
+                // --- CASE 2: NEXT DUE (PAY NOW) ---
+                else if (!nextActionFound) {
+                    nextActionFound = true; 
+                    
+                    if (dueDate < today) {
+                        statusBadge = '<span class="badge badge-danger">Overdue</span>';
+                    } else if (dueDate <= new Date(today.getTime() + (30 * 24 * 60 * 60 * 1000))) {
+                        statusBadge = '<span class="badge badge-warning">Due Soon</span>';
+                    } else {
+                        statusBadge = '<span class="badge badge-info">Scheduled</span>';
+                    }
+
+                    const bankStr = bankDetails && bankDetails.bank_name ? `${bankDetails.bank_name} - ${bankDetails.account_number}` : 'No Bank Details';
+                    
+                    actionBtn = `<button type="button" class="btn btn-sm btn-success shadow-none pay-now-btn"
+                                    data-installment="${i}"
+                                    data-amount="${quarterlyAmount}"
+                                    data-bank="${bankStr}">
+                                    Pay Now <i class="mdi mdi-cash"></i>
+                                 </button>`;
+                } 
+                // --- CASE 3: FUTURE ---
+                else {
+                    statusBadge = '<span class="badge badge-light">Future</span>';
+                    actionBtn = '<button class="btn btn-xs btn-light" disabled>Locked</button>';
                 }
 
-                html += `<tr class="${rowClass}"><td>${i}</td><td>${dueDate.toLocaleDateString()}</td><td>${status}</td></tr>`;
+                html += `<tr class="${rowClass}">
+                            <td>${i}</td>
+                            <td>${dueDate.toLocaleDateString()}</td>
+                            <td>₹${quarterlyAmount}</td>
+                            <td>${statusBadge}</td>
+                            <td>${actionBtn}</td>
+                        </tr>`;
             }
-            html += '</tbody></table>';
+            html += '</tbody></table></div>';
             container.html(html);
         }
 
-        // 5. Edit Controls
+        // 5. EVENT HANDLERS FOR THE NEW MODAL
+
+        // A. Handle "Pay Now" Click
+        $(document).on('click', '.pay-now-btn', function() {
+            const amount = $(this).data('amount');
+            const bankInfo = $(this).data('bank');
+            
+            $('#paymentModalTitle').text('Record New Payment');
+            $('#payActionType').val('create');
+            $('#payPaymentId').val(''); 
+            $('#payGranteeId').val(currentStudentId); 
+            
+            $('#payAmount').val(amount);
+            
+            // Set Date to Today
+            const today = new Date().toISOString().split('T')[0];
+            $('#payDate').val(today);
+            
+            $('#payStatus').val('Paid');
+            $('#payBankDetailsText').text(bankInfo);
+            
+            // Z-Index fix to ensure it appears over the details modal
+            $('#adminPaymentModal').css("z-index", "1060"); 
+            $('#adminPaymentModal').modal('show');
+        });
+
+        // B. Handle "Edit Payment" Click
+        $(document).on('click', '.edit-payment-btn', function() {
+            const payId = $(this).data('pay-id');
+            const amount = $(this).data('amount');
+            const dateStr = $(this).data('date'); 
+            const status = $(this).data('status');
+
+            $('#paymentModalTitle').text('Edit Payment Record');
+            $('#payActionType').val('edit');
+            $('#payPaymentId').val(payId);
+            $('#payGranteeId').val(currentStudentId);
+            
+            $('#payAmount').val(amount);
+            $('#payDate').val(dateStr);
+            $('#payStatus').val(status);
+            $('#payBankDetailsText').text("Editing historical record");
+            
+            $('#adminPaymentModal').css("z-index", "1060");
+            $('#adminPaymentModal').modal('show');
+        });
+
+        // C. Handle Form Submission
+        $('#adminPaymentForm').submit(function(e) {
+            e.preventDefault();
+            
+            const btn = $('#btnSubmitPayment');
+            const originalText = btn.text();
+            btn.prop('disabled', true).text('Processing...');
+
+            const formData = new FormData(this);
+
+            $.ajax({
+                url: "{{ url_for('admin.admin_record_payment') }}", 
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function(response) {
+                    alert(response.message);
+                    $('#adminPaymentModal').modal('hide');
+                    loadStudentDetails(currentStudentId); 
+                },
+                error: function(xhr) {
+                    alert('Error: ' + (xhr.responseJSON ? xhr.responseJSON.error : 'Unknown error'));
+                },
+                complete: function() {
+                    btn.prop('disabled', false).text(originalText);
+                }
+            });
+        });
+
+        // 6. Edit Controls for Profile
         $('#enableEditBtn').click(function() {
             $('#studentDetailsModal .editable-field').prop('disabled', false);
             $(this).hide();
@@ -583,13 +768,12 @@
         });
         $('#cancelEditBtn').click(function() { loadStudentDetails(currentStudentId); });
 
-        // 6. Save Changes
+        // 7. Save Changes for Profile
         $('#saveChangesBtn').click(function() {
-            // FIX: Use the global currentStudentId variable
             if (!currentStudentId) { alert("No student selected."); return; }
 
             const data = {
-                user_id: currentStudentId, // <--- Key Fix here
+                user_id: currentStudentId,
                 name: $('#editName').val(),
                 email: $('#editEmail').val(),
                 phone: $('#editPhone').val(),
@@ -617,7 +801,7 @@
             });
         });
 
-        // 7. Actions (Activate/Deactivate/Unmap)
+        // 8. Actions (Activate/Deactivate/Unmap)
         function performAction(action) {
             if(!confirm("Are you sure?")) return;
             $.ajax({

@@ -132,18 +132,6 @@
                   <span>Manage Users</span>
                 </a>
               </li>
-              
-              <!-- Manage Sponsorships (Current Page) -->
-              <li>
-                <a
-                  href="{{ url_for('admin.manage_sponsorships') }}"
-                  class="waves-effect waves-light active"
-                >
-                  <i class="mdi mdi-account-switch"></i>
-                  <span>Manage Sponsorships</span>
-                </a>
-              </li>
-
               <!-- System Configuration -->
               <li>
                 <a
@@ -174,7 +162,7 @@
                   <span>Application Period</span>
                 </a>
               </li>
-              <!-- Manage RCC Centers -->
+              <!-- In admin/dashboard.html -->
               <li>
                 <a
                   href="{{ url_for('admin.manage_rcc_centers') }}"
@@ -193,6 +181,7 @@
                   <span>Manage Courses</span>
                 </a>
               </li>
+              
               <li>
                 <a
                   href="{{ url_for('admin.manage_students') }}"
@@ -202,6 +191,16 @@
                   <span>Manage Students</span>
                 </a>
               </li>
+              <li>
+                <a
+                  href="{{ url_for('admin.manage_sponsorships') }}"
+                  class="waves-effect waves-light active"
+                >
+                  <i class="mdi mdi-account-switch"></i>
+                  <span>Manage Sponsorships</span>
+                </a>
+              </li>
+              <li><a href="{{ url_for('admin.student_directory') }}" class="waves-effect waves-light active"><i class="mdi mdi-account-details"></i><span>Student Directory</span></a></li>
             </ul>
           </div>
           <!-- End Sidebar -->

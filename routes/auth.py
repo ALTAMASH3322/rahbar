@@ -126,6 +126,37 @@ def login():
             if user_dict['status'] == 'Inactive':
                 flash('Your account is inactive. Please contact the administrator.', 'error')
             elif user_dict['password_hash'] == password:
+                conn = get_db_connection()
+                cursor = conn.cursor(dictionary=True)
+                cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+                user_dict = cursor.fetchone()
+                cursor.close()
+                conn.close()
+                user = User(user_dict)
+                login_user(user)
+                
+                if user_dict['status'] == 'registered':
+                    flash('Your account is not yet activated. Please wait for approval.', 'error')
+                    print(f"User status: {user_dict['status']}")
+                elif user_dict['status'] == 'recognised':
+                    return redirect(url_for('admin.public_application'))
+                
+                
+
+                elif user.role_id == 1:  
+                    return redirect(url_for('admin.admin_dashboard'))
+                elif user.role_id == 2:  
+                    return redirect(url_for('admin.admin_dashboard'))
+                elif user.role_id == 3:  
+                    return redirect(url_for('coordinator.coordinator_dashboard'))
+                elif user.role_id == 4:  
+                    return redirect(url_for('convenor.convenor_dashboard'))
+                elif user.role_id == 5:  
+                    return redirect(url_for('sponsor.sponsor_dashboard'))
+                elif user.role_id == 6:  
+                    return redirect(url_for('student.student_dashboard'))
+                elif user.role_id == 7:  
+                    return redirect(url_for('management.dashboard'))
                 otp = random.randint(100000, 999999)
                 session['otp'] = otp
                 session['email'] = email

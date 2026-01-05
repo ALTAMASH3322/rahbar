@@ -50,7 +50,7 @@
         <!-- end Topbar -->
 
         <!-- ========== Left Sidebar Start ========== -->
-        <div class="left-side-menu">
+      <div class="left-side-menu">
         <div class="slimscroll-menu">
           <!--- Sidemenu -->
           <div id="sidebar-menu">
@@ -125,6 +125,7 @@
                   <span>Manage Courses</span>
                 </a>
               </li>
+              
               <li>
                 <a
                   href="{{ url_for('admin.manage_students') }}"
@@ -143,12 +144,13 @@
                   <span>Manage Sponsorships</span>
                 </a>
               </li>
+              <li><a href="{{ url_for('admin.student_directory') }}" class="waves-effect waves-light active"><i class="mdi mdi-account-details"></i><span>Student Directory</span></a></li>
             </ul>
           </div>
           <!-- End Sidebar -->
         </div>
       </div>
-        <!-- Left Sidebar End -->
+      <!-- Left Sidebar End -->
 
         <!-- ============================================================== -->
         <!-- Start Page Content here -->

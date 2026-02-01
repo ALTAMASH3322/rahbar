@@ -1529,10 +1529,6 @@ def get_courses(institution_id):
 @admin_bp.route('/api/students/list', methods=['GET'])
 @login_required
 def get_all_students_data():
-    """
-    API to fetch a list of students with search capabilities for the Admin Table.
-    Searches: Name, Email, Phone, Sponsor Name, Region.
-    """
     if current_user.role_id not in [1, 2]:
         return jsonify({'error': 'Unauthorized'}), 403
 
@@ -1540,65 +1536,56 @@ def get_all_students_data():
     start = request.args.get('start', 0, type=int)
     length = request.args.get('length', 10, type=int)
     search_value = request.args.get('search[value]', '', type=str).strip()
+    inst_filter = request.args.get('institution_id')
+    course_filter = request.args.get('course_id')
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    # Base Query
-    query = """
-        SELECT 
-            u.user_id, u.name, u.email, u.phone, u.status, u.region,
-            gd.grantee_detail_id, gd.course_applied,
-            sponsor.name AS sponsor_name
+    # Base Join Structure
+    query_body = """
         FROM users u
         LEFT JOIN grantee_details gd ON u.user_id = gd.user_id
         LEFT JOIN grantor_grantees gg ON u.user_id = gg.grantee_id
         LEFT JOIN users sponsor ON gg.grantor_id = sponsor.user_id
+        LEFT JOIN student_institution_courses sic ON u.user_id = sic.user_id
+        LEFT JOIN institutions inst ON sic.institution_id = inst.institution_id
+        LEFT JOIN courses c ON sic.course_id = c.course_id
         WHERE u.role_id = 6
     """
-
     params = []
     
-    # Search Logic
+    if inst_filter:
+        query_body += " AND sic.institution_id = %s"
+        params.append(inst_filter)
+    if course_filter:
+        query_body += " AND sic.course_id = %s"
+        params.append(course_filter)
     if search_value:
-        query += """ 
-            AND (
-                u.name LIKE %s OR 
-                u.email LIKE %s OR 
-                u.phone LIKE %s OR 
-                u.user_id LIKE %s OR
-                sponsor.name LIKE %s
-            )
-        """
+        query_body += " AND (u.name LIKE %s OR u.email LIKE %s OR u.user_id LIKE %s OR sponsor.name LIKE %s)"
         wildcard = f"%{search_value}%"
-        params.extend([wildcard, wildcard, wildcard, wildcard, wildcard])
+        params.extend([wildcard, wildcard, wildcard, wildcard])
 
-    # Count filtered records
-    count_query = f"SELECT COUNT(*) as count FROM ({query}) as sub"
-    cursor.execute(count_query, tuple(params))
+    cursor.execute(f"SELECT COUNT(*) as count {query_body}", tuple(params))
     records_filtered = cursor.fetchone()['count']
-
-    # Total records (without search)
     cursor.execute("SELECT COUNT(*) as count FROM users WHERE role_id = 6")
     records_total = cursor.fetchone()['count']
 
-    # Pagination and Ordering
-    query += " ORDER BY u.user_id DESC LIMIT %s, %s"
+    # CRITICAL: We select sponsor.user_id AS sponsor_id to show in the table
+    final_query = f"""
+        SELECT u.user_id, u.name, u.email, u.phone, u.region, u.status,
+               sponsor.user_id AS sponsor_id, sponsor.name AS sponsor_name,
+               inst.institution_name, c.course_name
+        {query_body}
+        ORDER BY u.user_id DESC LIMIT %s, %s
+    """
     params.extend([start, length])
-
-    cursor.execute(query, tuple(params))
+    cursor.execute(final_query, tuple(params))
     data = cursor.fetchall()
 
     cursor.close()
     conn.close()
-
-    return jsonify({
-        "draw": draw,
-        "recordsTotal": records_total,
-        "recordsFiltered": records_filtered,
-        "data": data
-    })
-
+    return jsonify({"draw": draw, "recordsTotal": records_total, "recordsFiltered": records_filtered, "data": data})
 
 import json
 
@@ -1607,22 +1594,17 @@ import json
 @admin_bp.route('/api/student/details/<user_id>', methods=['GET'])
 @login_required
 def get_student_full_details(user_id):
-    """
-    API to fetch COMPLETE details.
-    FIX: Ensures 'name' is read strictly from the USERS table, ignoring the grantee_details table.
-    """
     if current_user.role_id not in [1, 2]:
         return jsonify({'error': 'Unauthorized'}), 403
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    # ADDED: buffered=True to prevent "Unread result found" error
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     try:
-        # 1. Basic User & Grantee Details
-        # We select 'u.name AS user_real_name' to ensure we grab the Login/User name.
-        # We also grab 'gd.*', but we will overwrite the 'name' key in Python below.
+        # 1. Fetch Profile (Including the 'year' column)
         cursor.execute("""
-            SELECT u.user_id, u.name AS user_real_name, u.email, u.phone, u.status, u.region,
+            SELECT u.user_id, u.name AS user_real_name, u.email, u.phone, u.status, u.region, u.year,
                    gd.* 
             FROM users u
             LEFT JOIN grantee_details gd ON u.user_id = gd.user_id
@@ -1633,53 +1615,51 @@ def get_student_full_details(user_id):
         if not profile:
              return jsonify({'error': 'Student not found'}), 404
         
-        # CRITICAL FIX: 
-        # The dictionary currently holds the 'name' from grantee_details (due to gd.*).
-        # We FORCE it to use the 'user_real_name' from the users table.
         profile['name'] = profile['user_real_name']
 
-        # 2. Bank Details
+        # 2. Fetch Year-Specific Amount
+        cursor.execute("""
+            SELECT amount as schedule_amount 
+            FROM payment_schedules 
+            WHERE year = %s AND status = 1 
+            LIMIT 1
+        """, (profile['year'],))
+        schedule_info = cursor.fetchone()
+        profile['annual_schedule_amount'] = schedule_info['schedule_amount'] if schedule_info else 0
+
+        # 3. Bank Details
         cursor.execute("SELECT * FROM bank_details WHERE user_id = %s", (user_id,))
         bank = cursor.fetchone()
 
-        # 3. Current Course Assignment
+        # 4. Course Assignment
         cursor.execute("""
-            SELECT sic.assigned_at, 
-                   i.institution_name, i.institution_id,
-                   c.course_name, c.course_id, c.fees_per_semester, c.number_of_semesters
+            SELECT sic.assigned_at, sic.institution_id, sic.course_id, 
+                   c.course_name, c.number_of_semesters, i.institution_name
             FROM student_institution_courses sic
-            JOIN institutions i ON sic.institution_id = i.institution_id
             JOIN courses c ON sic.course_id = c.course_id
+            JOIN institutions i ON sic.institution_id = i.institution_id
             WHERE sic.user_id = %s
         """, (user_id,))
         course_info = cursor.fetchone()
 
-        # 4. Sponsor Info
+        # 5. Sponsor Info
         cursor.execute("""
-            SELECT u.user_id, u.name, u.email, u.phone
-            FROM grantor_grantees gg
+            SELECT u.user_id, u.name, u.email FROM grantor_grantees gg
             JOIN users u ON gg.grantor_id = u.user_id
             WHERE gg.grantee_id = %s
         """, (user_id,))
         sponsor = cursor.fetchone()
 
-        # 5. Payment History
+        # 6. Payment History
         cursor.execute("""
-            SELECT p.*, u.name as grantor_name
-            FROM payments p
+            SELECT p.*, u.name as grantor_name FROM payments p
             LEFT JOIN users u ON p.grantor_id = u.user_id
-            WHERE p.grantee_id = %s
-            ORDER BY p.payment_date DESC
+            WHERE p.grantee_id = %s ORDER BY p.payment_date DESC
         """, (user_id,))
         payments = cursor.fetchall()
 
-        # 6. Student Progress / Uploaded Documents
-        cursor.execute("""
-            SELECT sp.* 
-            FROM student_progress sp
-            WHERE sp.grantee_id = %s
-            ORDER BY sp.created_at DESC
-        """, (user_id,))
+        # 7. Documents
+        cursor.execute("SELECT * FROM student_progress WHERE grantee_id = %s ORDER BY created_at DESC", (user_id,))
         documents = cursor.fetchall()
 
         response_data = {
@@ -1691,36 +1671,30 @@ def get_student_full_details(user_id):
             "documents": documents
         }
 
-        # Date Serialization Helper
+        # Safe Date Conversion
         def default_converter(o):
             if isinstance(o, (datetime.date, datetime.datetime)):
                 return o.isoformat()
             return str(o)
 
-        json_response = json.dumps(response_data, default=default_converter)
-        return current_app.response_class(json_response, mimetype='application/json')
+        return current_app.response_class(json.dumps(response_data, default=default_converter), mimetype='application/json')
 
     except Exception as e:
-        print(f"Error fetching student details: {e}")
+        print(f"Error: {e}")
         return jsonify({'error': str(e)}), 500
     finally:
-        if cursor: cursor.close()
-        if conn: conn.close()
+        cursor.close()
+        conn.close()
 
 
 @admin_bp.route('/api/student/update', methods=['POST'])
 @login_required
 def update_student_full_details():
-    """
-    API to update student details.
-    FIX: Handles INSERT for bank details by manually generating 'bank_detail_id'.
-    """
     if current_user.role_id not in [1, 2]:
         return jsonify({'error': 'Unauthorized'}), 403
 
     data = request.json
     user_id = data.get('user_id')
-    
     if not user_id:
         return jsonify({'error': 'User ID missing'}), 400
 
@@ -1728,70 +1702,80 @@ def update_student_full_details():
     cursor = conn.cursor(dictionary=True)
 
     try:
-        # 1. Update USERS table
-        cursor.execute("""
-            UPDATE users 
-            SET name = %s, email = %s, phone = %s, status = %s, region = %s, updated_at = NOW()
-            WHERE user_id = %s
-        """, (
-            data.get('name'), data.get('email'), data.get('phone'), 
-            data.get('status'), data.get('region'), user_id
-        ))
+        # --- 1. UPDATE USERS TABLE ---
+        # We only update the fields that are actually in the 'data' package
+        user_updates = []
+        user_params = []
+        for field in ['name', 'email', 'phone', 'region', 'status']:
+            if field in data and data[field] is not None:
+                user_updates.append(f"{field} = %s")
+                user_params.append(data[field])
+        
+        if user_updates:
+            user_sql = f"UPDATE users SET {', '.join(user_updates)}, updated_at = NOW() WHERE user_id = %s"
+            user_params.append(user_id)
+            cursor.execute(user_sql, tuple(user_params))
 
-        # 2. Update GRANTEE_DETAILS table
-        cursor.execute("""
-            UPDATE grantee_details
-            SET father_name = %s, mother_name = %s, address = %s, 
-                father_mobile = %s, mother_mobile = %s, updated_at = NOW()
-            WHERE user_id = %s
-        """, (
-            data.get('father_name'), data.get('mother_name'), data.get('address'), 
-            data.get('father_mobile'), data.get('mother_mobile'), user_id
-        ))
+        # --- 2. UPDATE GRANTEE_DETAILS ---
+        grantee_updates = []
+        grantee_params = []
+        for field in ['father_name', 'mother_name', 'address', 'father_mobile', 'mother_mobile']:
+            if field in data and data[field] is not None:
+                grantee_updates.append(f"{field} = %s")
+                grantee_params.append(data[field])
+        
+        if grantee_updates:
+            grantee_sql = f"UPDATE grantee_details SET {', '.join(grantee_updates)}, updated_at = NOW() WHERE user_id = %s"
+            grantee_params.append(user_id)
+            cursor.execute(grantee_sql, tuple(grantee_params))
 
-        # 3. Update OR Insert BANK_DETAILS
+        # --- 3. BANK DETAILS (The error fix) ---
         cursor.execute("SELECT * FROM bank_details WHERE user_id = %s", (user_id,))
-        existing_bank = cursor.fetchone()
+        exists = cursor.fetchone()
 
-        if existing_bank:
-            # Case A: Record exists -> UPDATE
+        bank_fields = {
+            'bank_name': data.get('bank_name'),
+            'account_number': data.get('account_number'),
+            'ifsc_code': data.get('ifsc_code'),
+            'account_name': data.get('account_name')
+        }
+
+        if exists:
+            # Update existing
             cursor.execute("""
-                UPDATE bank_details
-                SET bank_name = %s, account_number = %s, ifsc_code = %s, account_name = %s
-                WHERE user_id = %s
-            """, (
-                data.get('bank_name'), data.get('account_number'), 
-                data.get('ifsc_code'), data.get('account_name'), user_id
-            ))
+                UPDATE bank_details SET bank_name=%s, account_number=%s, ifsc_code=%s, account_name=%s 
+                WHERE user_id=%s
+            """, (bank_fields['bank_name'], bank_fields['account_number'], 
+                  bank_fields['ifsc_code'], bank_fields['account_name'], user_id))
         else:
-            # Case B: No record exists -> INSERT
-            if data.get('account_number'): # Only insert if data is provided
-                
-                # CRITICAL FIX: Calculate the next available ID manually
+            # Create new - FIXING Error 1364 by manually finding the next ID
+            if bank_fields['account_number']:
                 cursor.execute("SELECT COALESCE(MAX(bank_detail_id), 0) + 1 AS next_id FROM bank_details")
-                result = cursor.fetchone()
-                next_id = result['next_id']
-
-                # Insert providing the explicit ID
+                new_id = cursor.fetchone()['next_id']
                 cursor.execute("""
                     INSERT INTO bank_details (bank_detail_id, user_id, bank_name, account_number, ifsc_code, account_name)
                     VALUES (%s, %s, %s, %s, %s, %s)
-                """, (
-                    next_id, user_id, 
-                    data.get('bank_name'), data.get('account_number'), 
-                    data.get('ifsc_code'), data.get('account_name')
-                ))
+                """, (new_id, user_id, bank_fields['bank_name'], bank_fields['account_number'], 
+                      bank_fields['ifsc_code'], bank_fields['account_name']))
+
+        # --- 4. COURSE ASSIGNMENT ---
+        if data.get('institution_id') and data.get('course_id'):
+            cursor.execute("""
+                INSERT INTO student_institution_courses (user_id, institution_id, course_id, assigned_by, assigned_at)
+                VALUES (%s, %s, %s, %s, NOW())
+                ON DUPLICATE KEY UPDATE institution_id=VALUES(institution_id), course_id=VALUES(course_id)
+            """, (user_id, data['institution_id'], data['course_id'], current_user.user_id))
 
         conn.commit()
-        return jsonify({'success': True, 'message': 'Student details updated successfully.'})
+        return jsonify({'success': True, 'message': 'Successfully updated student record.'})
 
     except Exception as e:
         conn.rollback()
-        print(f"Error updating student: {e}")
+        print(f"Update Error: {e}")
         return jsonify({'error': str(e)}), 500
     finally:
-        if cursor: cursor.close()
-        if conn: conn.close()
+        cursor.close()
+        conn.close()
 
 
 @admin_bp.route('/api/student/action', methods=['POST'])
@@ -1843,22 +1827,55 @@ def perform_student_action():
 @admin_bp.route('/student_directory', methods=['GET'])
 @login_required
 def student_directory():
+    # 1. Permission Check
     if current_user.role_id not in [1, 2]:
         flash('Permission denied', 'error')
         return redirect(url_for('auth.login'))
     
-    # We fetch admin details for the sidebar name display
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM users WHERE user_id = %s", (current_user.user_id,))
-    admin = cursor.fetchone()
-    cursor.close()
-    conn.close()
 
-    return render_template('admin/student_directory.html', admin=admin)
+    try:
+        # 2. Fetch admin details for the sidebar name display
+        cursor.execute("SELECT * FROM users WHERE user_id = %s", (current_user.user_id,))
+        admin = cursor.fetchone()
+
+        # 3. Fetch all Institutions (For top filters and Assignment modal)
+        cursor.execute("SELECT institution_id, institution_name FROM institutions ORDER BY institution_name ASC")
+        institutions = cursor.fetchall()
+
+        # 4. Fetch all Courses (For top filters and Assignment modal)
+        # We include institution_id here so the JavaScript can filter courses based on the selected college
+        cursor.execute("SELECT course_id, course_name, institution_id FROM courses ORDER BY course_name ASC")
+        courses = cursor.fetchall()
+
+    except Exception as e:
+        flash(f"Error loading directory: {str(e)}", "error")
+        admin = None
+        institutions = []
+        courses = []
+    finally:
+        cursor.close()
+        conn.close()
+
+    # 5. Return template with all required data
+    return render_template('admin/student_directory.html', 
+                           admin=admin, 
+                           institutions=institutions, 
+                           courses=courses)
 
 
 
+@admin_bp.route('/upload_students_csv', methods=['GET'])
+@login_required
+def upload_students_csv():
+    if current_user.role_id not in [1, 2]:
+        flash('Permission denied', 'error')
+        return redirect(url_for('auth.login'))
+    
+
+
+    return render_template('admin/upload_students_csv.html')
 
 
 # ==============================================================================

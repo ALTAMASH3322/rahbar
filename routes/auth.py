@@ -112,26 +112,38 @@ def send_email_async(email, subject, body):
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form.get('email')
+        # Get the method (email/phone) and the input value
+        login_method = request.form.get('login_method') 
+        identifier = request.form.get('identifier')
         password = request.form.get('password')
 
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
 
-        # Fetch user by email
-        cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+        # 1. Select the correct column based on user choice
+        if login_method == 'phone':
+            query = "SELECT * FROM users WHERE phone = %s"
+        else:
+            query = "SELECT * FROM users WHERE email = %s"
+
+        # First Fetch
+        cursor.execute(query, (identifier,))
         user_dict = cursor.fetchone()
 
         if user_dict:
             if user_dict['status'] == 'Inactive':
                 flash('Your account is inactive. Please contact the administrator.', 'error')
             elif user_dict['password_hash'] == password:
+                
+                # --- PRESERVING YOUR ORIGINAL SECOND FETCH LOGIC ---
+                # This now uses the same query (phone or email) as chosen above
                 conn = get_db_connection()
                 cursor = conn.cursor(dictionary=True)
-                cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+                cursor.execute(query, (identifier,))
                 user_dict = cursor.fetchone()
                 cursor.close()
                 conn.close()
+                
                 user = User(user_dict)
                 login_user(user)
                 
@@ -141,8 +153,7 @@ def login():
                 elif user_dict['status'] == 'recognised':
                     return redirect(url_for('admin.public_application'))
                 
-                
-
+                # Preserved Dashboard Redirects
                 elif user.role_id == 1:  
                     return redirect(url_for('admin.admin_dashboard'))
                 elif user.role_id == 2:  
@@ -157,24 +168,26 @@ def login():
                     return redirect(url_for('student.student_dashboard'))
                 elif user.role_id == 7:  
                     return redirect(url_for('management.dashboard'))
+
+                # Preserved OTP Logic
                 otp = random.randint(100000, 999999)
                 session['otp'] = otp
-                session['email'] = email
+                session['email'] = user_dict['email'] # We still need email for the actual sending
 
                 subject = "Your Login OTP"
                 body = f"Your OTP for login is {otp}. It is valid for 5 minutes."
-                send_email_async(email, subject, body)
-
+                send_email_async(user_dict['email'], subject, body)
 
                 flash('An OTP has been sent to your email. Please verify.', 'info')
                 return redirect(url_for('auth.verify_otp'))
             else:
-                flash('Invalid email or password', 'error')
+                flash(f'Invalid {login_method} or password', 'error')
         else:
-            flash('Invalid email or password', 'error')
+            flash(f'Invalid {login_method} or password', 'error')
 
-        cursor.close()
-        conn.close()
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
 
     return render_template('auth/login.html')
 

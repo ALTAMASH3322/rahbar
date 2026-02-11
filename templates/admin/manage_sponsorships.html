@@ -2,36 +2,20 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Manage Sponsorships | Rahbar</title>
+    <title>Manage Sponsorships | Rahbar Admin</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta content="Manage Sponsors" name="description" />
+    <meta content="Manage Sponsors and Commitments" name="description" />
     <meta content="Coderthemes" name="author" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
     <!-- App favicon -->
-    <link
-      rel="shortcut icon"
-      href="{{ url_for('static', filename='images/favicon.ico') }}"
-    />
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}" />
 
     <!-- App css -->
-    <link
-      href="{{ url_for('static', filename='css/bootstrap.min.css') }}"
-      rel="stylesheet"
-      type="text/css"
-      id="bootstrap-stylesheet"
-    />
-    <link
-      href="{{ url_for('static', filename='css/icons.min.css') }}"
-      rel="stylesheet"
-      type="text/css"
-    />
-    <link
-      href="{{ url_for('static', filename='css/app.min.css') }}"
-      rel="stylesheet"
-      type="text/css"
-      id="app-stylesheet"
-    />
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" id="bootstrap-stylesheet" />
+    <link href="{{ url_for('static', filename='css/icons.min.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ url_for('static', filename='css/app.min.css') }}" rel="stylesheet" type="text/css" id="app-stylesheet" />
+    
     <style>
       .footer {
         position: fixed;
@@ -49,52 +33,38 @@
       .content-page {
         padding-bottom: 70px;
       }
+      .glassy-modal .modal-content {
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+      }
+      .badge-soft-primary {
+        background-color: rgba(50, 118, 242, 0.1);
+        color: #3276f2;
+      }
     </style>
   </head>
 
   <body>
-    <!-- Begin page -->
     <div id="wrapper">
       <!-- Topbar Start -->
       <div class="navbar-custom">
         <div class="d-flex justify-content-between align-items-center w-100">
-          <!-- Left side - Admin Panel -->
-          <div>
-            <h6 class="page-title mb-0">Admin Panel</h6>
-          </div>
-
-          <!-- Middle - Logo -->
+          <div><h6 class="page-title mb-0">Admin Panel</h6></div>
           <div>
             <a href="{{ url_for('main.homepage') }}" class="text-success">
               <h4>Rahbar Scholarship Information Management System</h4>
             </a>
           </div>
-
-          <!-- Right side - User Dropdown -->
           <ul class="list-unstyled topnav-menu mb-0">
             <li class="dropdown notification-list">
-              <a
-                class="nav-link dropdown-toggle nav-user waves-effect"
-                data-toggle="dropdown"
-                href="#"
-                role="button"
-                aria-haspopup="false"
-                aria-expanded="false"
-              >
-                <img
-                  src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}"
-                  alt="user-image"
-                  class="rounded-circle"
-                />
-                <span class="d-none d-sm-inline-block ml-1"
-                  >{{ current_user.name }}</span
-                >
+              <a class="nav-link dropdown-toggle nav-user waves-effect" data-toggle="dropdown" href="#" role="button">
+                <img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" alt="user-image" class="rounded-circle" />
+                <span class="d-none d-sm-inline-block ml-1">{{ current_user.name }}</span>
               </a>
               <div class="dropdown-menu dropdown-menu-right profile-dropdown">
-                <a
-                  href="{{ url_for('auth.logout') }}"
-                  class="dropdown-item notify-item"
-                >
+                <a href="{{ url_for('auth.logout') }}" class="dropdown-item notify-item">
                   <i class="mdi mdi-logout-variant"></i>
                   <span>Logout</span>
                 </a>
@@ -103,9 +73,9 @@
           </ul>
         </div>
       </div>
-      <!-- end Topbar -->
 
-      <!-- ========== Left Sidebar Start ========== -->
+      <!-- Left Sidebar Start -->
+       <!-- ========== Left Sidebar Start ========== -->
       <div class="left-side-menu">
         <div class="slimscroll-menu">
           <!--- Sidemenu -->
@@ -181,16 +151,6 @@
                   <span>Manage Courses</span>
                 </a>
               </li>
-              
-              <li>
-                <a
-                  href="{{ url_for('admin.manage_students') }}"
-                  class="waves-effect waves-light"
-                >
-                  <i class="mdi mdi-account-school"></i>
-                  <span>Manage Students</span>
-                </a>
-              </li>
               <li>
                 <a
                   href="{{ url_for('admin.manage_sponsorships') }}"
@@ -208,15 +168,9 @@
       </div>
       <!-- Left Sidebar End -->
 
-      <!-- ============================================================== -->
-      <!-- Start Page Content here -->
-      <!-- ============================================================== -->
-
       <div class="content-page">
         <div class="content">
-          <!-- Start Content-->
           <div class="container-fluid">
-            <!-- start page title -->
             <div class="row">
               <div class="col-12">
                 <div class="page-title-box">
@@ -224,18 +178,33 @@
                 </div>
               </div>
             </div>
-            <!-- end page title -->
 
-            <!-- Sponsors List -->
+            <!-- Main Sponsors Card -->
             <div class="row">
               <div class="col-12">
                 <div class="card">
                   <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h4 class="header-title">Active Sponsors & Convenors</h4>
-                        <!-- Search Box -->
-                        <div class="form-group mb-0">
-                            <input type="text" id="sponsorSearch" class="form-control" placeholder="Search Sponsors...">
+                    
+                    <!-- Flash Messages -->
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                      {% if messages %}
+                        {% for category, message in messages %}
+                          <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show">
+                            {{ message }}
+                            <button type="button" class="close" data-dismiss="alert">&times;</button>
+                          </div>
+                        {% endfor %}
+                      {% endif %}
+                    {% endwith %}
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="header-title">Registered Sponsors & Convenors</h4>
+                        
+                        <div class="d-flex align-items-center">
+                            <button type="button" class="btn btn-success waves-effect waves-light mr-3" data-toggle="modal" data-target="#uploadSponsorCsvModal">
+                                <i class="mdi mdi-file-upload"></i> Bulk Upload Sponsors
+                            </button>
+                            <input type="text" id="sponsorSearch" class="form-control" placeholder="Search Sponsors..." style="width: 250px;">
                         </div>
                     </div>
 
@@ -243,10 +212,9 @@
                       <table class="table table-striped table-hover" id="sponsorTable">
                         <thead>
                           <tr>
-                            <th>Name</th>
+                            <th>Sponsor Name</th>
                             <th>Role</th>
-                            <th>Email</th>
-                            <th>Phone</th>
+                            <th>Contact Info</th>
                             <th>Chapter</th>
                             <th>Actions</th>
                           </tr>
@@ -254,19 +222,25 @@
                         <tbody>
                           {% for sponsor in sponsors %}
                           <tr>
-                            <td><strong>{{ sponsor.name }}</strong></td>
-                            <td><span class="badge badge-info">{{ sponsor.role_name }}</span></td>
-                            <td>{{ sponsor.email }}</td>
-                            <td>{{ sponsor.phone }}</td>
+                            <td>
+                                <strong>{{ sponsor.name }}</strong><br>
+                                <small class="text-muted">ID: {{ sponsor.user_id }}</small>
+                            </td>
+                            <td><span class="badge badge-soft-primary">{{ sponsor.role_name }}</span></td>
+                            <td>
+                                <span><i class="mdi mdi-email-outline"></i> {{ sponsor.email or '-' }}</span><br>
+                                <span><i class="mdi mdi-phone"></i> {{ sponsor.phone or '-' }}</span>
+                            </td>
                             <td>{{ sponsor.region }}</td>
                             <td>
-                              <!-- Map Students Button -->
-                              <a
-                                href="{{ url_for('admin.admin_map_students_to_sponsors', sponsor_id=sponsor.user_id) }}"
-                                class="btn btn-sm btn-primary waves-effect waves-light"
-                              >
-                                <i class="mdi mdi-account-arrow-right-outline"></i> Map Students
-                              </a>
+                              <div class="btn-group">
+                                  <button class="btn btn-sm btn-info edit-sponsor-btn" data-id="{{ sponsor.user_id }}">
+                                      <i class="mdi mdi-pencil"></i> Edit Profile
+                                  </button>
+                                  <a href="{{ url_for('admin.admin_map_students_to_sponsors', user_id=sponsor.user_id) }}" class="btn btn-sm btn-primary waves-effect waves-light">
+                                    <i class="mdi mdi-account-arrow-right"></i> Map Students
+                                  </a>
+                              </div>
                             </td>
                           </tr>
                           {% endfor %}
@@ -277,46 +251,174 @@
                 </div>
               </div>
             </div>
-            <!-- End Sponsors List -->
           </div>
-          <!-- end container-fluid -->
         </div>
-        <!-- end content -->
 
-        <!-- Footer -->
         <footer class="footer">
-          <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
+          <p class="mb-0">Developed by <strong>Cognifly AI System</strong></p>
         </footer>
       </div>
-      <!-- End Page content -->
     </div>
-    <!-- END wrapper -->
 
-    <!-- Vendor js -->
+    <!-- MODAL: UPLOAD SPONSOR CSV -->
+    <div class="modal fade glassy-modal" id="uploadSponsorCsvModal" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-success text-white">
+            <h5 class="modal-title"><i class="mdi mdi-file-upload"></i> Bulk Import Sponsor Data</h5>
+            <button type="button" class="close text-white" data-dismiss="modal">×</button>
+          </div>
+          <form action="{{ url_for('admin.bulk_upload_sponsors') }}" method="POST" enctype="multipart/form-data">
+            <div class="modal-body">
+              <div class="alert alert-info">
+                <strong>Format Required:</strong><br>
+                <small>Sponsor Year, Sponsor Reference, Sponsor Chapter, Sponsor Name, Sponsor Mobile1, Sponsor Email, Student Assigned, etc.</small>
+              </div>
+              <div class="form-group">
+                <label>Select CSV File</label>
+                <input type="file" name="file" class="form-control-file" accept=".csv" required>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-success">Upload & Process</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: EDIT SPONSOR PROFILE & REFERENCES -->
+    <div class="modal fade glassy-modal" id="editSponsorModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h4 class="modal-title">Edit Sponsor Details: <span id="displaySponsorName"></span></h4>
+                    <button type="button" class="close text-white" data-dismiss="modal">×</button>
+                </div>
+                <div class="modal-body">
+                    <!-- Profile Section -->
+                    <h5 class="text-info border-bottom pb-2"><i class="mdi mdi-account-circle"></i> Master Account Details</h5>
+                    <form id="sponsorProfileForm">
+                        <input type="hidden" id="editSponsorId">
+                        <div class="row">
+                            <div class="col-md-6 form-group"><label>Full Name</label><input type="text" id="editSponsorName" class="form-control"></div>
+                            <div class="col-md-6 form-group"><label>Email Address</label><input type="email" id="editSponsorEmail" class="form-control"></div>
+                            <div class="col-md-6 form-group"><label>Phone (Mobile 1)</label><input type="text" id="editSponsorPhone" class="form-control"></div>
+                            <div class="col-md-6 form-group"><label>Chapter</label><input type="text" id="editSponsorRegion" class="form-control"></div>
+                        </div>
+                    </form>
+
+                    <!-- References Table Section -->
+                    <h5 class="text-primary border-bottom pb-2 mt-4"><i class="mdi mdi- clipboard-list-outline"></i> Commitment References (Multi-Year Data)</h5>
+                    <p class="text-muted small">These are unique references linked to this login account.</p>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Reference ID</th>
+                                    <th>Sponsor Year</th>
+                                    <th>Referral</th>
+                                    <th>Installment Date</th>
+                                    <th>Months</th>
+                                    <th>Credit Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="referenceListBody">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-info" id="saveSponsorBtn"><i class="mdi mdi-content-save"></i> Update Profile</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vendor & App Scripts -->
     <script src="{{ url_for('static', filename='js/vendor.min.js') }}"></script>
-
-    <!-- App js -->
     <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
 
-    <!-- Search Script -->
     <script>
-        const searchInput = document.getElementById('sponsorSearch');
-        const tableRows = document.querySelectorAll('#sponsorTable tbody tr');
+        $(document).ready(function() {
+            // 1. Search Logic
+            $('#sponsorSearch').on('keyup', function() {
+                const term = $(this).val().toLowerCase().trim();
+                $('#sponsorTable tbody tr').each(function() {
+                    const rowText = $(this).text().toLowerCase();
+                    $(this).toggle(rowText.indexOf(term) > -1);
+                });
+            });
 
-        if(searchInput) {
-            searchInput.addEventListener('keyup', function() {
-                const searchTerm = this.value.toLowerCase().trim();
+            // 2. Open Edit Modal and Load Data via API
+            $('.edit-sponsor-btn').click(function() {
+                const userId = $(this).data('id');
+                $.get(`/api/sponsor/details/${userId}`, function(res) {
+                    const p = res.profile;
+                    $('#displaySponsorName').text(p.name);
+                    $('#editSponsorId').val(p.user_id);
+                    $('#editSponsorName').val(p.name);
+                    $('#editSponsorEmail').val(p.email);
+                    $('#editSponsorPhone').val(p.phone);
+                    $('#editSponsorRegion').val(p.region);
 
-                tableRows.forEach(row => {
-                    const text = row.innerText.toLowerCase();
-                    if(text.includes(searchTerm)) {
-                        row.style.display = '';
+                    // Build References Table
+                    let refHtml = '';
+                    if (res.references && res.references.length > 0) {
+                        res.references.forEach(ref => {
+                            refHtml += `
+                            <tr>
+                                <td><strong>${ref.reference_id}</strong></td>
+                                <td>${ref.sponsor_year || '-'}</td>
+                                <td>${ref.referral || '-'}</td>
+                                <td>${ref.installment_date || 'N/A'}</td>
+                                <td>${ref.payment_months || '0'}</td>
+                                <td>${ref.confirm_credit_date || 'N/A'}</td>
+                            </tr>`;
+                        });
                     } else {
-                        row.style.display = 'none';
+                        refHtml = '<tr><td colspan="6" class="text-center">No reference history found for this account.</td></tr>';
+                    }
+                    $('#referenceListBody').html(refHtml);
+                    
+                    $('#editSponsorModal').modal('show');
+                }).fail(function() {
+                    alert("Error loading sponsor details.");
+                });
+            });
+
+            // 3. Save Profile Updates
+            $('#saveSponsorBtn').click(function() {
+                const btn = $(this);
+                const data = {
+                    user_id: $('#editSponsorId').val(),
+                    name: $('#editSponsorName').val(),
+                    email: $('#editSponsorEmail').val(),
+                    phone: $('#editSponsorPhone').val(),
+                    region: $('#editSponsorRegion').val()
+                };
+
+                btn.prop('disabled', true).html('<i class="mdi mdi-loading mdi-spin"></i> Saving...');
+
+                $.ajax({
+                    url: '/api/sponsor/update',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function(response) {
+                        alert('Profile Updated Successfully!');
+                        location.reload();
+                    },
+                    error: function(err) {
+                        alert('Update failed: ' + (err.responseJSON ? err.responseJSON.error : 'Unknown error'));
+                        btn.prop('disabled', false).html('<i class="mdi mdi-content-save"></i> Update Profile');
                     }
                 });
             });
-        }
+        });
     </script>
   </body>
 </html>

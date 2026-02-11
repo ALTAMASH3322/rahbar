@@ -507,106 +507,94 @@ def system_configuration():
 @admin_bp.route('/admin_generate_reports', methods=['GET', 'POST'])
 @login_required
 def admin_generate_reports():
-    if current_user.role_id not in [1, 2]:  # Ensure only Admins can access this route
+    if current_user.role_id not in [1, 2]:
         flash('You do not have permission to access this page.', 'error')
-        # print("Permission issue hit") # For debugging if needed
         return redirect(url_for('auth.login'))
-
-    # --- Data Fetching for page load and report generation ---
-    # It's better to fetch data once. If POST, this data is used.
-    # If GET, this data is passed to the template for previews.
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    # Fetch all applications (Original query)
-    cursor.execute("SELECT * FROM grantee_details")
-    applications_data = cursor.fetchall() # Use a different variable name to avoid confusion
+    # 1. Fetch Applications (Modified to include the assigned Human Sponsor)
+    cursor.execute("""
+        SELECT gd.*, 
+               sr.reference_id AS assigned_reference_id,
+               sponsor_user.name AS assigned_sponsor_name
+        FROM grantee_details gd
+        LEFT JOIN grantor_grantees gg ON gd.user_id = gg.grantee_id
+        LEFT JOIN sponsor_references sr ON gg.grantor_id COLLATE utf8mb4_general_ci = sr.reference_id COLLATE utf8mb4_general_ci
+        LEFT JOIN users sponsor_user ON sr.user_id COLLATE utf8mb4_general_ci = sponsor_user.user_id COLLATE utf8mb4_general_ci
+    """)
+    applications_data = cursor.fetchall()
 
-    # Fetch all payments (MODIFIED QUERY to include names)
+    # 2. Fetch Payments (Modified to correctly find Grantor Name via Reference ID)
     cursor.execute("""
         SELECT
-            p.payment_id,
-            p.amount,
-            p.status AS payment_status,
-            p.payment_date,
-            p.receipt_url, 
-            p.grantee_id,
+            p.payment_id, p.amount, p.status AS payment_status, p.payment_date,
+            p.receipt_url, p.grantee_id,
             grantee_user.name AS grantee_name,
-            p.grantor_id,
-            grantor_user.name AS grantor_name,
-            p.created_at, 
-            p.updated_at
+            p.grantor_id AS grantor_reference_id,
+            sponsor_user.name AS grantor_name,
+            p.created_at, p.updated_at
         FROM payments p
         LEFT JOIN users grantee_user ON p.grantee_id = grantee_user.user_id
-        LEFT JOIN users grantor_user ON p.grantor_id = grantor_user.user_id
-       
+        -- We join through sponsor_references to find which human made this payment
+        LEFT JOIN sponsor_references sr ON p.grantor_id COLLATE utf8mb4_general_ci = sr.reference_id COLLATE utf8mb4_general_ci
+        LEFT JOIN users sponsor_user ON sr.user_id COLLATE utf8mb4_general_ci = sponsor_user.user_id COLLATE utf8mb4_general_ci
     """)
-    payments_data = cursor.fetchall() # Use a different variable name
+    payments_data = cursor.fetchall()
 
-    # Fetch all sponsors and convenors (Original query)
-    cursor.execute("SELECT * FROM users WHERE role_id IN (4, 5)")  # Role ID 4 = Convenor, 5 = Sponsor
-    sponsors_convenors_data = cursor.fetchall() # Use a different variable name
+    # 3. Fetch all sponsors and convenors
+    cursor.execute("SELECT * FROM users WHERE role_id IN (4, 5)")
+    sponsors_convenors_data = cursor.fetchall()
 
-    # Fetch all grantees (students) (Original query)
-    cursor.execute("SELECT * FROM users WHERE role_id = 6")  # Role ID 6 = Grantee (Student)
-    grantees_data = cursor.fetchall() # Use a different variable name
+    # 4. Fetch all grantees (students)
+    cursor.execute("SELECT * FROM users WHERE role_id = 6")
+    grantees_data = cursor.fetchall()
 
     cursor.close()
     conn.close()
 
     if request.method == 'POST':
         report_type = request.form.get('reportType')
-        report_format = request.form.get('format') # Renamed from 'format' for clarity
+        report_format = request.form.get('format')
 
-        data_for_df = [] # Data to be converted to DataFrame
+        data_for_df = []
         filename_prefix = 'report'
-        columns_for_report = [] # To control columns in the report
+        columns_for_report = []
 
         if report_type == 'applications':
             data_for_df = applications_data
             filename_prefix = 'applications_report'
-            # Define specific columns for applications if you don't want SELECT *
-            # For example: columns_for_report = ['grantee_detail_id', 'name', 'status', ...]
+            columns_for_report = [
+                'grantee_detail_id', 'name', 'father_name', 'rcc_name', 
+                'course_applied', 'assigned_sponsor_name', 'assigned_reference_id'
+            ]
         elif report_type == 'payments':
-            data_for_df = payments_data # This now includes the names
+            data_for_df = payments_data
             filename_prefix = 'payments_report'
-            columns_for_report = [ # Define the columns you want in the payment report
-                'payment_id', 'grantee_name', 'grantor_name', 'amount', 
-                'payment_status', 'payment_date', 'receipt_url', 
-                'updated_by_name', 'notes', 'created_at', 'updated_at',
-                # Optionally include original IDs if needed:
-                # 'grantee_id', 'grantor_id', 'updated_by' 
+            columns_for_report = [
+                'payment_id', 'grantee_name', 'grantor_name', 'grantor_reference_id', 
+                'amount', 'payment_status', 'payment_date'
             ]
         elif report_type == 'sponsors_convenors':
             data_for_df = sponsors_convenors_data
             filename_prefix = 'sponsors_convenors_report'
-            # Define specific columns: columns_for_report = ['user_id', 'name', 'email', 'role_id', ...]
         elif report_type == 'grantees':
             data_for_df = grantees_data
             filename_prefix = 'grantees_report'
-            # Define specific columns: columns_for_report = ['user_id', 'name', 'email', ...]
         else:
             flash('Invalid report type selected.', 'error')
             return redirect(url_for('admin.admin_generate_reports'))
 
         if not data_for_df:
-            flash(f'No data available for {report_type.replace("_", " ")} report.', 'info')
+            flash(f'No data available for {report_type} report.', 'info')
             return redirect(url_for('admin.admin_generate_reports'))
 
-        # Convert data to a DataFrame
         df = pd.DataFrame(data_for_df)
 
-        # If specific columns are defined, use them. Otherwise, use all columns from df.
         if columns_for_report:
-            # Filter to include only existing columns from the defined list, preserving order
             df = df[[col for col in columns_for_report if col in df.columns]]
-        elif df.empty: # If df is empty after all, no point proceeding
-             flash(f'No data to generate for {report_type.replace("_", " ")} report.', 'info')
-             return redirect(url_for('admin.admin_generate_reports'))
 
-
-        # Generate the report in the selected format
         if report_format == 'csv':
             output = BytesIO()
             df.to_csv(output, index=False, encoding='utf-8')
@@ -615,58 +603,28 @@ def admin_generate_reports():
 
         elif report_format == 'excel':
             output = BytesIO()
-            # Use pd.ExcelWriter for more control if needed in the future (e.g., multiple sheets)
             with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
                 df.to_excel(writer, index=False, sheet_name='Report')
             output.seek(0)
             return send_file(output, as_attachment=True, download_name=f"{filename_prefix}.xlsx", mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
         elif report_format == 'pdf':
-            # Placeholder for PDF generation - use a library like WeasyPrint or ReportLab
             try:
-                from weasyprint import HTML # Make sure WeasyPrint is installed: pip install WeasyPrint
-                # Create a basic HTML string from the DataFrame
+                from weasyprint import HTML
                 html_content = df.to_html(index=False, border=1, classes="table table-striped")
-                # Add some minimal styling for better PDF output
-                styled_html = f"""
-                <html>
-                    <head>
-                        <meta charset="utf-8">
-                        <style>
-                            body {{ font-family: Arial, sans-serif; font-size: 10pt; }}
-                            table {{ border-collapse: collapse; width: 100%; }}
-                            th, td {{ border: 1px solid #ccc; padding: 5px; text-align: left; }}
-                            th {{ background-color: #f2f2f2; }}
-                            .table-striped tbody tr:nth-of-type(odd) {{ background-color: rgba(0,0,0,.05); }}
-                        </style>
-                    </head>
-                    <body>
-                        <h2>{filename_prefix.replace("_", " ").title()}</h2>
-                        {html_content}
-                    </body>
-                </html>
-                """
+                styled_html = f"<html><body><h2>{filename_prefix.replace('_', ' ').title()}</h2>{html_content}</body></html>"
                 output = BytesIO()
                 HTML(string=styled_html).write_pdf(output)
                 output.seek(0)
                 return send_file(output, as_attachment=True, download_name=f"{filename_prefix}.pdf", mimetype='application/pdf')
             except ImportError:
-                flash("PDF generation library (WeasyPrint) is not installed. Please install it.", "error")
+                flash("PDF library not installed.", "error")
                 return redirect(url_for('admin.admin_generate_reports'))
-            except Exception as e:
-                flash(f"An error occurred during PDF generation: {str(e)}", "error")
-                current_app.logger.error(f"PDF Generation Error: {e}", exc_info=True)
-                return redirect(url_for('admin.admin_generate_reports'))
-        else:
-            flash("Invalid report format selected.", "error")
-            return redirect(url_for('admin.admin_generate_reports'))
 
-
-    # This data is passed to the template for the initial page load (e.g., for previews if any)
     return render_template(
         'admin/generate_reports.html',
         applications=applications_data,
-        payments=payments_data, # This now includes names
+        payments=payments_data,
         sponsors_convenors=sponsors_convenors_data,
         grantees=grantees_data
     )
@@ -1387,10 +1345,9 @@ def manage_students():
 
 
 
-@admin_bp.route('/admin_map_students_to_sponsors/<string:sponsor_id>', methods=['GET', 'POST'])
+@admin_bp.route('/admin_map_students_to_sponsors/<string:user_id>', methods=['GET', 'POST'])
 @login_required
-def admin_map_students_to_sponsors(sponsor_id):
-    # Permission Check
+def admin_map_students_to_sponsors(user_id):
     if current_user.role_id not in [1, 2]:
         flash('Permission denied', 'error')
         return redirect(url_for('auth.login'))
@@ -1398,8 +1355,8 @@ def admin_map_students_to_sponsors(sponsor_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    # A. Fetch Sponsor Details
-    cursor.execute("SELECT user_id, name FROM users WHERE user_id = %s", (sponsor_id,))
+    # 1. Fetch Human Sponsor Details
+    cursor.execute("SELECT user_id, name, email, region FROM users WHERE user_id = %s", (user_id,))
     sponsor = cursor.fetchone()
 
     if not sponsor:
@@ -1407,57 +1364,73 @@ def admin_map_students_to_sponsors(sponsor_id):
         conn.close()
         return redirect(url_for('admin.manage_sponsorships'))
 
-    # B. Handle POST (Saving changes)
+    # 2. Fetch all Reference IDs belonging to this human
+    cursor.execute("SELECT reference_id, sponsor_year, chapter FROM sponsor_references WHERE user_id = %s", (user_id,))
+    available_references = cursor.fetchall()
+    ref_id_list = [r['reference_id'] for r in available_references]
+
+    # 3. Handle POST (Saving changes)
     if request.method == 'POST':
         try:
             student_ids = request.form.getlist('student_ids')
+            target_ref_id = request.form.get('target_reference_id')
 
-            # Upsert Logic: Insert if new, Update if exists
-            query = """
-                INSERT INTO grantor_grantees (grantee_id, grantor_id) 
-                VALUES (%s, %s)
-                ON DUPLICATE KEY UPDATE grantor_id = VALUES(grantor_id)
-            """
+            if not target_ref_id:
+                flash('Please select a Reference ID for assignment.', 'error')
+            else:
+                query = """
+                    INSERT INTO grantor_grantees (grantee_id, grantor_id, status, created_at) 
+                    VALUES (%s, %s, 'Accepted', NOW())
+                    ON DUPLICATE KEY UPDATE grantor_id = VALUES(grantor_id), updated_at = NOW()
+                """
+                for student_id in student_ids:
+                    cursor.execute(query, (student_id, target_ref_id))
+                
+                conn.commit()
+                flash(f'Students successfully mapped to Reference {target_ref_id}!', 'success')
             
-            for student_id in student_ids:
-                cursor.execute(query, (student_id, sponsor_id))
-            
-            conn.commit()
-            flash(f'Students successfully mapped to {sponsor["name"]}!', 'success')
-            return redirect(url_for('admin.admin_map_students_to_sponsors', sponsor_id=sponsor_id))
-
+            return redirect(url_for('admin.admin_map_students_to_sponsors', user_id=user_id))
         except Exception as e:
             conn.rollback()
-            print(f"Error mapping students: {e}")
-            flash('An error occurred while mapping students.', 'error')
+            flash(f'Error: {str(e)}', 'error')
 
-    # C. Handle GET (Fetching Data)
+    # 4. Handle GET (Fetching Data)
     
-    # 1. Fetch Mapped Students (Already assigned to THIS sponsor)
-    cursor.execute("""
-        SELECT u.user_id, u.name, u.email, u.phone, u.region
-        FROM users u
-        JOIN grantor_grantees gg ON u.user_id = gg.grantee_id
-        WHERE gg.grantor_id = %s AND u.status = 'active'
-    """, (sponsor_id,))
-    mapped_students = cursor.fetchall()
+    # A. Mapped Students (Right Side) - Added GROUP BY to prevent duplicates
+    mapped_students = []
+    if ref_id_list:
+        format_strings = ','.join(['%s'] * len(ref_id_list))
+        cursor.execute(f"""
+            SELECT u.user_id, u.name, u.email, u.phone, u.region, 
+                   MAX(gg.grantor_id) AS linked_ref_id
+            FROM users u
+            JOIN grantor_grantees gg ON u.user_id = gg.grantee_id
+            WHERE gg.grantor_id IN ({format_strings}) AND u.status = 'active'
+            GROUP BY u.user_id
+            ORDER BY u.name ASC
+        """, tuple(ref_id_list))
+        mapped_students = cursor.fetchall()
 
-    mapped_ids = [s['user_id'] for s in mapped_students]
-
-    # 2. Fetch Available Students (Unassigned, Open Pool, or Assigned to OTHERS)
-    # Crucial: We select gg.grantor_id to distinguish Open Pool (12) from others
-    cursor.execute("""
+    # B. Available Students (Left Side) - Added GROUP BY and MAX() to prevent duplicates
+    # This prevents the repeating "Rashid Qamar" rows shown in your screenshot
+    format_strings_sub = ','.join(['%s'] * len(ref_id_list)) if ref_id_list else "''"
+    
+    available_students_query = f"""
         SELECT u.user_id, u.name, u.email, u.phone, u.region, 
-               gg.grantor_id, 
-               current_sponsor.name as current_sponsor_name
+               MAX(actual_sponsor.name) as current_sponsor_name,
+               MAX(gg.grantor_id) as current_ref_id
         FROM users u
         LEFT JOIN grantor_grantees gg ON u.user_id = gg.grantee_id
-        LEFT JOIN users current_sponsor ON gg.grantor_id = current_sponsor.user_id
+        LEFT JOIN sponsor_references sr ON gg.grantor_id COLLATE utf8mb4_general_ci = sr.reference_id COLLATE utf8mb4_general_ci
+        LEFT JOIN users actual_sponsor ON sr.user_id COLLATE utf8mb4_general_ci = actual_sponsor.user_id COLLATE utf8mb4_general_ci
         WHERE u.role_id = 6 
         AND u.status = 'active'
-        AND (gg.grantor_id != %s OR gg.grantor_id IS NULL)
-    """, (sponsor_id,))
+        AND (u.user_id NOT IN (SELECT grantee_id FROM grantor_grantees WHERE grantor_id IN ({format_strings_sub})))
+        GROUP BY u.user_id
+        ORDER BY u.name ASC
+    """
     
+    cursor.execute(available_students_query, tuple(ref_id_list) if ref_id_list else ())
     available_students = cursor.fetchall()
 
     cursor.close()
@@ -1466,9 +1439,10 @@ def admin_map_students_to_sponsors(sponsor_id):
     return render_template(
         'admin/map_students_to_sponsor.html',
         sponsor=sponsor,
+        references=available_references,
         students=available_students,
         mapped_students=mapped_students,
-        mapped_student_ids=mapped_ids
+        mapped_student_ids=[s['user_id'] for s in mapped_students]
     )
 
 @admin_bp.route('/manage_sponsorships', methods=['GET'])
@@ -1526,6 +1500,7 @@ def get_courses(institution_id):
 # ADMIN STUDENT MANAGEMENT API (Search, View Details, Edit, Actions)
 # ==============================================================================
 
+
 @admin_bp.route('/api/students/list', methods=['GET'])
 @login_required
 def get_all_students_data():
@@ -1542,12 +1517,19 @@ def get_all_students_data():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    # Base Join Structure
+    # UPDATED JOIN CHAIN with Collation Bridge:
+    # We force both sides of the join to use utf8mb4_general_ci to prevent the 1267 error
     query_body = """
         FROM users u
         LEFT JOIN grantee_details gd ON u.user_id = gd.user_id
         LEFT JOIN grantor_grantees gg ON u.user_id = gg.grantee_id
-        LEFT JOIN users sponsor ON gg.grantor_id = sponsor.user_id
+        
+        -- Collation Fix for Sponsor References
+        LEFT JOIN sponsor_references sr ON gg.grantor_id COLLATE utf8mb4_general_ci = sr.reference_id COLLATE utf8mb4_general_ci
+        
+        -- Collation Fix for Sponsor User link
+        LEFT JOIN users sponsor ON sr.user_id COLLATE utf8mb4_general_ci = sponsor.user_id COLLATE utf8mb4_general_ci
+        
         LEFT JOIN student_institution_courses sic ON u.user_id = sic.user_id
         LEFT JOIN institutions inst ON sic.institution_id = inst.institution_id
         LEFT JOIN courses c ON sic.course_id = c.course_id
@@ -1562,30 +1544,45 @@ def get_all_students_data():
         query_body += " AND sic.course_id = %s"
         params.append(course_filter)
     if search_value:
-        query_body += " AND (u.name LIKE %s OR u.email LIKE %s OR u.user_id LIKE %s OR sponsor.name LIKE %s)"
+        query_body += " AND (u.name LIKE %s OR u.email LIKE %s OR u.user_id LIKE %s OR sponsor.name LIKE %s OR sr.reference_id LIKE %s)"
         wildcard = f"%{search_value}%"
-        params.extend([wildcard, wildcard, wildcard, wildcard])
+        params.extend([wildcard, wildcard, wildcard, wildcard, wildcard])
 
-    cursor.execute(f"SELECT COUNT(*) as count {query_body}", tuple(params))
+    # 1. Count unique students
+    cursor.execute(f"SELECT COUNT(DISTINCT u.user_id) as count {query_body}", tuple(params))
     records_filtered = cursor.fetchone()['count']
-    cursor.execute("SELECT COUNT(*) as count FROM users WHERE role_id = 6")
+    
+    cursor.execute("SELECT COUNT(DISTINCT user_id) as count FROM users WHERE role_id = 6")
     records_total = cursor.fetchone()['count']
 
-    # CRITICAL: We select sponsor.user_id AS sponsor_id to show in the table
+    # 2. Final query
     final_query = f"""
         SELECT u.user_id, u.name, u.email, u.phone, u.region, u.status,
-               sponsor.user_id AS sponsor_id, sponsor.name AS sponsor_name,
-               inst.institution_name, c.course_name
+               MAX(sr.reference_id) AS sponsor_id, 
+               MAX(sponsor.name) AS sponsor_name,
+               MAX(inst.institution_name) AS institution_name, 
+               MAX(c.course_name) AS course_name
         {query_body}
+        GROUP BY u.user_id
         ORDER BY u.user_id DESC LIMIT %s, %s
     """
     params.extend([start, length])
-    cursor.execute(final_query, tuple(params))
-    data = cursor.fetchall()
+    
+    try:
+        cursor.execute(final_query, tuple(params))
+        data = cursor.fetchall()
+    except Exception as e:
+        print(f"SQL Error: {e}")
+        return jsonify({"error": str(e)}), 500
 
     cursor.close()
     conn.close()
-    return jsonify({"draw": draw, "recordsTotal": records_total, "recordsFiltered": records_filtered, "data": data})
+    return jsonify({
+        "draw": draw, 
+        "recordsTotal": records_total, 
+        "recordsFiltered": records_filtered, 
+        "data": data
+    })
 
 import json
 
@@ -1593,16 +1590,16 @@ import json
 
 @admin_bp.route('/api/student/details/<user_id>', methods=['GET'])
 @login_required
+
 def get_student_full_details(user_id):
     if current_user.role_id not in [1, 2]:
         return jsonify({'error': 'Unauthorized'}), 403
 
     conn = get_db_connection()
-    # ADDED: buffered=True to prevent "Unread result found" error
     cursor = conn.cursor(dictionary=True, buffered=True)
 
     try:
-        # 1. Fetch Profile (Including the 'year' column)
+        # 1. Fetch Profile
         cursor.execute("""
             SELECT u.user_id, u.name AS user_real_name, u.email, u.phone, u.status, u.region, u.year,
                    gd.* 
@@ -1642,10 +1639,13 @@ def get_student_full_details(user_id):
         """, (user_id,))
         course_info = cursor.fetchone()
 
-        # 5. Sponsor Info
+        # 5. UPDATED SPONSOR INFO Logic
+        # Join: Mapping (gg) -> Reference (sr) -> Human (u)
         cursor.execute("""
-            SELECT u.user_id, u.name, u.email FROM grantor_grantees gg
-            JOIN users u ON gg.grantor_id = u.user_id
+            SELECT u.user_id, u.name, u.email, sr.reference_id 
+            FROM grantor_grantees gg
+            JOIN sponsor_references sr ON gg.grantor_id COLLATE utf8mb4_general_ci = sr.reference_id COLLATE utf8mb4_general_ci
+            JOIN users u ON sr.user_id COLLATE utf8mb4_general_ci = u.user_id COLLATE utf8mb4_general_ci
             WHERE gg.grantee_id = %s
         """, (user_id,))
         sponsor = cursor.fetchone()
@@ -1680,7 +1680,7 @@ def get_student_full_details(user_id):
         return current_app.response_class(json.dumps(response_data, default=default_converter), mimetype='application/json')
 
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Error in detail fetch: {e}")
         return jsonify({'error': str(e)}), 500
     finally:
         cursor.close()
@@ -1788,7 +1788,7 @@ def perform_student_action():
         return jsonify({'error': 'Unauthorized'}), 403
 
     data = request.json
-    user_id = data.get('user_id')
+    user_id = data.get('user_id') # This is the Student's Reference ID
     action = data.get('action') # 'activate', 'deactivate', 'unassign_sponsor'
 
     conn = get_db_connection()
@@ -1804,9 +1804,10 @@ def perform_student_action():
             msg = "Student activated successfully."
         
         elif action == 'unassign_sponsor':
-            # Set to default pool (e.g., ID 12 or NULL based on your logic)
-            cursor.execute("UPDATE grantor_grantees SET grantor_id = 12, status = 'Unassigned' WHERE grantee_id = %s", (user_id,))
-            msg = "Student unassigned from sponsor."
+            # Logic Update: Since we link Students to Sponsor Reference IDs,
+            # we simply delete the mapping row to make them "Unassigned"
+            cursor.execute("DELETE FROM grantor_grantees WHERE grantee_id = %s", (user_id,))
+            msg = "Student unassigned from sponsor reference successfully."
             
         else:
             return jsonify({'error': 'Invalid action'}), 400
@@ -1884,11 +1885,11 @@ def upload_students_csv():
 
 @admin_bp.route('/api/payment/record_action', methods=['POST'])
 @login_required
+
 def admin_record_payment():
     if current_user.role_id not in [1, 2]:
         return jsonify({'error': 'Unauthorized'}), 403
 
-    # FIX: Import datetime class locally to avoid 'module object has no attribute now' error
     from datetime import datetime 
 
     conn = get_db_connection()
@@ -1897,47 +1898,56 @@ def admin_record_payment():
     try:
         # 1. Get Form Data
         action_type = request.form.get('action_type') # 'create' or 'edit'
-        payment_id = request.form.get('payment_id') # Only for edits
-        grantee_id = request.form.get('grantee_id')
+        payment_id = request.form.get('payment_id') 
+        grantee_id = request.form.get('grantee_id') # The Student ID
         amount = request.form.get('amount')
-        payment_date = request.form.get('payment_date') # YYYY-MM-DD
+        payment_date = request.form.get('payment_date') 
         status = request.form.get('status', 'Paid')
         
-        # 2. Handle File Upload (Receipt)
+        # 2. Handle File Upload
         receipt_file = request.files.get('receipt')
         receipt_path = None
-        
         if receipt_file and receipt_file.filename != '':
-            # FIX: Used datetime.now() safely here
             timestamp = datetime.now().timestamp()
             filename = secure_filename(f"admin_pay_{grantee_id}_{timestamp}_{receipt_file.filename}")
-            
-            filepath = os.path.join(UPLOAD_FOLDER, filename) # Use the global UPLOAD_FOLDER var
+            filepath = os.path.join(UPLOAD_FOLDER, filename)
             receipt_file.save(filepath)
             receipt_path = filename 
 
         # 3. Database Logic
         if action_type == 'create':
             if not grantee_id or not amount:
-                return jsonify({'error': 'Missing required fields'}), 400
+                return jsonify({'error': 'Missing student or amount'}), 400
             
-            # Handle empty date by using current date
+            # --- NEW STEP: Find the Sponsor Reference ID for this student ---
+            # We look in grantor_grantees to find WHICH reference is supporting this student
+            cursor.execute("""
+                SELECT grantor_id FROM grantor_grantees 
+                WHERE grantee_id = %s LIMIT 1
+            """, (grantee_id,))
+            mapping = cursor.fetchone()
+            
+            # If student isn't mapped, we can't link the payment to a sponsor reference
+            if not mapping:
+                return jsonify({'error': 'This student is not assigned to any Sponsor Reference. Mapping required first.'}), 400
+            
+            target_reference_id = mapping['grantor_id']
             final_date = payment_date if payment_date else datetime.now().strftime('%Y-%m-%d')
 
+            # We insert the Reference ID as the grantor_id
             cursor.execute("""
-                INSERT INTO payments (grantor_id, grantee_id, amount, payment_date, status, receipt_url, created_at)
-                VALUES (%s, %s, %s, %s, %s, %s, NOW())
-            """, (current_user.user_id, grantee_id, amount, final_date, status, receipt_path))
+                INSERT INTO payments (grantor_id, grantee_id, amount, payment_date, status, receipt_url, created_at, updated_by)
+                VALUES (%s, %s, %s, %s, %s, %s, NOW(), %s)
+            """, (target_reference_id, grantee_id, amount, final_date, status, receipt_path, current_user.user_id))
             
-            msg = "Payment recorded successfully."
+            msg = "Payment recorded and linked to Sponsor Reference successfully."
 
         elif action_type == 'edit':
             if not payment_id:
-                return jsonify({'error': 'Payment ID missing for edit'}), 400
+                return jsonify({'error': 'Payment ID missing'}), 400
             
-            # Dynamic Update Query building
-            query = "UPDATE payments SET amount=%s, payment_date=%s, status=%s, updated_at=NOW()"
-            params = [amount, payment_date, status]
+            query = "UPDATE payments SET amount=%s, payment_date=%s, status=%s, updated_at=NOW(), updated_by=%s"
+            params = [amount, payment_date, status, current_user.user_id]
             
             if receipt_path:
                 query += ", receipt_url=%s"
@@ -1953,10 +1963,416 @@ def admin_record_payment():
         return jsonify({'success': True, 'message': msg})
 
     except Exception as e:
-        conn.rollback()
-        # Print the error to console for easier debugging
+        if conn: conn.rollback()
         print(f"Payment Error: {e}")
         return jsonify({'error': str(e)}), 500
     finally:
         cursor.close()
         conn.close()
+
+
+
+
+import re
+import pandas as pd
+from flask import request, redirect, url_for, flash
+from flask_login import login_required, current_user
+from werkzeug.security import generate_password_hash
+
+@admin_bp.route('/api/students/bulk_upload', methods=['POST'])
+@login_required
+def bulk_upload_students():
+    if current_user.role_id not in [1, 2]:
+        return redirect(url_for('admin.student_directory'))
+
+    file = request.files.get('file')
+    if not file: return redirect(url_for('admin.student_directory'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    try:
+        try:
+            df = pd.read_csv(file)
+        except:
+            file.seek(0)
+            df = pd.read_csv(file, encoding='latin-1')
+
+        # Cleanup headers: lowercase and remove spaces
+        df.columns = [str(c).strip().lower().replace(" ", "") for c in df.columns]
+        df = df.astype(object).where(pd.notnull(df), None)
+
+        hashed_pw = generate_password_hash("hello")
+        STUDENT_ROLE_ID = 6
+        success_count = 0
+
+        for index, row in df.iterrows():
+            try:
+                u_id = str(row.get('studentreference', '')).strip()
+                name = str(row.get('studentname', '')).strip()
+                
+                if not u_id or u_id in ['None', '']: continue
+
+                # --- STEP A: USERS (Prevent duplication manually if DB unique constraint missing) ---
+                email_val = row.get('email') or f"{u_id}@rahbar.com"
+                phone_val = str(row.get('mobilestudent') or '')
+                year_adm = row.get('yearadmission')
+
+                cursor.execute("SELECT user_id FROM users WHERE user_id = %s", (u_id,))
+                user_exists = cursor.fetchone()
+
+                if user_exists:
+                    cursor.execute("""
+                        UPDATE users SET name=%s, email=%s, phone=%s, year=%s, updated_at=NOW() 
+                        WHERE user_id=%s
+                    """, (name, email_val, phone_val, year_adm, u_id))
+                else:
+                    cursor.execute("""
+                        INSERT INTO users (user_id, name, email, sex, phone, role_id, status, password_hash, year, created_at, updated_at)
+                        VALUES (%s, %s, %s, 'M', %s, %s, 'Active', %s, %s, NOW(), NOW())
+                    """, (u_id, name, email_val, phone_val, STUDENT_ROLE_ID, hashed_pw, year_adm))
+
+                # --- STEP B: GRANTEE_DETAILS ---
+                cursor.execute("""
+                    INSERT INTO grantee_details (user_id, name, father_name, address, course_applied, rcc_name, father_mobile, mother_mobile, student_mobile, created_at, updated_at)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW())
+                    ON DUPLICATE KEY UPDATE name=VALUES(name), father_name=VALUES(father_name), address=VALUES(address), course_applied=VALUES(course_applied), updated_at=NOW()
+                """, (u_id, name, row.get('fathername'), row.get('address'), row.get('course(branch)'), row.get('rccnon-rcc'), row.get('mobile-1'), row.get('mobile-2'), phone_val))
+
+                # --- STEP C: BANK DETAILS (New Ultra-Forgiving Parser) ---
+                bank_raw = str(row.get('bank') or '').strip()
+                acc_no, bnk_nm, ifsc = None, None, None
+
+                if bank_raw and bank_raw not in ['None', '']:
+                    # Try Format 1: A/c Number...
+                    if "A/c Number" in bank_raw:
+                        acc_m = re.search(r"A/c Number:\s*([^,]+)", bank_raw)
+                        bnk_m = re.search(r"Bank:\s*([^,]+)", bank_raw)
+                        ifs_m = re.search(r"IFSC Code:\s*(\w+)", bank_raw)
+                        acc_no = acc_m.group(1).strip().replace('*','') if acc_m else None
+                        bnk_nm = bnk_m.group(1).strip() if bnk_m else None
+                        ifsc = ifs_m.group(1).strip() if ifs_m else None
+                    
+                    # Try Format 2: Bank & Branch...
+                    elif "Bank & Branch" in bank_raw:
+                        bnk_m = re.search(r"Bank & Branch:\s*(.*)", bank_raw)
+                        bnk_nm = bnk_m.group(1).strip() if bnk_m else bank_raw
+                    
+                    # Fallback: Just take the whole string
+                    if not bnk_nm:
+                        bnk_nm = bank_raw
+
+                    cursor.execute("SELECT bank_detail_id FROM bank_details WHERE user_id = %s", (u_id,))
+                    if cursor.fetchone():
+                        cursor.execute("UPDATE bank_details SET account_number=%s, bank_name=%s, ifsc_code=%s, account_name=%s WHERE user_id=%s", (acc_no, bnk_nm, ifsc, name, u_id))
+                    else:
+                        cursor.execute("SELECT COALESCE(MAX(bank_detail_id), 0) + 1 as n_id FROM bank_details")
+                        new_bank_id = cursor.fetchone()['n_id']
+                        cursor.execute("INSERT INTO bank_details (bank_detail_id, user_id, bank_name, account_number, ifsc_code, account_name) VALUES (%s, %s, %s, %s, %s, %s)", (new_bank_id, u_id, bnk_nm, acc_no, ifsc, name))
+
+                # --- STEP D: INSTITUTIONS & COURSES ---
+                coll_name = row.get('college')
+                course_name = row.get('course(branch)')
+                if coll_name and course_name:
+                    cursor.execute("SELECT institution_id FROM institutions WHERE institution_name = %s", (coll_name,))
+                    inst_res = cursor.fetchone()
+                    if inst_res: inst_id = inst_res['institution_id']
+                    else:
+                        cursor.execute("SELECT COALESCE(MAX(institution_id), 0) + 1 as n_inst FROM institutions")
+                        inst_id = cursor.fetchone()['n_inst']
+                        cursor.execute("INSERT INTO institutions (institution_id, institution_name, address, created_at, updated_at) VALUES (%s, %s, 'Bulk Upload', NOW(), NOW())", (inst_id, coll_name))
+
+                    cursor.execute("SELECT course_id FROM courses WHERE course_name = %s AND institution_id = %s", (course_name, inst_id))
+                    crs_res = cursor.fetchone()
+                    if crs_res: course_id = crs_res['course_id']
+                    else:
+                        cursor.execute("INSERT INTO courses (institution_id, course_name, fees_per_semester, number_of_semesters) VALUES (%s, %s, 0, 8)", (inst_id, course_name))
+                        course_id = cursor.lastrowid
+
+                    cursor.execute("""
+                        INSERT INTO student_institution_courses (user_id, institution_id, course_id, assigned_by, assigned_at)
+                        VALUES (%s, %s, %s, %s, NOW())
+                        ON DUPLICATE KEY UPDATE institution_id=VALUES(institution_id), course_id=VALUES(course_id)
+                    """, (u_id, inst_id, course_id, current_user.user_id))
+
+                success_count += 1
+            except Exception as e:
+                print(f"Error at {u_id}: {e}")
+                continue
+
+        conn.commit()
+        flash(f'Success! Processed {success_count} unique students.', 'success')
+
+    except Exception as e:
+        if conn: conn.rollback()
+        flash(f"Error: {e}", 'error')
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+
+    return redirect(url_for('admin.student_directory'))
+
+
+
+
+@admin_bp.route('/api/students/manual_add', methods=['POST'])
+@login_required
+def manual_add_student():
+    if current_user.role_id not in [1, 2]:
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    try:
+        # --- 1. Get Data from Form ---
+        u_id = request.form.get('user_id')
+        name = request.form.get('name')
+        
+        # --- 2. USERS TABLE ---
+        hashed_pw = generate_password_hash("hello")
+        email = request.form.get('email') or f"{u_id}@rahbar.com"
+        
+        cursor.execute("""
+            INSERT INTO users (user_id, name, email, sex, phone, role_id, status, password_hash, year, created_at, updated_at)
+            VALUES (%s, %s, %s, %s, %s, 6, 'Active', %s, %s, NOW(), NOW())
+            ON DUPLICATE KEY UPDATE name=VALUES(name), email=VALUES(email), phone=VALUES(phone), year=VALUES(year), updated_at=NOW()
+        """, (u_id, name, email, request.form.get('sex'), request.form.get('phone'), hashed_pw, request.form.get('year')))
+
+        # --- 3. GRANTEE_DETAILS ---
+        cursor.execute("""
+            INSERT INTO grantee_details (
+                user_id, name, father_name, mother_name, address, course_applied, 
+                rcc_name, father_mobile, mother_mobile, student_mobile, created_at, updated_at
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW())
+            ON DUPLICATE KEY UPDATE 
+                father_name=VALUES(father_name), mother_name=VALUES(mother_name), address=VALUES(address),
+                course_applied=VALUES(course_applied), rcc_name=VALUES(rcc_name), updated_at=NOW()
+        """, (u_id, name, request.form.get('father_name'), request.form.get('mother_name'), 
+              request.form.get('address'), request.form.get('course_name'), request.form.get('rcc_name'),
+              request.form.get('father_mobile'), request.form.get('mother_mobile'), request.form.get('phone')))
+
+        # --- 4. BANK DETAILS ---
+        bnk_nm = request.form.get('bank_name')
+        if bnk_nm:
+            cursor.execute("SELECT bank_detail_id FROM bank_details WHERE user_id = %s", (u_id,))
+            if cursor.fetchone():
+                cursor.execute("""
+                    UPDATE bank_details SET bank_name=%s, account_number=%s, ifsc_code=%s, account_name=%s 
+                    WHERE user_id=%s
+                """, (bnk_nm, request.form.get('acc_no'), request.form.get('ifsc'), name, u_id))
+            else:
+                cursor.execute("SELECT COALESCE(MAX(bank_detail_id), 0) + 1 as n_id FROM bank_details")
+                new_bid = cursor.fetchone()['n_id']
+                cursor.execute("""
+                    INSERT INTO bank_details (bank_detail_id, user_id, bank_name, account_number, ifsc_code, account_name) 
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                """, (new_bid, u_id, bnk_nm, request.form.get('acc_no'), request.form.get('ifsc'), name))
+
+        # --- 5. INSTITUTION & COURSE MAPPING ---
+        inst_id = request.form.get('institution_id')
+        crs_id = request.form.get('course_id')
+        if inst_id and crs_id:
+            cursor.execute("""
+                INSERT INTO student_institution_courses (user_id, institution_id, course_id, assigned_by, assigned_at)
+                VALUES (%s, %s, %s, %s, NOW())
+                ON DUPLICATE KEY UPDATE institution_id=VALUES(institution_id), course_id=VALUES(course_id)
+            """, (u_id, inst_id, crs_id, current_user.user_id))
+
+        conn.commit()
+        flash(f'Student {u_id} registered successfully!', 'success')
+        return redirect(url_for('admin.student_directory'))
+
+    except Exception as e:
+        if conn: conn.rollback()
+        flash(f'Error: {str(e)}', 'error')
+        return redirect(url_for('admin.student_directory'))
+    finally:
+        cursor.close()
+        conn.close()
+
+
+
+
+
+
+
+
+
+# API to get full sponsor details and all their references
+@admin_bp.route('/api/sponsor/details/<user_id>', methods=['GET'])
+@login_required
+def get_sponsor_full_details(user_id):
+    if current_user.role_id not in [1, 2]:
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # 1. Fetch User Profile
+    cursor.execute("SELECT user_id, name, email, phone, region, status FROM users WHERE user_id = %s", (user_id,))
+    profile = cursor.fetchone()
+
+    if not profile:
+        return jsonify({'error': 'Sponsor not found'}), 404
+
+    # 2. Fetch all References for this User
+    cursor.execute("SELECT * FROM sponsor_references WHERE user_id = %s", (user_id,))
+    references = cursor.fetchall()
+
+    # Helper to convert dates for JSON
+    def date_handler(obj):
+        return obj.isoformat() if hasattr(obj, 'isoformat') else obj
+
+    return current_app.response_class(
+        json.dumps({'profile': profile, 'references': references}, default=date_handler),
+        mimetype='application/json'
+    )
+
+# API to update Sponsor Profile
+@admin_bp.route('/api/sponsor/update', methods=['POST'])
+@login_required
+def update_sponsor_details():
+    if current_user.role_id not in [1, 2]:
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    data = request.json
+    user_id = data.get('user_id')
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    try:
+        # Update Users Table
+        cursor.execute("""
+            UPDATE users 
+            SET name=%s, email=%s, phone=%s, region=%s 
+            WHERE user_id=%s
+        """, (data['name'], data['email'], data['phone'], data['region'], user_id))
+
+        conn.commit()
+        return jsonify({'success': True, 'message': 'Sponsor profile updated!'})
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+
+@admin_bp.route('/api/sponsors/bulk_upload', methods=['POST'])
+@login_required
+def bulk_upload_sponsors():
+    if current_user.role_id not in [1, 2]:
+        return redirect(url_for('admin.student_directory'))
+
+    file = request.files.get('file')
+    if not file: return redirect(url_for('admin.student_directory'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    def safe_date(val):
+        if not val or pd.isna(val) or str(val).strip().lower() in ['nan', 'none', '']: return None
+        try: return pd.to_datetime(val).strftime('%Y-%m-%d')
+        except: return None
+
+    try:
+        try:
+            df = pd.read_csv(file)
+        except:
+            file.seek(0)
+            df = pd.read_csv(file, encoding='latin-1')
+
+        # Clean headers
+        df.columns = [str(c).strip().lower().replace(" ", "").replace("_", "") for c in df.columns]
+        df = df.astype(object).where(pd.notnull(df), None)
+
+        SPONSOR_ROLE_ID = 5
+        hashed_pw = generate_password_hash("hello")
+        success_count = 0
+
+        for index, row in df.iterrows():
+            try:
+                # Basic Mapping
+                ref_id = str(row.get('sponsorreference', '')).strip()
+                name = str(row.get('sponsorname', '')).strip()
+                email = str(row.get('sponsoremail', '')).strip() if row.get('sponsoremail') else None
+                mobile1 = str(row.get('sponsormobile1', '')).strip() if row.get('sponsormobile1') else None
+                chapter = str(row.get('sponsorchapter', '')).strip() or "General"
+                
+                if not ref_id or ref_id == 'None': continue
+
+                # --- STEP 1: IDENTITY MERGING (Find Existing Person) ---
+                user_id = None
+                if email and email not in ['None', '', 'nan']:
+                    cursor.execute("SELECT user_id FROM users WHERE email = %s AND role_id IN (3,4,5) LIMIT 1", (email,))
+                    res = cursor.fetchone()
+                    if res: user_id = res['user_id']
+
+                if not user_id and mobile1 and mobile1 not in ['None', '', 'nan']:
+                    cursor.execute("SELECT user_id FROM users WHERE phone = %s AND role_id IN (3,4,5) LIMIT 1", (mobile1,))
+                    res = cursor.fetchone()
+                    if res: user_id = res['user_id']
+
+                if not user_id and name and chapter:
+                    cursor.execute("SELECT user_id FROM users WHERE name = %s AND region = %s AND role_id IN (3,4,5) LIMIT 1", (name, chapter))
+                    res = cursor.fetchone()
+                    if res: user_id = res['user_id']
+
+                # --- STEP 2: CREATE OR UPDATE USER ACCOUNT ---
+                if not user_id:
+                    user_id = f"USR-{ref_id}" 
+                    cursor.execute("""
+                        INSERT INTO users (user_id, name, email, phone, role_id, status, password_hash, region, created_at, updated_at)
+                        VALUES (%s, %s, %s, %s, %s, 'active', %s, %s, NOW(), NOW())
+                    """, (user_id, name, email, mobile1, SPONSOR_ROLE_ID, hashed_pw, chapter))
+                else:
+                    cursor.execute("UPDATE users SET updated_at=NOW() WHERE user_id=%s", (user_id,))
+
+                # --- STEP 3: FILL SPONSOR REFERENCES ---
+                cursor.execute("""
+                    REPLACE INTO sponsor_references (
+                        reference_id, user_id, sponsor_year, chapter, referral, 
+                        installment_date, payment_months, confirm_credit_date, 
+                        special_demand, remarks, mobile_1, mobile_2, created_at, updated_at
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW())
+                """, (
+                    ref_id, user_id, row.get('sponsoryear'), chapter, row.get('sponsorreferal'),
+                    safe_date(row.get('datetransf1stinstallment')),
+                    row.get('paymentnumberofmonths') or 0,
+                    safe_date(row.get('confirmcreditdate')),
+                    row.get('specialdemand'), row.get('remarks'), mobile1, row.get('sponsormobile2')
+                ))
+
+                # --- STEP 4: MAP STUDENTS (GRANTOR_GRANTEES) ---
+                # We use row.get('studentassigned') from your CSV
+                student_data = str(row.get('studentassigned') or '').strip()
+                if student_data and student_data.lower() not in ['none', 'nan', '']:
+                    # Support multiple student IDs in one cell (e.g. M001, M002)
+                    stu_list = [s.strip() for s in student_data.split(',')]
+                    for stu_id in stu_list:
+                        if stu_id:
+                            cursor.execute("""
+                                INSERT INTO grantor_grantees (grantor_id, grantee_id, status, created_at)
+                                VALUES (%s, %s, 'Accepted', NOW())
+                                ON DUPLICATE KEY UPDATE updated_at = NOW()
+                            """, (ref_id, stu_id)) # Link Student to Reference ID
+
+                success_count += 1
+            except Exception as e_row:
+                print(f"Row {index} failed: {e_row}")
+                continue
+
+        conn.commit()
+        flash(f'Success! Processed {success_count} rows. Sponsors merged and students mapped.', 'success')
+
+    except Exception as e:
+        if conn: conn.rollback()
+        flash(f"System Error: {str(e)}", 'error')
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+
+    return redirect(url_for('admin.manage_sponsorships'))

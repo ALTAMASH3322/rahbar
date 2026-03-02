@@ -32,7 +32,7 @@ def convenor_dashboard():
         return redirect(url_for('auth.login'))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     # Fetch convenor details including region
     cursor.execute("SELECT * FROM users WHERE user_id = %s", (current_user.user_id,))
@@ -158,7 +158,7 @@ def view_applications():
 
     # Fetch convenor details including region
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
     cursor.execute("SELECT * FROM users WHERE user_id = %s", (current_user.user_id,))
     convenor = cursor.fetchone()
 
@@ -240,7 +240,7 @@ def manage_sponsors():
 
     # Fetch convenor details including region
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
     cursor.execute("SELECT * FROM users WHERE user_id = %s", (current_user.user_id,))
     convenor = cursor.fetchone()
 
@@ -343,7 +343,7 @@ def map_students(sponsor_id):
         return redirect(url_for('auth.login'))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     # Fetch convenor details including region
     cursor.execute("SELECT * FROM users WHERE user_id = %s", (current_user.user_id,))
@@ -418,7 +418,7 @@ def view_student_progress(grantee_id=None):
         return redirect(url_for('auth.login'))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     # Fetch convenor details including region
     cursor.execute("SELECT * FROM users WHERE user_id = %s", (current_user.user_id,))
@@ -538,7 +538,7 @@ def convenor_payments():
         return render_template('convenor/error.html', error="You do not have permission to access this page."), 403
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
     convenor_id = current_user.user_id
 
     cursor.execute("SELECT * FROM users WHERE user_id = %s", (convenor_id,))

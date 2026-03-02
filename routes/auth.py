@@ -44,7 +44,7 @@ class User(UserMixin):
 def load_user(user_id):
     print(f"Loading user with ID: {user_id}")  # Debugging
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     # Fetch user from the database
     cursor.execute("SELECT * FROM users WHERE user_id = %s", (user_id,))
@@ -116,9 +116,10 @@ def login():
         login_method = request.form.get('login_method') 
         identifier = request.form.get('identifier')
         password = request.form.get('password')
+        print(f"Login attempt using {login_method}: {identifier}")  # Debugging
 
         conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(dictionary=True, buffered=True)
 
         # 1. Select the correct column based on user choice
         if login_method == 'phone':
@@ -138,7 +139,7 @@ def login():
                 # --- PRESERVING YOUR ORIGINAL SECOND FETCH LOGIC ---
                 # This now uses the same query (phone or email) as chosen above
                 conn = get_db_connection()
-                cursor = conn.cursor(dictionary=True)
+                cursor = conn.cursor(dictionary=True, buffered=True)
                 cursor.execute(query, (identifier,))
                 user_dict = cursor.fetchone()
                 cursor.close()
@@ -202,7 +203,7 @@ def verify_otp():
             session.pop('otp')
 
             conn = get_db_connection()
-            cursor = conn.cursor(dictionary=True)
+            cursor = conn.cursor(dictionary=True, buffered=True)
             cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
             user_dict = cursor.fetchone()
             cursor.close()

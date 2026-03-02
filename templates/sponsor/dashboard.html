@@ -62,30 +62,32 @@
 
             <!-- Sponsor Details & Student List -->
             <div class="row">
-              <div class="col-lg-6">
+              <div class="col-lg-5">
                 <div class="card">
                   <div class="card-body">
-                    <h4 class="header-title">Sponsor Details</h4>
+                    <h4 class="header-title">Sponsor Master Profile</h4>
                     <p><strong>Name:</strong> {{ sponsor.name }}</p>
-                    <p><strong>Email:</strong> {{ sponsor.email }}</p>
-                    <p><strong>Phone:</strong> {{ sponsor.phone }}</p>
+                    <p><strong>Email:</strong> {{ sponsor.email or 'N/A' }}</p>
+                    <p><strong>Phone:</strong> {{ sponsor.phone or 'N/A' }}</p>
+                    <hr>
+                    <small class="text-muted">Note: All commitments (Reference IDs) linked to this profile are shown in the beneficiaries table.</small>
                   </div>
                 </div>
               </div>
 
-              <!-- "Assigned Beneficiaries" CARD - MODIFIED -->
-              <div class="col-lg-6">
+              <!-- "Assigned Beneficiaries" CARD -->
+              <div class="col-lg-7">
                 <div class="card">
                   <div class="card-body">
                     <h4 class="header-title">Assigned Beneficiaries</h4>
-                    <!-- YOUR ORIGINAL SEARCH BOX IS PRESERVED -->
-                    <input type="text" id="searchBox" class="form-control mb-3" placeholder="Search by name..." onkeyup="filterTable()" />
+                    <input type="text" id="searchBox" class="form-control mb-3" placeholder="Search by name or reference ID..." onkeyup="filterTable()" />
                     
-                    <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                    <div class="table-responsive" style="max-height: 350px; overflow-y: auto;">
                       <table class="table table-hover table-centered mb-0" id="beneficiaryTable">
                         <thead class="thead-light">
                           <tr>
                             <th>Student Name</th>
+                            <th>Reference ID</th> <!-- NEW COLUMN -->
                             <th>Payment Status</th>
                             <th>Action</th>
                           </tr>
@@ -97,10 +99,13 @@
                                 <td>
                                   <strong>{{ grantee_detail.user.name }}</strong>
                                   <br>
-                                  <small class="text-muted">{{ grantee_detail.user.email }}</small>
+                                  <small class="text-muted">ID: {{ grantee_detail.user.user_id }}</small>
                                 </td>
                                 <td>
-                                  <!-- THIS IS THE UPDATED JINJA2 LOGIC FOR DISPLAYING THE SMART STATUS -->
+                                  <!-- DISPLAYS THE COMMITMENT ID LINKED IN SPONSOR.PY -->
+                                  <span class="badge badge-light border" style="font-family: monospace;">{{ grantee_detail.reference_id }}</span>
+                                </td>
+                                <td>
                                   {% if grantee_detail.payment_status == 'Overdue' %}
                                     <span class="badge badge-danger" style="font-size: 13px;">{{ grantee_detail.payment_status }}</span>
                                   {% elif grantee_detail.payment_status == 'Due Soon' %}
@@ -112,13 +117,13 @@
                                   {% endif %}
                                 </td>
                                 <td>
-                                  <a href="{{ url_for('sponsor.sponsor_payments') }}" class="btn btn-sm btn-info">View Payments</a>
+                                  <a href="{{ url_for('sponsor.sponsor_payments') }}" class="btn btn-sm btn-info">Payments</a>
                                 </td>
                               </tr>
                             {% endfor %}
                           {% else %}
                             <tr>
-                              <td colspan="3" class="text-center text-muted">No beneficiaries assigned yet.</td>
+                              <td colspan="4" class="text-center text-muted">No beneficiaries assigned yet.</td>
                             </tr>
                           {% endif %}
                         </tbody>
@@ -137,13 +142,12 @@
           </div>
         </div>
 
-        <!-- Footer (NO CHANGES) -->
-        <footer class="footer"><p class="mb-0">Developed by <strong>Congnifly AI System</strong></p></footer>
-        <style>.footer { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; background-color: #f8f9fa; padding: 10px 0; text-align: center; font-size: 14px; color: #6c757d; border-top: 1px solid #ddd; }</style>
+        <!-- Footer -->
+        <footer class="footer"><p class="mb-0">Developed by <strong>Cognifly AI System</strong></p></footer>
       </div>
     </div>
 
-    <!-- Vendor JS (NO CHANGES) -->
+    <!-- Scripts (NO CHANGES TO FILTERS OR CHARTS) -->
     <script src="{{ url_for('static', filename='js/vendor.min.js') }}"></script>
     <script src="{{ url_for('static', filename='libs/flot-charts/jquery.flot.js') }}"></script>
     <script src="{{ url_for('static', filename='libs/flot-charts/jquery.flot.pie.js') }}"></script>
@@ -151,33 +155,27 @@
     <script src="{{ url_for('static', filename='libs/bootstrap-daterangepicker/daterangepicker.js') }}"></script>
     <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
 
-    <!-- The old complex JavaScript is removed, and replaced with this simpler version -->
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        initializeCharts(); // Your chart logic is preserved
+        initializeCharts();
       });
 
-      // New, simpler search function that works on the table
       function filterTable() {
         const input = document.getElementById("searchBox");
         const filter = input.value.toLowerCase();
         const table = document.getElementById("beneficiaryTable");
         const tr = table.getElementsByTagName("tr");
 
-        for (let i = 1; i < tr.length; i++) { // Start from 1 to skip the header row
-          const td = tr[i].getElementsByTagName("td")[0]; // Search in the first column (Student Name)
-          if (td) {
-            const txtValue = td.textContent || td.innerText;
-            if (txtValue.toLowerCase().indexOf(filter) > -1) {
-              tr[i].style.display = "";
-            } else {
-              tr[i].style.display = "none";
-            }
+        for (let i = 1; i < tr.length; i++) {
+          const txtValue = tr[i].textContent || tr[i].innerText;
+          if (txtValue.toLowerCase().indexOf(filter) > -1) {
+            tr[i].style.display = "";
+          } else {
+            tr[i].style.display = "none";
           }
         }
       }
 
-      // Your original chart initialization function is preserved
       function initializeCharts() {
         if (document.getElementById("donut-chart-container")) {
             var donutData = [
@@ -190,7 +188,7 @@
         if (document.getElementById("website-stats")) {
             var lineData = [];
             for (var i = 0; i <= 10; i += 1) { lineData.push([i, Math.sin(i / 1.5) * 10 + 20 + Math.random() * 5]); }
-            $.plot("#website-stats", [{ data: lineData, label: "Grantor A Marks", color: "#44a0cb" }], { series: { lines: { show: true, fill: true, lineWidth: 2 }, points: { show: true, radius: 3 }, shadowSize: 0 }, grid: { hoverable: true, clickable: true, borderColor: "#f1f1f1", borderWidth: 1, labelMargin: 15, backgroundColor: "#fff" }, yaxis: { min: 0, max: 40, color: "rgba(0,0,0,0.1)" }, xaxis: { color: "rgba(0,0,0,0.1)" }, tooltip: true, tooltipOpts: { content: "X: %x, Y: %y", shifts: { x: -60, y: 25 } } });
+            $.plot("#website-stats", [{ data: lineData, label: "Beneficiary Performance", color: "#44a0cb" }], { series: { lines: { show: true, fill: true, lineWidth: 2 }, points: { show: true, radius: 3 }, shadowSize: 0 }, grid: { hoverable: true, clickable: true, borderColor: "#f1f1f1", borderWidth: 1, labelMargin: 15, backgroundColor: "#fff" }, yaxis: { min: 0, max: 40, color: "rgba(0,0,0,0.1)" }, xaxis: { color: "rgba(0,0,0,0.1)" }, tooltip: true, tooltipOpts: { content: "X: %x, Y: %y", shifts: { x: -60, y: 25 } } });
         }
       }
     </script>

@@ -46,25 +46,25 @@
                   <h4 class="header-title">Make a Payment</h4>
                   <div class="form-group">
                     <label for="studentSelect">Select Student</label>
-                    <!-- Uses new students_for_dropdown list for simplicity -->
                     <select class="form-control" id="studentSelect" onchange="updateStudentDetails()">
                       <option value="">-- Select a Student --</option>
-                      {% for student in students_for_dropdown %}
-                        <option value="{{ student.user_id }}">{{ student.name }}</option>
+                      {% for item in payment_details %}
+                        <!-- ADDED REFERENCE ID TO THE DROPDOWN TEXT -->
+                        <option value="{{ item.grantee.user_id }}">{{ item.grantee.name }} (Ref: {{ item.reference_id }})</option>
                       {% endfor %}
                     </select>
                   </div>
                   
-                  <!-- YOUR ORIGINAL HTML STRUCTURE IS PRESERVED HERE -->
                   <div id="studentDetails" style="display:none;">
                     <h5 id="beneficiaryName"></h5>
+                    <!-- ADDED REFERENCE ID DISPLAY LINE -->
+                    <p><strong>Sponsorship Reference:</strong> <span id="referenceIdDisplay" class="badge badge-light border"></span></p>
                     <p>Grantee Academic Year: <span id="granteeYearDisplay"></span></p>
                     <p id="bankInfo"></p>
                     <p id="ifscInfo"></p>
                     <p id="lastPaymentInfo"></p>
                     <p id="currentStatus"></p>
                     
-                    <!-- This section will be replaced by the new unified table -->
                     <div id="paymentScheduleSection">
                       <!-- Content will be populated by JavaScript -->
                     </div>
@@ -74,14 +74,12 @@
             </div>
           </div>
 
-          <!-- Past Payments Table is now obsolete, as its data is in the unified table -->
-          <!-- You can remove this card if you like, or keep it. The data will be duplicated. -->
           <div class="row">
             <div class="col-12">
               <div class="card">
                 <div class="card-body">
                   <h4 class="header-title">Official Payment History</h4>
-                  <p class="text-muted">This table shows all successfully recorded payments.</p>
+                  <p class="text-muted">This table shows all successfully recorded payments across all your reference IDs.</p>
                   <div class="table-responsive mt-4">
                     <table class="table table-centered mb-0">
                       <thead><tr><th>Student Name</th><th>Amount</th><th>Date</th><th>Receipt</th></tr></thead>
@@ -106,7 +104,7 @@
         </div>
       </div>
       <!-- Footer -->
-      <footer class="footer"><p class="mb-0">Developed by <strong>Congnifly AI System</strong></p></footer>
+      <footer class="footer"><p class="mb-0">Developed by <strong>Cognifly AI System</strong></p></footer>
       <style>.footer { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; background-color: #f8f9fa; padding: 10px 0; text-align: center; font-size: 14px; color: #6c757d; border-top: 1px solid #ddd; }</style>
     </div>
   </div>
@@ -140,7 +138,6 @@
   <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
 
   <script>
-    // This uses the NEW data map from your Python file
     const studentDataMap = {{ student_data_map|tojson }};
 
     function updateStudentDetails() {
@@ -160,17 +157,18 @@
       const grantee = studentData.grantee;
       const bank = studentData.bank_details || {};
       const courseInfo = studentData.course_info;
-      const paidRecords = studentData.paid_records || [];
+      const paidRecords = studentData.payments || []; // Matches the new Python key
       const paidCount = paidRecords.length;
 
-      // --- 1. POPULATE YOUR ORIGINAL HTML PLACEHOLDERS ---
+      // --- 1. POPULATE HTML PLACEHOLDERS ---
       document.getElementById("beneficiaryName").innerText = "Student: " + (grantee.name || "N/A");
+      document.getElementById("referenceIdDisplay").innerText = studentData.reference_id || "N/A"; // Display Reference ID
       document.getElementById("granteeYearDisplay").innerText = grantee.year || "Not Specified";
       document.getElementById("bankInfo").innerText = "Bank: " + (bank.bank_name || "N/A") + " (Acc: " + (bank.account_number || "N/A") + ")";
       document.getElementById("ifscInfo").innerText = "IFSC: " + (bank.ifsc_code || "N/A");
       
       if (paidCount > 0) {
-        const lastPayment = paidRecords[paidCount - 1];
+        const lastPayment = paidRecords[0]; // Latest is index 0 due to ORDER BY payment_date DESC
         const lastPaymentDate = new Date(lastPayment.payment_date).toLocaleDateString();
         document.getElementById("lastPaymentInfo").innerText = `Last Payment: ₹${parseFloat(lastPayment.amount).toFixed(2)} on ${lastPaymentDate}`;
       } else {
@@ -184,7 +182,7 @@
         return;
       }
 
-      // --- 2. CALCULATE AND GENERATE THE NEW UNIFIED TABLE ---
+      // --- 2. GENERATE UNIFIED TABLE ---
       const baseDate = new Date(courseInfo.assigned_at);
       const totalSemesters = courseInfo.number_of_semesters;
       const feesPerSemester = courseInfo.fees_per_semester || 0;
@@ -210,18 +208,21 @@
           let paidOnDate = '—';
           let actionButton = '';
 
-          if (i <= paidCount) {
+          // We reverse the paidRecords list for matching since the query was DESC
+          const paidRecordMatch = paidRecords.slice().reverse()[i-1];
+
+          if (i <= paidCount && paidRecordMatch) {
               status = 'Paid';
               statusClass = 'badge-success';
-              amountDisplay = `₹${parseFloat(paidRecords[i-1].amount).toFixed(2)}`;
-              paidOnDate = new Date(paidRecords[i-1].payment_date).toLocaleDateString();
+              amountDisplay = `₹${parseFloat(paidRecordMatch.amount).toFixed(2)}`;
+              paidOnDate = new Date(paidRecordMatch.payment_date).toLocaleDateString();
               actionButton = '<button class="btn btn-sm btn-light" disabled>Paid</button>';
           } else {
               if (dueDate < today) {
                   status = 'Overdue';
                   statusClass = 'badge-danger';
               }
-              if (nextStatus === 'All Paid') { // Find the first unpaid status
+              if (nextStatus === 'All Paid') { 
                   nextStatus = status;
               }
               actionButton = `<button type="button" class="btn btn-sm btn-success pay-now-btn" 
@@ -237,13 +238,11 @@
       }
       tableHtml += `</tbody></table></div>`;
       
-      // --- 3. DISPLAY THE CONTENT ---
       scheduleSection.innerHTML = tableHtml;
       document.getElementById("currentStatus").innerText = "Payment Status: " + nextStatus;
       detailsDiv.style.display = "block";
     }
 
-    // jQuery event listener for the modal (preserved)
     $(document).on('click', '.pay-now-btn', function() {
         var button = $(this);
         $('#modalTitle').text(`Record Payment: Installment #${button.data('installment-num')}`);

@@ -40,7 +40,7 @@ def admin_dashboard():
         return redirect(url_for('auth.login'))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     # Get selected year from query parameters, default to None (all years)
     selected_year = request.args.get('year', None)
@@ -276,7 +276,7 @@ def manage_users():
         return redirect(url_for('auth.login'))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     if request.method == 'POST':
         # Handle user creation or update
@@ -328,7 +328,7 @@ def edit_user(user_id):
         return redirect(url_for('auth.login'))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     if request.method == 'POST':
         # Handle user update
@@ -405,7 +405,7 @@ def system_configuration():
 
     try:
         conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(dictionary=True, buffered=True)
 
         if request.method == 'POST':
             user_id = current_user.user_id
@@ -512,7 +512,7 @@ def admin_generate_reports():
         return redirect(url_for('auth.login'))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     # 1. Fetch Applications (Modified to include the assigned Human Sponsor)
     cursor.execute("""
@@ -642,7 +642,7 @@ def uploaded_file(filename):
 def public_application():
     #print(current_user.user_id )
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     # Check application period
     cursor.execute(
@@ -740,7 +740,7 @@ def check_application_status():
         mobile = request.form.get('mobile')
 
         conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(dictionary=True, buffered=True)
 
         # Check if mobile exists in any of the contact numbers
         cursor.execute("""
@@ -768,7 +768,7 @@ def check_application_status():
 @admin_bp.route('/application_status/<int:application_id>')
 def application_status(application_id):
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     cursor.execute("""
         SELECT gd.*, s.status, s.comments, s.created_at as status_date
@@ -798,7 +798,7 @@ def manage_applications():
         return redirect(url_for('auth.login'))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     # Get applications with latest status
     cursor.execute("""
@@ -829,7 +829,7 @@ def update_application_status(grantee_detail_id):
         return redirect(url_for('auth.login'))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     if request.method == 'POST':
         status = request.form['status']
@@ -880,7 +880,7 @@ def manage_rcc_centers():
         return redirect(url_for('auth.login'))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     if request.method == 'POST':
         # Handle RCC center creation or update
@@ -926,7 +926,7 @@ def edit_rcc_center(rcc_center_id=None):  # Make rcc_center_id optional
         return redirect(url_for('auth.login'))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     if request.method == 'POST':
         # Handle form submission
@@ -1007,7 +1007,7 @@ def manage_courses():
         return redirect(url_for('auth.login'))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     if request.method == 'POST':
         # Handle course creation or update
@@ -1063,7 +1063,7 @@ def edit_course(course_id=None):  # Make course_id optional
         return redirect(url_for('auth.login'))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     if request.method == 'POST':
         # Handle form submission
@@ -1141,7 +1141,7 @@ def add_institution():
         return redirect(url_for('auth.login'))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     if request.method == 'POST':
         try:
@@ -1180,7 +1180,7 @@ def add_institution():
 @admin_bp.route('/applications', methods=['GET'])
 def view_applications():
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     cursor.execute("""
         SELECT g.grantee_detail_id,g.name, g.father_name, g.mother_name, g.rcc_name, a.status 
@@ -1199,7 +1199,7 @@ def view_applications():
 @admin_bp.route('/application/<int:application_id>', methods=['GET', 'POST'])
 def view_application(application_id):
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     # Fetch application details
     cursor.execute("""
@@ -1262,7 +1262,7 @@ def manage_students():
         return redirect(url_for('auth.login'))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     # Fetch all active students with their sponsors and current assignments
     cursor.execute("""
@@ -1353,7 +1353,7 @@ def admin_map_students_to_sponsors(user_id):
         return redirect(url_for('auth.login'))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     # 1. Fetch Human Sponsor Details
     cursor.execute("SELECT user_id, name, email, region FROM users WHERE user_id = %s", (user_id,))
@@ -1448,21 +1448,30 @@ def admin_map_students_to_sponsors(user_id):
 @admin_bp.route('/manage_sponsorships', methods=['GET'])
 @login_required
 def manage_sponsorships():
-    # Permission Check
     if current_user.role_id not in [1, 2]:
         flash('Permission denied', 'error')
         return redirect(url_for('auth.login'))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
-    # Fetch Sponsors, Convenors, and Coordinators (Roles 3, 4, 5)
+    # UPDATED QUERY: Added MAX() to all columns to satisfy ONLY_FULL_GROUP_BY
     cursor.execute("""
-        SELECT u.user_id, u.name, u.email, u.phone, u.status, u.region, r.role_name
+        SELECT 
+            u.user_id, 
+            MAX(u.name) as name, 
+            MAX(u.email) as email, 
+            MAX(u.phone) as phone, 
+            MAX(u.status) as status, 
+            MAX(u.region) as region, 
+            MAX(r.role_name) as role_name,
+            GROUP_CONCAT(sr.reference_id SEPARATOR ', ') as all_references
         FROM users u
         JOIN roles r ON u.role_id = r.role_id
+        LEFT JOIN sponsor_references sr ON u.user_id COLLATE utf8mb4_general_ci = sr.user_id COLLATE utf8mb4_general_ci
         WHERE u.role_id IN (3, 4, 5) AND u.status = 'active'
-        ORDER BY u.name ASC
+        GROUP BY u.user_id
+        ORDER BY name ASC
     """)
     sponsors = cursor.fetchall()
 
@@ -1475,7 +1484,7 @@ def manage_sponsorships():
 @login_required
 def get_courses(institution_id):
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
     
     cursor.execute("""
         SELECT course_id, course_name 
@@ -1515,7 +1524,7 @@ def get_all_students_data():
     course_filter = request.args.get('course_id')
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     # UPDATED JOIN CHAIN with Collation Bridge:
     # We force both sides of the join to use utf8mb4_general_ci to prevent the 1267 error
@@ -1699,7 +1708,7 @@ def update_student_full_details():
         return jsonify({'error': 'User ID missing'}), 400
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     try:
         # --- 1. UPDATE USERS TABLE ---
@@ -1834,7 +1843,7 @@ def student_directory():
         return redirect(url_for('auth.login'))
     
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     try:
         # 2. Fetch admin details for the sidebar name display
@@ -1893,7 +1902,7 @@ def admin_record_payment():
     from datetime import datetime 
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     try:
         # 1. Get Form Data
@@ -1989,7 +1998,7 @@ def bulk_upload_students():
     if not file: return redirect(url_for('admin.student_directory'))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
     
     try:
         try:
@@ -2002,7 +2011,7 @@ def bulk_upload_students():
         df.columns = [str(c).strip().lower().replace(" ", "") for c in df.columns]
         df = df.astype(object).where(pd.notnull(df), None)
 
-        hashed_pw = generate_password_hash("hello")
+        hashed_pw = "hello"
         STUDENT_ROLE_ID = 6
         success_count = 0
 
@@ -2122,7 +2131,7 @@ def manual_add_student():
         return jsonify({'error': 'Unauthorized'}), 403
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
     
     try:
         # --- 1. Get Data from Form ---
@@ -2130,7 +2139,7 @@ def manual_add_student():
         name = request.form.get('name')
         
         # --- 2. USERS TABLE ---
-        hashed_pw = generate_password_hash("hello")
+        hashed_pw = "hello"
         email = request.form.get('email') or f"{u_id}@rahbar.com"
         
         cursor.execute("""
@@ -2207,7 +2216,7 @@ def get_sponsor_full_details(user_id):
         return jsonify({'error': 'Unauthorized'}), 403
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     # 1. Fetch User Profile
     cursor.execute("SELECT user_id, name, email, phone, region, status FROM users WHERE user_id = %s", (user_id,))
@@ -2271,7 +2280,7 @@ def bulk_upload_sponsors():
     if not file: return redirect(url_for('admin.student_directory'))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     def safe_date(val):
         if not val or pd.isna(val) or str(val).strip().lower() in ['nan', 'none', '']: return None
@@ -2290,7 +2299,7 @@ def bulk_upload_sponsors():
         df = df.astype(object).where(pd.notnull(df), None)
 
         SPONSOR_ROLE_ID = 5
-        hashed_pw = generate_password_hash("hello")
+        hashed_pw = "hello"
         success_count = 0
 
         for index, row in df.iterrows():
@@ -2376,3 +2385,31 @@ def bulk_upload_sponsors():
         if conn: conn.close()
 
     return redirect(url_for('admin.manage_sponsorships'))
+
+
+
+@admin_bp.route('/api/sponsorship/lookup', methods=['GET'])
+@login_required
+def lookup_sponsorship_reference():
+    ref_id = request.args.get('ref_id', '').strip()
+    if not ref_id:
+        return jsonify({'error': 'No Reference ID provided'}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True, buffered=True)
+
+    # Find the User ID associated with this specific Reference ID
+    cursor.execute("""
+        SELECT user_id FROM sponsor_references 
+        WHERE reference_id = %s LIMIT 1
+    """, (ref_id,))
+    result = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+
+    if result:
+        # Redirect to the mapping page for that specific Human User
+        return jsonify({'success': True, 'redirect_url': url_for('admin.admin_map_students_to_sponsors', user_id=result['user_id'])})
+    else:
+        return jsonify({'error': 'Reference ID not found in the system'}), 404

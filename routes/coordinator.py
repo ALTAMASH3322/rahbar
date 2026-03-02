@@ -31,7 +31,7 @@ def coordinator_dashboard():
         return redirect(url_for('auth.login'))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     # Fetch coordinator details (assuming 'users' table)
     cursor.execute("SELECT user_id, name, email, phone FROM users WHERE user_id = %s", (current_user.user_id,))
@@ -124,7 +124,7 @@ def co_view_applications():
         return redirect(url_for('auth.login'))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     # Fetch all applications
     cursor.execute("""
@@ -236,7 +236,7 @@ def co_map_students_to_sponsors(sponsor_id):
         return redirect(url_for('auth.login'))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     if request.method == 'POST':
         # Get selected student IDs
@@ -299,7 +299,7 @@ def co_manage_sponsors():
         return redirect(url_for('auth.login'))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
 
     cursor.execute("SELECT user_id, name, email, phone FROM users WHERE user_id = %s", (current_user.user_id,))
@@ -447,7 +447,7 @@ def view_sponsors_convenors():
         return redirect(url_for('auth.login'))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     # Fetch all sponsors and convenors with their roles and regions
     cursor.execute("""
@@ -474,7 +474,7 @@ def monitor_payments():
         flash('You do not have permission to access this page.', 'error')
         return redirect(url_for('auth.login'))
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
     cursor.execute("SELECT user_id, name, email, phone FROM users WHERE user_id = %s", (current_user.user_id,))
     coordinator = cursor.fetchone()
 
@@ -488,7 +488,7 @@ def monitor_payments_data():
         return jsonify({"error": "Unauthorized access"}), 403
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     cursor.execute("SELECT user_id, name, email, phone FROM users WHERE user_id = %s", (current_user.user_id,))
     coordinator = cursor.fetchone()
@@ -585,7 +585,7 @@ def generate_reports():
         return redirect(url_for('auth.login'))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
     cursor.execute("SELECT user_id, name, email, phone FROM users WHERE user_id = %s", (current_user.user_id,))
     coordinator = cursor.fetchone()
 

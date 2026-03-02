@@ -22,6 +22,7 @@ def get_db_connection():
     return mysql.connector.connect(**db_config)
 
 # Student Dashboard
+# Student Dashboard
 @student_bp.route('/student_dashboard', methods=['GET'])
 @login_required
 def student_dashboard():
@@ -31,20 +32,23 @@ def student_dashboard():
         return redirect(url_for('auth.login'))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    # Using buffered=True to avoid unread result errors
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
-    # Fetch student details
+    # 1. Fetch student details
     cursor.execute("SELECT * FROM users WHERE user_id = %s", (current_user.user_id,))
     student = cursor.fetchone()
 
-    # Fetch assigned sponsor
-    cursor.execute("SELECT * FROM grantor_grantees WHERE grantee_id = %s", (current_user.user_id,))
-    grantor_grantee = cursor.fetchone()
-
-    sponsor = None
-    if grantor_grantee:
-        cursor.execute("SELECT * FROM users WHERE user_id = %s", (grantor_grantee['grantor_id'],))
-        sponsor = cursor.fetchone()
+    # 2. Fetch assigned sponsor via the NEW join path
+    # Join: Mapping (gg) -> Reference (sr) -> Human Sponsor (u)
+    cursor.execute("""
+        SELECT u.*, sr.reference_id 
+        FROM grantor_grantees gg
+        JOIN sponsor_references sr ON gg.grantor_id COLLATE utf8mb4_general_ci = sr.reference_id COLLATE utf8mb4_general_ci
+        JOIN users u ON sr.user_id COLLATE utf8mb4_general_ci = u.user_id COLLATE utf8mb4_general_ci
+        WHERE gg.grantee_id = %s
+    """, (current_user.user_id,))
+    sponsor = cursor.fetchone()
 
     cursor.close()
     conn.close()
@@ -54,7 +58,7 @@ def student_dashboard():
 def get_bank_details(user_id):
     """Fetch bank details for a given user."""
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
     
     cursor.execute("SELECT * FROM bank_details WHERE user_id = %s", (user_id,))
     bank_details = cursor.fetchone()
@@ -75,7 +79,7 @@ def student_payments():
         return redirect(url_for('auth.login'))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     # 1. Fetch payments for the student
     cursor.execute("SELECT * FROM payments WHERE grantee_id = %s ORDER BY payment_date ASC", (current_user.user_id,))
@@ -139,7 +143,7 @@ def edit_bank_details():
         return jsonify({'success': False, 'message': 'Unauthorized access'}), 403
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     if request.method == 'POST':
         bank_name = request.json.get('bank_name')
@@ -189,7 +193,7 @@ def student_progress():
         os.makedirs('uploads')
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     # Fetch student details
     cursor.execute("SELECT * FROM users WHERE user_id = %s", (current_user.user_id,))

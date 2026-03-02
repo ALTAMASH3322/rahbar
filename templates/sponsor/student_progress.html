@@ -19,25 +19,13 @@
 </head>
 
 <body>
-    <!-- Begin page -->
     <div id="wrapper">
 
         <!-- Topbar Start -->
         <div class="navbar-custom">
             <div class="d-flex justify-content-between align-items-center w-100">
-                <!-- Left side - Admin Panel -->
-                <div>
-                    <h6 class="page-title mb-0">Sponsor Panel</h6>
-                </div>
-        
-                <!-- Middle - Logo -->
-                <div>
-                  <a href="{{ url_for('main.homepage') }}" class="text-success">
-                      <h4>Rahbar Scholarship Information Management System</h4>
-                      </a>
-                </div>
-        
-                <!-- Right side - User Dropdown -->
+                <div><h6 class="page-title mb-0">Sponsor Panel</h6></div>
+                <div><a href="{{ url_for('main.homepage') }}" class="text-success"><h4>Rahbar Scholarship Information Management System</h4></a></div>
                 <ul class="list-unstyled topnav-menu mb-0">
                     <li class="dropdown notification-list">
                         <a class="nav-link dropdown-toggle nav-user waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
@@ -45,89 +33,55 @@
                             <span class="d-none d-sm-inline-block ml-1">{{ sponsor.name }}</span>
                         </a>
                         <div class="dropdown-menu dropdown-menu-right profile-dropdown">
-                            <a href="{{ url_for('auth.logout') }}" class="dropdown-item notify-item">
-                                <i class="mdi mdi-logout-variant"></i>
-                                <span>Logout</span>
-                            </a>
+                            <a href="{{ url_for('auth.logout') }}" class="dropdown-item notify-item"><i class="mdi mdi-logout-variant"></i><span>Logout</span></a>
                         </div>
                     </li>
                 </ul>
             </div>
         </div>
-        <!-- end Topbar -->
 
-        <!-- ========== Left Sidebar Start ========== -->
+        <!-- Sidebar -->
         <div class="left-side-menu">
             <div class="slimscroll-menu">
-                <!--- Sidemenu -->
                 <div id="sidebar-menu">
                     <ul class="metismenu" id="side-menu">
                         <li class="menu-title">Navigation</li>
-                        <!-- Dashboard -->
-                        <li>
-                            <a href="{{ url_for('sponsor.sponsor_dashboard') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-view-dashboard"></i>
-                                <span>Dashboard</span>
-                            </a>
-                        </li>
-                        <!-- Payments -->
-                        <li>
-                            <a href="{{ url_for('sponsor.sponsor_payments') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-cash-multiple"></i>
-                                <span>Payments</span>
-                            </a>
-                        </li>
-                        <!-- Progress -->
-                        <li>
-                            <a href="{{ url_for('sponsor.sponsor_student_progress') }}" class="waves-effect waves-light">
-                                <i class="mdi mdi-chart-line"></i>
-                                <span>Student Progress</span>
-                            </a>
-                        </li>
+                        <li><a href="{{ url_for('sponsor.sponsor_dashboard') }}" class="waves-effect waves-light"><i class="mdi mdi-view-dashboard"></i><span>Dashboard</span></a></li>
+                        <li><a href="{{ url_for('sponsor.sponsor_payments') }}" class="waves-effect waves-light"><i class="mdi mdi-cash-multiple"></i><span>Payments</span></a></li>
+                        <li><a href="{{ url_for('sponsor.sponsor_student_progress') }}" class="waves-effect waves-light"><i class="mdi mdi-chart-line"></i><span>Student Progress</span></a></li>
                     </ul>
                 </div>
-                <!-- End Sidebar -->
             </div>
         </div>
-        <!-- Left Sidebar End -->
-
-        <!-- ============================================================== -->
-        <!-- Start Page Content here -->
-        <!-- ============================================================== -->
 
         <div class="content-page">
             <div class="content">
-                <!-- Start Content-->
                 <div class="container-fluid">
-                    <!-- start page title -->
                     <div class="row">
-                        <div class="col-12">
-                            <div class="page-title-box">
-                                <h4 class="page-title">Student Progress</h4>
-                            </div>
-                        </div>
+                        <div class="col-12"><div class="page-title-box"><h4 class="page-title">Student Progress Reports</h4></div></div>
                     </div>
-                    <!-- end page title -->
 
-                    <!-- Main Content -->
                     <div class="row">
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-body">
-                                    <h4 class="header-title">Student Progress</h4>
-                                    <p class="text-muted">Here you can view the progress of your Student.</p>
+                                    <h4 class="header-title">Academic Records</h4>
+                                    <p class="text-muted">Review the marks and uploaded progress files of your beneficiaries.</p>
 
                                     <!-- Search Form -->
                                     <form class="mb-4">
                                         <div class="row">
                                             <div class="col-md-3 mb-2">
-                                                <input type="text" id="searchName" class="form-control" placeholder="Search by Name">
+                                                <input type="text" id="searchName" class="form-control" placeholder="Student Name">
                                             </div>
-                                            <div class="col-md-3 mb-2">
-                                                <input type="text" id="searchSession" class="form-control" placeholder="Search by Session">
+                                            <div class="col-md-2 mb-2">
+                                                <input type="text" id="searchRefId" class="form-control" placeholder="Reference ID">
                                             </div>
-                                            <div class="col-md-3 mb-2">
-                                                <input type="text" id="searchYear" class="form-control" placeholder="Search by Year">
+                                            <div class="col-md-2 mb-2">
+                                                <input type="text" id="searchSession" class="form-control" placeholder="Session">
+                                            </div>
+                                            <div class="col-md-2 mb-2">
+                                                <input type="text" id="searchYear" class="form-control" placeholder="Year">
                                             </div>
                                             <div class="col-md-3">
                                                 <button type="button" id="searchButton" class="btn btn-primary mr-1">Search</button>
@@ -135,7 +89,6 @@
                                             </div>
                                         </div>
                                     </form>
-                                    <!-- End Search Form -->
 
                                     <!-- Progress Table -->
                                     <div class="table-responsive mt-4">
@@ -143,28 +96,30 @@
                                             <thead>
                                                 <tr>
                                                     <th>Student Name</th>
+                                                    <th>Reference ID</th> <!-- NEW COLUMN -->
                                                     <th>Progress (%)</th>
                                                     <th>Session</th>
                                                     <th>Year</th>
                                                     <th>File</th>
-                                                    <th>Date</th>
+                                                    <th>Uploaded On</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 {% for progress in progress_data %}
                                                 <tr>
-                                                    <td>{{ progress.grantee_name }}</td>
+                                                    <td><strong>{{ progress.grantee_name }}</strong></td>
+                                                    <td><span class="badge badge-light border">{{ progress.reference_id }}</span></td>
                                                     <td>{{ progress.marks }}%</td>
                                                     <td>{{ progress.session }}</td>
                                                     <td>{{ progress.year }}</td>
                                                     <td>
-                                                        <a href="{{ url_for('student.uploaded_file', filename=progress.file_path.split('/')[-1]) }}" target="_blank">View File</a>
+                                                        <a href="{{ url_for('sponsor.uploaded_file', filename=progress.file_path.split('/')[-1]) }}" target="_blank" class="btn btn-xs btn-outline-info">View File</a>
                                                     </td>
-                                                    <td>{{ progress.created_at }}</td>
+                                                    <td>{{ progress.created_at.strftime('%Y-%m-%d') if progress.created_at else 'N/A' }}</td>
                                                 </tr>
                                                 {% else %}
                                                 <tr>
-                                                    <td colspan="6" class="text-center">No progress data found.</td>
+                                                    <td colspan="7" class="text-center">No progress data found.</td>
                                                 </tr>
                                                 {% endfor %}
                                             </tbody>
@@ -174,48 +129,29 @@
                             </div>
                         </div>
                     </div>
-                    <!-- End Main Content -->
                 </div>
-                <!-- end container-fluid -->
             </div>
-            <!-- end content -->
 
-            <!-- Footer Start -->
+            <!-- Footer -->
             <footer class="footer">
-                <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
+                <p class="mb-0">Developed by <strong>Cognifly AI System</strong></p>
             </footer>
         
             <style>
-                .footer {
-                    position: fixed;
-                    bottom: 0;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    width: 100%;
-                    background-color: #f8f9fa;
-                    padding: 10px 0;
-                    text-align: center;
-                    font-size: 14px;
-                    color: #6c757d;
-                    border-top: 1px solid #ddd;
-                }
+                .footer { position: fixed; bottom: 0; left: 0; width: 100%; background-color: #f8f9fa; padding: 10px 0; text-align: center; font-size: 14px; color: #6c757d; border-top: 1px solid #ddd; z-index: 1000;}
+                .content-page { padding-bottom: 60px; }
             </style>
-            <!-- end Footer -->
         </div>
-        <!-- End Page content -->
     </div>
-    <!-- END wrapper -->
 
-    <!-- Vendor js -->
+    <!-- Scripts -->
     <script src="{{ url_for('static', filename='js/vendor.min.js') }}"></script>
-
-    <!-- App js -->
     <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
 
-    <!-- Custom Search Script -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const searchNameInput = document.getElementById('searchName');
+            const searchRefInput = document.getElementById('searchRefId');
             const searchSessionInput = document.getElementById('searchSession');
             const searchYearInput = document.getElementById('searchYear');
             const searchButton = document.getElementById('searchButton');
@@ -223,29 +159,29 @@
             const progressTableBody = document.querySelector('#progressDataTable tbody');
             
             const allRows = Array.from(progressTableBody.getElementsByTagName('tr'));
-            
-            const noDataRowElement = allRows.find(row => row.cells.length === 1 && row.cells[0].getAttribute('colspan') === '6');
+            const noDataRowElement = allRows.find(row => row.cells.length === 1);
 
             function filterTable() {
                 const nameQuery = searchNameInput.value.toLowerCase().trim();
+                const refQuery = searchRefInput.value.toLowerCase().trim();
                 const sessionQuery = searchSessionInput.value.toLowerCase().trim();
                 const yearQuery = searchYearInput.value.toLowerCase().trim();
                 let anyRowVisible = false;
 
                 allRows.forEach(row => {
-                    if (row === noDataRowElement) {
-                        return;
-                    }
+                    if (row === noDataRowElement) return;
 
-                    const beneficiaryName = row.cells[0].textContent.toLowerCase().trim();
-                    const session = row.cells[2].textContent.toLowerCase().trim();
-                    const year = row.cells[3].textContent.toLowerCase().trim();
+                    const studentName = row.cells[0].textContent.toLowerCase().trim();
+                    const refId = row.cells[1].textContent.toLowerCase().trim();
+                    const session = row.cells[3].textContent.toLowerCase().trim();
+                    const year = row.cells[4].textContent.toLowerCase().trim();
 
-                    const nameMatch = nameQuery === '' || beneficiaryName.includes(nameQuery);
+                    const nameMatch = nameQuery === '' || studentName.includes(nameQuery);
+                    const refMatch = refQuery === '' || refId.includes(refQuery);
                     const sessionMatch = sessionQuery === '' || session.includes(sessionQuery);
                     const yearMatch = yearQuery === '' || year.includes(yearQuery);
 
-                    if (nameMatch && sessionMatch && yearMatch) {
+                    if (nameMatch && refMatch && sessionMatch && yearMatch) {
                         row.style.display = ''; 
                         anyRowVisible = true;
                     } else {
@@ -254,70 +190,26 @@
                 });
 
                 if (noDataRowElement) {
-                    if (anyRowVisible) {
-                        noDataRowElement.style.display = 'none'; 
-                    } else {
-                        noDataRowElement.style.display = ''; 
-                        noDataRowElement.cells[0].textContent = 'No matching progress data found.';
-                    }
+                    noDataRowElement.style.display = anyRowVisible ? 'none' : '';
+                    if (!anyRowVisible) noDataRowElement.cells[0].textContent = 'No matching records found.';
                 }
             }
 
             function clearSearch() {
                 searchNameInput.value = '';
+                searchRefInput.value = '';
                 searchSessionInput.value = '';
                 searchYearInput.value = '';
-                let hasDataRows = false;
-
-                allRows.forEach(row => {
-                    if (row !== noDataRowElement) {
-                        row.style.display = ''; 
-                        hasDataRows = true;
-                    }
-                });
-
-                if (noDataRowElement) {
-                    if (hasDataRows) {
-                        noDataRowElement.style.display = 'none';
-                    } else {
-                        noDataRowElement.style.display = ''; 
-                        noDataRowElement.cells[0].textContent = 'No progress data found.'; 
-                    }
-                }
+                allRows.forEach(row => row.style.display = '');
+                if (noDataRowElement) noDataRowElement.style.display = (allRows.length > 1) ? 'none' : '';
             }
 
-            if (searchButton) {
-                searchButton.addEventListener('click', filterTable);
-            }
-            if (clearButton) {
-                clearButton.addEventListener('click', clearSearch);
-            }
+            searchButton.addEventListener('click', filterTable);
+            clearButton.addEventListener('click', clearSearch);
 
-            [searchNameInput, searchSessionInput, searchYearInput].forEach(input => {
-                if (input) {
-                    input.addEventListener('keypress', function(event) {
-                        if (event.key === 'Enter') {
-                            event.preventDefault(); 
-                            filterTable();
-                        }
-                    });
-                }
+            [searchNameInput, searchRefInput, searchSessionInput, searchYearInput].forEach(input => {
+                input.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); filterTable(); } });
             });
-
-            if (noDataRowElement && allRows.length === 1 && allRows[0] === noDataRowElement) {
-                 noDataRowElement.cells[0].textContent = 'No progress data found.';
-                 noDataRowElement.style.display = '';
-            } else if (noDataRowElement) {
-                // If data rows exist, the noDataRowElement should initially be hidden
-                // (This assumes Jinja's 'else' clause in the template markup handles this correctly by not rendering it if data exists)
-                // The script mainly manages its visibility *during* and *after* filtering.
-                // If there are data rows, we assume the "no data" row is not displayed by default (handled by Jinja's template logic).
-                // If it was somehow rendered alongside data, this would hide it.
-                 let dataRowsPresent = allRows.some(row => row !== noDataRowElement);
-                 if (dataRowsPresent) {
-                    noDataRowElement.style.display = 'none';
-                 }
-            }
         });
     </script>
 </body>

@@ -1790,18 +1790,15 @@ def update_student_full_details():
 @admin_bp.route('/api/student/action', methods=['POST'])
 @login_required
 def perform_student_action():
-    """
-    API to perform specific actions like Deactivate, Activate, or Unmap Sponsor.
-    """
     if current_user.role_id not in [1, 2]:
         return jsonify({'error': 'Unauthorized'}), 403
 
     data = request.json
-    user_id = data.get('user_id') # This is the Student's Reference ID
-    action = data.get('action') # 'activate', 'deactivate', 'unassign_sponsor'
+    user_id = data.get('user_id')
+    action = data.get('action')
 
     conn = get_db_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(dictionary=True)
 
     try:
         if action == 'deactivate':
@@ -1812,11 +1809,21 @@ def perform_student_action():
             cursor.execute("UPDATE users SET status = 'Active' WHERE user_id = %s", (user_id,))
             msg = "Student activated successfully."
         
-        elif action == 'unassign_sponsor':
-            # Logic Update: Since we link Students to Sponsor Reference IDs,
-            # we simply delete the mapping row to make them "Unassigned"
+        elif action == 'delete':
+            # 1. Check for payments
+            cursor.execute("SELECT COUNT(*) as pay_count FROM payments WHERE grantee_id = %s", (user_id,))
+            count = cursor.fetchone()['pay_count']
+            
+            if count > 0:
+                return jsonify({'error': f'Cannot delete student. {count} payment records exist. Deactivate instead.'}), 400
+            
+            # 2. If no payments, delete related records (manual cascade)
             cursor.execute("DELETE FROM grantor_grantees WHERE grantee_id = %s", (user_id,))
-            msg = "Student unassigned from sponsor reference successfully."
+            cursor.execute("DELETE FROM student_institution_courses WHERE user_id = %s", (user_id,))
+            cursor.execute("DELETE FROM bank_details WHERE user_id = %s", (user_id,))
+            cursor.execute("DELETE FROM grantee_details WHERE user_id = %s", (user_id,))
+            cursor.execute("DELETE FROM users WHERE user_id = %s", (user_id,))
+            msg = "Student and all associated records deleted successfully."
             
         else:
             return jsonify({'error': 'Invalid action'}), 400

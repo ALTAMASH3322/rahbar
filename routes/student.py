@@ -188,63 +188,109 @@ def student_progress():
         flash('You do not have permission to access this page.', 'error')
         return redirect(url_for('auth.login'))
 
-    # Ensure the uploads folder exists
-    if not os.path.exists('uploads'):
-        os.makedirs('uploads')
-
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True, buffered=True)
 
-    # Fetch student details
-    cursor.execute("SELECT * FROM users WHERE user_id = %s", (current_user.user_id,))
-    student = cursor.fetchone()
-
     if request.method == 'POST':
-        # Handle file upload and marks submission
+        # 1. Retrieve data from form
         marks = request.form.get('marks')
-        file = request.files.get('file')
         year = request.form.get('year')
-        session = request.form.get('session')
+        session = request.form.get('session') 
+        file = request.files.get('file')
 
-        if not marks or not file:
-            flash('Marks and file are required.', 'error')
-            return redirect(url_for('student.student_progress', student=student))
+        # 2. Basic validation
+        if not marks or not file or not year or not session:
+            flash('All fields are required.', 'error')
+            return redirect(url_for('student.student_progress'))
 
-        original_filename = secure_filename(file.filename)
-        file_ext = os.path.splitext(original_filename)[1]  # Get file extension
-        timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-
-        custom_filename = f"{student['user_id']}_session{session}_year{year}_{timestamp}{file_ext}"
-
-        # Save the file
-        file_path = os.path.join('uploads', custom_filename)
-        file.save(file_path)
-
-        # Insert progress data into the database
         try:
-            cursor.execute(
-                "INSERT INTO student_progress (grantee_id, marks, file_path, created_at, updated_at, session, year, updated_by) VALUES (%s, %s, %s, NOW(), NOW(), %s, %s, %s)",
-                (current_user.user_id, marks, file_path, session, year, current_user.user_id)
-            )
+            # 3. MANUALLY CALCULATE NEXT ID (Fixes 'progress_id' default value error)
+            cursor.execute("SELECT COALESCE(MAX(progress_id), 0) + 1 AS next_id FROM student_progress")
+            new_id = cursor.fetchone()['next_id']
+
+            # 4. SECURE FILENAME GENERATION
+            original_filename = secure_filename(file.filename)
+            file_ext = os.path.splitext(original_filename)[1]
+            timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+            
+            # Clean session string for filename (replace slashes with dashes)
+            clean_session = session.replace('/', '-')
+            custom_filename = f"{current_user.user_id}_{clean_session}_{timestamp}{file_ext}"
+            
+            # 5. DISK OPERATION: Save file with folder prefix
+            file_save_path = os.path.join('uploads', custom_filename)
+            file.save(file_save_path)
+
+            # 6. DATABASE OPERATION: Save ONLY the filename (no 'uploads\' prefix)
+            sql = """
+                INSERT INTO student_progress 
+                (progress_id, grantee_id, marks, file_path, created_at, updated_at, session, year, updated_by) 
+                VALUES (%s, %s, %s, %s, NOW(), NOW(), %s, %s, %s)
+            """
+            
+            # Note: custom_filename is used for the file_path column
+            params = (new_id, current_user.user_id, marks, custom_filename, session, year, current_user.user_id)
+            
+            cursor.execute(sql, params)
             conn.commit()
+            
             flash('Progress submitted successfully!', 'success')
+            return redirect(url_for('student.student_progress'))
+
+        except mysql.connector.Error as err:
+            if conn: conn.rollback()
+            flash(f'Database Error: {err.msg}', 'error')
         except Exception as e:
-            print(f"Database Error: {e}")
-            conn.rollback()
-            flash('An error occurred while submitting progress.', 'error')
+            if conn: conn.rollback()
+            flash(f'System Error: {str(e)}', 'error')
         finally:
-            # The cursor and connection for the POST should be closed here
-            cursor.close()
-            conn.close()
+            if cursor: cursor.close()
+            if conn: conn.close()
 
         return redirect(url_for('student.student_progress'))
 
-    else: # GET request
-        # Fetch progress data for the student
-        cursor.execute("SELECT * FROM student_progress WHERE grantee_id = %s", (current_user.user_id,))
+    else:
+        # GET request: Fetch submission history for display
+        cursor.execute("SELECT * FROM student_progress WHERE grantee_id = %s ORDER BY created_at DESC", (current_user.user_id,))
         progress_data = cursor.fetchall()
+        
+        cursor.close()
+        conn.close()
+        
+        return render_template('student/student_progress.html', progress_data=progress_data, student=current_user)
+    
 
+
+
+@student_bp.route('/upload_payment_proof', methods=['POST'])
+@login_required
+def upload_payment_proof():
+    if current_user.role_id != 6:
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+
+    payment_id = request.form.get('payment_id')
+    file = request.files.get('proof_file')
+
+    if not file or not payment_id:
+        return jsonify({'success': False, 'message': 'File and Payment ID required'}), 400
+
+    try:
+        # Secure and save the file
+        filename = secure_filename(f"proof_{payment_id}_{file.filename}")
+        file_path = os.path.join('uploads', filename)
+        file.save(file_path)
+
+        # Update database
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            "UPDATE payments SET student_proof_url = %s WHERE payment_id = %s AND grantee_id = %s",
+            (filename, payment_id, current_user.user_id)
+        )
+        conn.commit()
         cursor.close()
         conn.close()
 
-        return render_template('student/student_progress.html', progress_data=progress_data, student=student)
+        return jsonify({'success': True, 'message': 'Proof uploaded successfully!'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500

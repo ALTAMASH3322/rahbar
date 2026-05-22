@@ -47,6 +47,7 @@
       #manualAddStudentModal .modal-body {
         max-height: 75vh;
         overflow-y: auto;
+        overflow-x: hidden;
       }
       
       .nav-pills .nav-link.active {
@@ -76,7 +77,6 @@
         flex-direction: column;
       }
 
-      /* Custom styling for the new payment schedule columns */
       .table-schedule thead th {
           background-color: #f1f5f7;
           font-size: 11px;
@@ -94,13 +94,14 @@
     </div>
 
     <div id="wrapper">
+      <!-- Topbar Start -->
       <div class="navbar-custom">
         <div class="d-flex justify-content-between align-items-center w-100">
           <div><h6 class="page-title mb-0">Admin Panel</h6></div>
           <div><a href="{{ url_for('main.homepage') }}" class="text-success"><h4>Rahbar Scholarship Information Management System</h4></a></div>
           <ul class="list-unstyled topnav-menu mb-0">
             <li class="dropdown notification-list">
-              <a class="nav-link dropdown-toggle nav-user waves-effect" data-toggle="dropdown" href="#" role="button">
+              <a class="nav-link dropdown-toggle nav-user waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
                 <img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" alt="user-image" class="rounded-circle" />
                 <span class="d-none d-sm-inline-block ml-1">{{ admin.name }}</span>
               </a>
@@ -120,13 +121,13 @@
               <li class="menu-title">Navigation</li>
               <li><a href="{{ url_for('admin.admin_dashboard') }}"><i class="mdi mdi-view-dashboard"></i><span>Dashboard</span></a></li>
               <li><a href="{{ url_for('admin.manage_users') }}"><i class="mdi mdi-account-multiple"></i><span>Manage Users</span></a></li>
-              <li><a href="{{ url_for('admin.system_configuration') }}"><i class="mdi mdi-settings"></i><span>Payment Config</span></a></li>
-              <li><a href="{{ url_for('admin.admin_generate_reports') }}"><i class="mdi mdi-chart-bar"></i><span>Reports</span></a></li>
-              <li><a href="{{ url_for('admin.manage_application_period') }}"><i class="mdi mdi-calendar"></i><span>App Period</span></a></li>
-              <li><a href="{{ url_for('admin.manage_rcc_centers') }}"><i class="mdi mdi-bank"></i><span>RCC Centers</span></a></li>
-              <li><a href="{{ url_for('admin.manage_courses') }}"><i class="mdi mdi-book-open"></i><span>Courses</span></a></li>
-              <li><a href="{{ url_for('admin.manage_sponsorships') }}"><i class="mdi mdi-account-switch"></i><span>Sponsorships</span></a></li>
-              <li><a href="{{ url_for('admin.student_directory') }}"><i class="mdi mdi-account-details"></i><span>Student Directory</span></a></li>
+              <li><a href="{{ url_for('admin.system_configuration') }}"><i class="mdi mdi-settings"></i><span>Payment Configuration</span></a></li>
+              <li><a href="{{ url_for('admin.admin_generate_reports') }}"><i class="mdi mdi-chart-bar"></i><span>Generate Reports</span></a></li>
+              <li><a href="{{ url_for('admin.manage_application_period') }}"><i class="mdi mdi-calendar"></i><span>Application Period</span></a></li>
+              <li><a href="{{ url_for('admin.manage_rcc_centers') }}"><i class="mdi mdi-bank"></i><span>Manage RCC Centers</span></a></li>
+              <li><a href="{{ url_for('admin.manage_courses') }}"><i class="mdi mdi-book-open"></i><span>Manage Courses</span></a></li>
+              <li><a href="{{ url_for('admin.manage_sponsorships') }}"><i class="mdi mdi-account-switch"></i><span>Manage Sponsorships</span></a></li>
+              <li><a href="{{ url_for('admin.student_directory') }}" class="waves-effect waves-light active"><i class="mdi mdi-account-details"></i><span>Student Directory</span></a></li>
             </ul>
           </div>
         </div>
@@ -139,52 +140,14 @@
               <div class="col-12"><div class="page-title-box"><h4 class="page-title">Student Directory</h4></div></div>
             </div>
 
-            <!-- Filters Section -->
-            <div class="row">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-body">
-                            <h4 class="header-title">Filters & Search</h4>
-                            <div class="row">
-                                <div class="col-md-3">
-                                    <div class="form-group"><label>Search</label><input type="text" id="searchInput" class="form-control" placeholder="Search anything..."></div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="form-group"><label>Institution</label>
-                                        <select id="filterInstitution" class="form-control">
-                                            <option value="">All Institutions</option>
-                                            {% for inst in institutions %}<option value="{{ inst.institution_id }}">{{ inst.institution_name }}</option>{% endfor %}
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="form-group"><label>Course</label>
-                                        <select id="filterCourse" class="form-control">
-                                            <option value="">All Courses</option>
-                                            {% for course in courses %}<option value="{{ course.course_id }}">{{ course.course_name }}</option>{% endfor %}
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="form-group" style="margin-top: 28px;">
-                                        <button class="btn btn-primary" id="btnApplyFilters">Apply</button>
-                                        <button class="btn btn-secondary" id="btnResetFilters">Reset</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Table Section -->
+            <!-- Table Card -->
             <div class="row">
               <div class="col-12">
                 <div class="card">
                   <div class="card-body">
                     <div class="mb-3">
-                        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#uploadCsvModal">Upload CSV</button>
-                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#manualAddStudentModal">New Student</button>
+                        <button type="button" class="btn btn-success mr-2" data-toggle="modal" data-target="#uploadCsvModal"><i class="mdi mdi-file-upload"></i> Upload CSV</button>
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#manualAddStudentModal"><i class="mdi mdi-account-plus"></i> Register New Student</button>
                     </div>
                     <div class="table-responsive">
                         <table id="studentsTable" class="table table-bordered table-striped dt-responsive nowrap" style="width:100%">
@@ -217,11 +180,12 @@
             <ul class="nav nav-pills nav-fill mb-3" id="pills-tab" role="tablist">
               <li class="nav-item"><a class="nav-link active" data-toggle="pill" href="#pills-profile">Personal</a></li>
               <li class="nav-item"><a class="nav-link" data-toggle="pill" href="#pills-course">Academic</a></li>
-              <li class="nav-item"><a class="nav-link" data-toggle="pill" href="#pills-bank">Bank</a></li>
+              <li class="nav-item"><a class="nav-link" data-toggle="pill" href="#pills-bank">Bank Details</a></li>
               <li class="nav-item"><a class="nav-link" data-toggle="pill" href="#pills-payment">Payment Schedule</a></li>
               <li class="nav-item"><a class="nav-link" data-toggle="pill" href="#pills-docs">Docs</a></li>
             </ul>
             <div class="tab-content">
+              <!-- Personal Tab -->
               <div class="tab-pane fade show active" id="pills-profile">
                 <form id="editStudentForm">
                   <input type="hidden" id="editUserId">
@@ -241,11 +205,12 @@
                   </div>
                 </form>
               </div>
+              <!-- Academic Tab -->
               <div class="tab-pane fade" id="pills-course">
                 <div class="row">
                   <div class="col-md-6">
                     <div class="card bg-light card-body">
-                        <h5 class="card-title text-success">Course Assignment</h5>
+                        <h5 class="card-title text-success">Academic Status</h5>
                         <div class="form-group"><label>Institution</label>
                             <select class="form-control editable-field" id="editInstitution" disabled>
                                 <option value="">Not Assigned</option>
@@ -253,35 +218,39 @@
                             </select>
                         </div>
                         <div class="form-group"><label>Course</label>
-                            <select class="form-control editable-field" id="editCourse" disabled><option value="">Not Assigned</option></select>
+                            <select class="form-control editable-field" id="editCourse" disabled><option value="">Select College First</option></select>
                         </div>
-                        <p><strong>Assigned On:</strong> <span id="viewAssignedAt">N/A</span></p>
+                        <p><strong>Assigned Date:</strong> <span id="viewAssignedAt">N/A</span></p>
                     </div>
                   </div>
                   <div class="col-md-6">
                     <div class="card bg-light card-body">
-                        <h5 class="card-title text-info">Sponsorship Info</h5>
+                        <h5 class="card-title text-info">Sponsorship Status</h5>
                         <p><strong>Sponsor:</strong> <span id="viewSponsorName">Unassigned</span></p>
-                        <button class="btn btn-sm btn-outline-danger" id="unmapSponsorBtn">Unassign</button>
+                        <p><strong>Email:</strong> <span id="viewSponsorEmail">--</span></p>
+                        <button class="btn btn-sm btn-outline-danger mt-2" id="unmapSponsorBtn">Unassign Sponsor</button>
                     </div>
                   </div>
                 </div>
               </div>
+              <!-- Bank Tab -->
               <div class="tab-pane fade" id="pills-bank">
                 <div class="row">
-                    <div class="col-md-6 form-group"><label>Account Name</label><input type="text" class="form-control editable-field" id="editBankAcName" disabled></div>
+                    <div class="col-md-6 form-group"><label>A/C Holder Name</label><input type="text" class="form-control editable-field" id="editBankAcName" disabled></div>
                     <div class="col-md-6 form-group"><label>Bank Name</label><input type="text" class="form-control editable-field" id="editBankName" disabled></div>
-                    <div class="col-md-6 form-group"><label>Account No</label><input type="text" class="form-control editable-field" id="editBankAcNum" disabled></div>
-                    <div class="col-md-6 form-group"><label>IFSC</label><input type="text" class="form-control editable-field" id="editBankIfsc" disabled></div>
+                    <div class="col-md-6 form-group"><label>Account Number</label><input type="text" class="form-control editable-field" id="editBankAcNum" disabled></div>
+                    <div class="col-md-6 form-group"><label>IFSC Code</label><input type="text" class="form-control editable-field" id="editBankIfsc" disabled></div>
                 </div>
               </div>
+              <!-- Payment Tab -->
               <div class="tab-pane fade" id="pills-payment">
-                <h5 class="text-primary mb-3">Installment Schedule</h5>
+                <h5 class="text-primary mb-3">Installment Tracker</h5>
                 <div id="paymentScheduleContainer"></div>
               </div>
+              <!-- Docs Tab -->
               <div class="tab-pane fade" id="pills-docs">
-                <table class="table table-sm">
-                    <thead><tr><th>Date</th><th>Session</th><th>Marks</th><th>File</th></tr></thead>
+                <table class="table table-sm table-striped">
+                    <thead><tr><th>Date</th><th>Session</th><th>Marks</th><th>Action</th></tr></thead>
                     <tbody id="docsTableBody"></tbody>
                 </table>
               </div>
@@ -295,12 +264,71 @@
             </div>
             <div>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-info" id="enableEditBtn">Edit</button>
-                <button type="button" class="btn btn-success" id="saveChangesBtn" style="display:none;">Save Changes</button>
+                <button type="button" class="btn btn-info" id="enableEditBtn">Edit Details</button>
+                <button type="button" class="btn btn-success" id="saveChangesBtn" style="display:none;">Save Profile & Assignment</button>
             </div>
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- MANUAL ADD STUDENT MODAL (FULL 4 STEPS) -->
+    <div class="modal fade" id="manualAddStudentModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content glassy-modal">
+                <div class="modal-header bg-primary text-white"><h4 class="modal-title">Manual Student Registration</h4><button type="button" class="close text-white" data-dismiss="modal">×</button></div>
+                <form action="{{ url_for('admin.manual_add_student') }}" method="POST">
+                    <div class="modal-body">
+                        <h5 class="text-primary border-bottom pb-2">Step 1: Profile</h5>
+                        <div class="row">
+                            <div class="col-md-3 form-group"><label>Student Ref_Id</label><input type="text" name="user_id" class="form-control" placeholder="M001-2024" required></div>
+                            <div class="col-md-4 form-group"><label>Full Name</label><input type="text" name="name" class="form-control" required></div>
+                            <div class="col-md-3 form-group"><label>Email</label><input type="email" name="email" class="form-control" placeholder="Optional"></div>
+                            <div class="col-md-2 form-group"><label>Sex</label><select name="sex" class="form-control"><option value="M">Male</option><option value="F">Female</option></select></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-3 form-group"><label>Region</label><select name="region" class="form-control"><option value="North">North</option><option value="South">South</option><option value="East">East</option><option value="West">West</option><option value="Jeddah">Jeddah</option><option value="Riyadh">Riyadh</option></select></div>
+                            <div class="col-md-3 form-group"><label>Admission Year</label><input type="number" name="year" class="form-control" value="2024"></div>
+                            <div class="col-md-3 form-group"><label>Student Mobile</label><input type="text" name="phone" class="form-control" required></div>
+                            <div class="col-md-3 form-group"><label>Rahbar Alumnus?</label><select name="alumnus" class="form-control"><option value="N">No</option><option value="Y">Yes</option></select></div>
+                        </div>
+
+                        <h5 class="text-primary border-bottom pb-2 mt-3">Step 2: Family & Socio-Economic</h5>
+                        <div class="row">
+                            <div class="col-md-3 form-group"><label>Father Name</label><input type="text" name="father_name" class="form-control"></div>
+                            <div class="col-md-3 form-group"><label>Father Profession</label><input type="text" name="father_profession" class="form-control"></div>
+                            <div class="col-md-3 form-group"><label>Mother Name</label><input type="text" name="mother_name" class="form-control"></div>
+                            <div class="col-md-3 form-group"><label>Mother Profession</label><input type="text" name="mother_profession" class="form-control"></div>
+                            <div class="col-md-4 form-group"><label>Annual Salary (INR)</label><input type="number" name="salary" class="form-control" value="0"></div>
+                            <div class="col-md-4 form-group"><label>Father Mobile</label><input type="text" name="father_mobile" class="form-control"></div>
+                            <div class="col-md-4 form-group"><label>Mother Mobile</label><input type="text" name="mother_mobile" class="form-control"></div>
+                            <div class="col-12 form-group"><label>Full Address</label><textarea name="address" class="form-control" rows="2"></textarea></div>
+                        </div>
+
+                        <h5 class="text-primary border-bottom pb-2 mt-3">Step 3: Academic & Sponsorship</h5>
+                        <div class="row">
+                            <div class="col-md-4 form-group"><label>College</label>
+                                <select name="institution_id" id="manualInst" class="form-control">
+                                    <option value="">Select College</option>
+                                    {% for inst in institutions %}<option value="{{ inst.institution_id }}">{{ inst.institution_name }}</option>{% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4 form-group"><label>Course</label><select name="course_id" id="manualCourse" class="form-control"><option value="">Select College First</option></select></div>
+                            <div class="col-md-4 form-group"><label>RCC Name/Center</label><input type="text" name="rcc_name" class="form-control"></div>
+                            <div class="col-md-12 form-group"><label>Sponsor Reference (User_ID)</label><input type="text" name="sponsor_id" class="form-control" placeholder="Enter Sponsor Reference ID"></div>
+                        </div>
+
+                        <h5 class="text-primary border-bottom pb-2 mt-3">Step 4: Bank Details</h5>
+                        <div class="row">
+                            <div class="col-md-4 form-group"><label>Bank Name</label><input type="text" name="bank_name" class="form-control"></div>
+                            <div class="col-md-4 form-group"><label>Account No</label><input type="text" name="acc_no" class="form-control"></div>
+                            <div class="col-md-4 form-group"><label>IFSC Code</label><input type="text" name="ifsc" class="form-control"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary">Register Student</button></div>
+                </form>
+            </div>
+        </div>
     </div>
 
     <!-- PAYMENT MODAL -->
@@ -315,13 +343,13 @@
               <div class="form-group"><label>Date</label><input type="date" class="form-control" name="payment_date" id="payDate" required></div>
               <div class="form-group"><label>Receipt</label><input type="file" class="form-control-file" name="receipt"></div>
             </div>
-            <div class="modal-footer"><button type="submit" class="btn btn-success">Record</button></div>
+            <div class="modal-footer"><button type="submit" class="btn btn-success">Record Payment</button></div>
           </form>
         </div>
       </div>
     </div>
 
-    <!-- Modals for CSV and Manual Add (Keeping your original structure) -->
+    <!-- CSV Upload -->
     <div class="modal fade" id="uploadCsvModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content glassy-modal"><div class="modal-header"><h5 class="modal-title">Bulk Upload</h5></div><form action="{{ url_for('admin.bulk_upload_students') }}" method="POST" enctype="multipart/form-data"><div class="modal-body"><input type="file" name="file" accept=".csv" required></div><div class="modal-footer"><button type="submit" class="btn btn-success">Upload</button></div></form></div></div></div>
 
     <script src="{{ url_for('static', filename='js/vendor.min.js') }}"></script>
@@ -331,89 +359,144 @@
 
     <script>
       const allCourses = {{ courses|tojson|safe if courses else '[]' }};
-      var currentStudentId = null;
-      var uploadsBaseUrl = "{{ url_for('admin.uploaded_file', filename='') }}";
+      let currentStudentId = null;
+      const uploadsBaseUrl = "{{ url_for('admin.uploaded_file', filename='') }}";
 
       $(document).ready(function() {
-        var table = $('#studentsTable').DataTable({
-            "processing": true, "serverSide": true,
-            "ajax": { "url": "{{ url_for('admin.get_all_students_data') }}", "data": function(d) { d.institution_id = $('#filterInstitution').val(); d.course_id = $('#filterCourse').val(); d.search_val = $('#searchInput').val(); } },
-            "columns": [
-                { "data": "user_id" }, { "data": "name" }, { "data": "email" }, { "data": "phone" }, 
-                { "data": "sponsor_id", "render": d => d || '-' }, { "data": "sponsor_name", "render": d => d || 'Unassigned' },
-                { "data": "status", "render": d => `<span class="badge badge-${d.toLowerCase()=='active'?'success':'danger'}">${d}</span>` },
-                { "data": null, "render": (d,t,row) => `<button class="btn btn-xs btn-primary view-details-btn" data-id="${row.user_id}">View</button>` }
+        // DataTable Init
+        const table = $('#studentsTable').DataTable({
+            processing: true, serverSide: true,
+            ajax: "{{ url_for('admin.get_all_students_data') }}",
+            columns: [
+                { data: "user_id" }, { data: "name" }, { data: "email" }, { data: "phone" }, 
+                { data: "sponsor_id", render: d => d || '-' }, { data: "sponsor_name", render: d => d || 'Unassigned' },
+                { data: "status", render: d => `<span class="badge badge-${d.toLowerCase()=='active'?'success':'danger'}">${d}</span>` },
+                { data: null, render: (d,t,row) => `<button class="btn btn-xs btn-primary view-details-btn" data-id="${row.user_id}">View Details</button>` }
             ]
         });
 
-        $('#btnApplyFilters').click(() => table.ajax.reload());
-        $('#studentsTable tbody').on('click', '.view-details-btn', function () { loadStudentDetails($(this).data('id')); });
+        // Dependent Dropdowns Logic
+        $('#manualInst').on('change', function() {
+            const instId = $(this).val();
+            const courseSelect = $('#manualCourse').html('<option value="">Select Course</option>');
+            if (!instId) return;
+            allCourses.filter(c => c.institution_id == instId).forEach(c => {
+                courseSelect.append($('<option></option>').val(c.course_id).text(c.course_name));
+            });
+        });
 
-        function loadStudentDetails(userId) {
-            currentStudentId = userId;
+        $('#editInstitution').on('change', function() {
+            const instId = $(this).val();
+            const courseSelect = $('#editCourse').html('<option value="">Select Course</option>');
+            if (!instId) return;
+            allCourses.filter(c => c.institution_id == instId).forEach(c => {
+                courseSelect.append($('<option></option>').val(c.course_id).text(c.course_name));
+            });
+        });
+
+        // Load Student Details
+        $('#studentsTable tbody').on('click', '.view-details-btn', function () {
+            currentStudentId = $(this).data('id');
             $('.editable-field').prop('disabled', true);
             $('#saveChangesBtn').hide(); $('#enableEditBtn').show();
             
-            $.get(`/api/student/details/${userId}`, function(res) {
+            $.get(`/api/student/details/${currentStudentId}`, function(res) {
                 const p = res.profile; const b = res.bank || {}; const c = res.course || {}; const s = res.sponsor || {};
                 $('#modalTitleName').text(p.name);
                 $('#editUserId').val(p.user_id); $('#editName').val(p.name); $('#editEmail').val(p.email); $('#editPhone').val(p.phone);
                 $('#editRegion').val(p.region); $('#editFatherName').val(p.father_name); $('#editMotherName').val(p.mother_name); $('#editAddress').val(p.address);
+                
                 $('#editInstitution').val(c.institution_id || "");
-                updateCourseDropdown(c.institution_id, c.course_id);
+                const courseSelect = $('#editCourse').html('<option value="">Select Course</option>');
+                if (c.institution_id) {
+                    allCourses.filter(x => x.institution_id == c.institution_id).forEach(x => {
+                        courseSelect.append($('<option></option>').val(x.course_id).text(x.course_name).prop('selected', x.course_id == c.course_id));
+                    });
+                }
+                
                 $('#viewAssignedAt').text(c.assigned_at ? new Date(c.assigned_at).toLocaleDateString() : 'N/A');
+                $('#viewSponsorName').text(s.name || 'Unassigned');
+                $('#viewSponsorEmail').text(s.email || '--'); // FIX: Added this line to display sponsor email
                 
                 if (p.status.toLowerCase() === 'active') { $('#deactivateBtn').show(); $('#activateBtn').hide(); } 
                 else { $('#deactivateBtn').hide(); $('#activateBtn').show(); }
                 
-                $('#viewSponsorName').text(s.name || 'Unassigned');
-                $('#editBankAcName').val(b.account_name); $('#editBankName').val(b.bank_name); $('#editBankAcNum').val(b.account_number); $('#editBankIfsc').val(b.ifsc_code);
+                $('#editBankAcName').val(b.account_name); $('#editBankName').val(b.bank_name); 
+                $('#editBankAcNum').val(b.account_number); $('#editBankIfsc').val(b.ifsc_code);
                 
+                // POPULATE DOCS TAB (Academic Progress)
+                let docsHtml = '';
+                if(res.documents && res.documents.length > 0) {
+                    res.documents.forEach(doc => {
+                        docsHtml += `<tr>
+                            <td>${new Date(doc.created_at).toLocaleDateString()}</td>
+                            <td>${doc.session} (${doc.year})</td>
+                            <td>${doc.marks}</td>
+                            <td><a href="${uploadsBaseUrl}${doc.file_path.split('/').pop()}" target="_blank" class="btn btn-xs btn-outline-info">View File</a></td>
+                        </tr>`;
+                    });
+                } else {
+                    docsHtml = '<tr><td colspan="4" class="text-center">No documents found.</td></tr>';
+                }
+                $('#docsTableBody').html(docsHtml);
+
                 generateSchedule(c, res.payments, p);
                 $('#studentDetailsModal').modal('show');
             });
-        }
-
-        function updateCourseDropdown(instId, selected) {
-            const courseSelect = $('#editCourse').html('<option value="">Select Course</option>');
-            allCourses.filter(c => c.institution_id == instId).forEach(c => {
-                courseSelect.append($('<option></option>').val(c.course_id).text(c.course_name).prop('selected', c.course_id == selected));
-            });
-        }
+        });
 
         function generateSchedule(course, payments, profile) {
             const container = $('#paymentScheduleContainer');
-            if (!course.assigned_at) { container.html('<div class="alert alert-warning">No active course assignment.</div>'); return; }
-            
+            if (!course.assigned_at) { container.html('<div class="alert alert-warning">No course assigned.</div>'); return; }
             const start = new Date(course.assigned_at);
             const expAmt = (parseFloat(profile.annual_schedule_amount) / 4).toFixed(2);
             const totalInst = (parseInt(course.number_of_semesters) / 2) * 4;
             const paidData = payments.sort((a,b) => new Date(a.payment_date) - new Date(b.payment_date));
 
-            let html = '<div class="table-responsive"><table class="table table-bordered table-schedule text-center"><thead><tr><th>#</th><th>Exp. Due Date</th><th>Exp. Amt</th><th>Actual Date</th><th>Actual Amt</th><th>Receipt</th><th>Action</th></tr></thead><tbody>';
-            
+            let html = '<table class="table table-bordered table-schedule text-center"><thead><tr><th>#</th><th>Exp. Date</th><th>Exp. Amt</th><th>Actual Date</th><th>Actual Amt</th><th>Bank Receipt</th><th>Spent Proof</th><th>Action</th></tr></thead><tbody>';
             for (let i = 1; i <= totalInst; i++) {
                 let dueDate = new Date(start); dueDate.setMonth(start.getMonth() + (3 * i));
                 let p = paidData[i-1] || null;
                 
                 let actDate = p ? new Date(p.payment_date).toLocaleDateString() : '--';
                 let actAmt = p ? `₹${p.amount}` : '--';
-                let receipt = p && p.receipt_url ? `<a href="${uploadsBaseUrl}${p.receipt_url.split('/').pop()}" target="_blank">View</a>` : '--';
-                let btn = p ? `<button class="btn btn-xs btn-warning edit-pay" data-id="${p.payment_id}" data-amt="${p.amount}" data-date="${p.payment_date.split('T')[0]}">Edit</button>` : `<button class="btn btn-xs btn-success pay-now" data-amt="${expAmt}">Pay</button>`;
                 
-                html += `<tr class="${p ? 'table-success' : ''}"><td>${i}</td><td>${dueDate.toLocaleDateString()}</td><td>₹${expAmt}</td><td>${actDate}</td><td>${actAmt}</td><td>${receipt}</td><td>${btn}</td></tr>`;
+                // Receipt Links
+                let foundReceipt = p && p.receipt_url ? `<a href="${uploadsBaseUrl}${p.receipt_url.split('/').pop()}" target="_blank">View</a>` : '--';
+                let spentProof = p && p.student_proof_url ? `<a href="${uploadsBaseUrl}${p.student_proof_url.split('/').pop()}" target="_blank" class="text-success font-weight-bold">View</a>` : '--';
+                
+                let btn = p ? `<button class="btn btn-xs btn-warning edit-pay" data-id="${p.payment_id}" data-amt="${p.amount}" data-date="${p.payment_date.split('T')[0]}">Edit</button>` : `<button class="btn btn-xs btn-success pay-now" data-amt="${expAmt}">Pay Now</button>`;
+                
+                html += `<tr class="${p ? 'table-success' : ''}">
+                    <td>${i}</td><td>${dueDate.toLocaleDateString()}</td><td>₹${expAmt}</td>
+                    <td>${actDate}</td><td>${actAmt}</td><td>${foundReceipt}</td><td>${spentProof}</td><td>${btn}</td>
+                </tr>`;
             }
-            container.html(html + '</tbody></table></div>');
+            container.html(html + '</table>');
+        }
+
+        function refreshModal() {
+             $('.view-details-btn[data-id="' + currentStudentId + '"]').click();
         }
 
         // Action Handlers
         $('#deactivateBtn, #activateBtn').click(function() {
             const action = this.id === 'deactivateBtn' ? 'deactivate' : 'activate';
-            $.ajax({ url: "/api/student/action", method: "POST", contentType: "application/json", data: JSON.stringify({ user_id: currentStudentId, action: action }), success: (r) => { alert(r.message); loadStudentDetails(currentStudentId); table.ajax.reload(null, false); } });
+            $.ajax({ 
+                url: "/api/student/action", 
+                method: "POST", 
+                contentType: "application/json", 
+                data: JSON.stringify({ user_id: currentStudentId, action: action }), 
+                success: (r) => { 
+                    alert(r.message); 
+                    refreshModal();
+                    table.ajax.reload(null, false); 
+                } 
+            });
         });
 
         $('#deleteStudentBtn').click(function() {
-            if (!confirm("Are you sure? This cannot be undone. Student can only be deleted if NO payments are recorded.")) return;
+            if (!confirm("Are you sure? Deleted only if no payments exist.")) return;
             $('#loading-overlay').css('display', 'flex');
             $.ajax({ 
                 url: "/api/student/action", method: "POST", contentType: "application/json", data: JSON.stringify({ user_id: currentStudentId, action: 'delete' }), 
@@ -421,6 +504,18 @@
                 error: (e) => { alert(e.responseJSON.error); },
                 complete: () => { $('#loading-overlay').hide(); }
             });
+        });
+
+        $('#enableEditBtn').click(() => { $('.editable-field').prop('disabled', false); $('#enableEditBtn').hide(); $('#saveChangesBtn').show(); });
+        
+        $('#saveChangesBtn').click(function() {
+            const data = { 
+                user_id: currentStudentId, name: $('#editName').val(), email: $('#editEmail').val(), phone: $('#editPhone').val(), 
+                region: $('#editRegion').val(), institution_id: $('#editInstitution').val(), course_id: $('#editCourse').val(), 
+                account_number: $('#editBankAcNum').val(), bank_name: $('#editBankName').val(), ifsc_code: $('#editBankIfsc').val(), account_name: $('#editBankAcName').val(),
+                father_name: $('#editFatherName').val(), mother_name: $('#editMotherName').val(), address: $('#editAddress').val()
+            };
+            $.ajax({ url: "/api/student/update", method: 'POST', contentType: 'application/json', data: JSON.stringify(data), success: function() { alert('Updated!'); $('#studentDetailsModal').modal('hide'); table.ajax.reload(null, false); } });
         });
 
         $(document).on('click', '.pay-now, .edit-pay', function() {
@@ -434,10 +529,8 @@
 
         $('#adminPaymentForm').submit(function(e) {
             e.preventDefault();
-            $.ajax({ url: "/api/payment/record_action", type: 'POST', data: new FormData(this), contentType: false, processData: false, success: function() { $('#adminPaymentModal').modal('hide'); loadStudentDetails(currentStudentId); } });
+            $.ajax({ url: "/api/payment/record_action", type: 'POST', data: new FormData(this), contentType: false, processData: false, success: function() { $('#adminPaymentModal').modal('hide'); refreshModal(); } });
         });
-
-        $('#enableEditBtn').click(() => { $('.editable-field').prop('disabled', false); $('#enableEditBtn').hide(); $('#saveChangesBtn').show(); });
       });
     </script>
   </body>

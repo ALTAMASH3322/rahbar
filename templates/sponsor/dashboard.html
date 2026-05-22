@@ -1,196 +1,258 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8" />
     <title>Sponsor Dashboard | Rahbar</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta content="Sponsor Dashboard for Rahbar Application" name="description" />
-    <meta content="Coderthemes" name="author" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
     <!-- App favicon -->
     <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}" />
 
     <!-- App CSS -->
-    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" id="bootstrap-stylesheet" />
     <link href="{{ url_for('static', filename='css/icons.min.css') }}" rel="stylesheet" type="text/css" />
-    <link href="{{ url_for('static', filename='css/app.min.css') }}" rel="stylesheet" type="text/css" />
-    <link href="{{ url_for('static', filename='libs/bootstrap-daterangepicker/daterangepicker.css') }}" rel="stylesheet" type="text/css" />
-  </head>
+    <link href="{{ url_for('static', filename='css/app.min.css') }}" rel="stylesheet" type="text/css" id="app-stylesheet" />
 
-  <body>
+    <style>
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #f8f9fa;
+            padding: 10px 0;
+            text-align: center;
+            font-size: 14px;
+            color: #6c757d;
+            border-top: 1px solid #ddd;
+            z-index: 1000;
+        }
+        .content-page { padding-bottom: 70px; }
+        .card-header-title { font-weight: 700; color: #333; margin-bottom: 15px; display: block; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        
+        #beneficiaryTable thead th { 
+            background-color: #f1f5f7; 
+            border-top: none; 
+            font-size: 11px; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px;
+        }
+        
+        .beneficiary-row td { vertical-align: middle !important; }
+        .pagination .page-link { color: #28a745; border: none; margin: 0 2px; border-radius: 4px; }
+        .pagination .page-item.active .page-link { background-color: #28a745; color: white; }
+        
+        .profile-img-container {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 15px auto;
+            border: 3px solid #28a745;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+        .profile-img-container img { width: 100%; height: auto; }
+    </style>
+</head>
+
+<body>
     <div id="wrapper">
-      <!-- Topbar and Sidebar (NO CHANGES) -->
-      <div class="navbar-custom">
-        <div class="d-flex justify-content-between align-items-center w-100">
-          <h6 class="page-title mb-0">Sponsor Panel</h6>
-          <a href="{{ url_for('main.homepage') }}" class="text-success"><h4>Rahbar Scholarship Information Management System</h4></a>
-          <ul class="list-unstyled topnav-menu mb-0">
-            <li class="dropdown notification-list">
-              <a class="nav-link dropdown-toggle nav-user waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
-                <img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" alt="user-image" class="rounded-circle"/>
-                <span class="d-none d-sm-inline-block ml-1">{{ sponsor.name }}</span>
-              </a>
-              <div class="dropdown-menu dropdown-menu-right profile-dropdown">
-                <a href="{{ url_for('auth.logout') }}" class="dropdown-item notify-item"><i class="mdi mdi-logout-variant"></i><span>Logout</span></a>
-              </div>
-            </li>
-          </ul>
-        </div>
-      </div>
-      <div class="left-side-menu">
-        <div class="slimscroll-menu">
-          <div id="sidebar-menu">
-            <ul class="metismenu" id="side-menu">
-              <li class="menu-title">Navigation</li>
-              <li><a href="{{ url_for('sponsor.sponsor_dashboard') }}" class="waves-effect waves-light"><i class="mdi mdi-view-dashboard"></i><span>Dashboard</span></a></li>
-              <li><a href="{{ url_for('sponsor.sponsor_payments') }}" class="waves-effect waves-light"><i class="mdi mdi-cash-multiple"></i><span>Payments</span></a></li>
-              <li><a href="{{ url_for('sponsor.sponsor_student_progress') }}" class="waves-effect waves-light"><i class="mdi mdi-chart-line"></i><span>Student Progress</span></a></li>
-            </ul>
-          </div>
-        </div>
-      </div>
-      <!-- End Sidebar -->
-
-      <div class="content-page">
-        <div class="content">
-          <div class="container-fluid">
-            <!-- Page Title -->
-            <div class="row">
-              <div class="col-12"><div class="page-title-box"><h4 class="page-title">Sponsor Dashboard</h4></div></div>
+        <!-- Topbar -->
+        <div class="navbar-custom">
+            <div class="d-flex justify-content-between align-items-center w-100 px-3">
+                <div><h6 class="page-title mb-0 text-white">Sponsor Panel</h6></div>
+                <div><a href="{{ url_for('main.homepage') }}" class="text-success"><h4>Rahbar Scholarship Information Management System</h4></a></div>
+                <ul class="list-unstyled topnav-menu mb-0">
+                    <li class="dropdown notification-list">
+                        <a class="nav-link dropdown-toggle nav-user waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
+                            <img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" alt="user-image" class="rounded-circle"/>
+                            <span class="d-none d-sm-inline-block ml-1">{{ sponsor.name }}</span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right profile-dropdown">
+                            <a href="{{ url_for('auth.logout') }}" class="dropdown-item notify-item"><i class="mdi mdi-logout-variant"></i><span>Logout</span></a>
+                        </div>
+                    </li>
+                </ul>
             </div>
+        </div>
 
-            <!-- Sponsor Details & Student List -->
-            <div class="row">
-              <div class="col-lg-5">
-                <div class="card">
-                  <div class="card-body">
-                    <h4 class="header-title">Sponsor Master Profile</h4>
-                    <p><strong>Name:</strong> {{ sponsor.name }}</p>
-                    <p><strong>Email:</strong> {{ sponsor.email or 'N/A' }}</p>
-                    <p><strong>Phone:</strong> {{ sponsor.phone or 'N/A' }}</p>
-                    <hr>
-                    <small class="text-muted">Note: All commitments (Reference IDs) linked to this profile are shown in the beneficiaries table.</small>
-                  </div>
+        <!-- Sidebar -->
+        <div class="left-side-menu">
+            <div class="slimscroll-menu">
+                <div id="sidebar-menu">
+                    <ul class="metismenu" id="side-menu">
+                        <li class="menu-title">Navigation</li>
+                        <li><a href="{{ url_for('sponsor.sponsor_dashboard') }}" class="waves-effect waves-light"><i class="mdi mdi-view-dashboard"></i><span>Dashboard</span></a></li>
+                        <li><a href="{{ url_for('sponsor.sponsor_payments') }}" class="waves-effect waves-light"><i class="mdi mdi-cash-multiple"></i><span>Payments</span></a></li>
+                        <li><a href="{{ url_for('sponsor.sponsor_student_progress') }}" class="waves-effect waves-light"><i class="mdi mdi-chart-line"></i><span>Student Progress</span></a></li>
+                    </ul>
                 </div>
-              </div>
+            </div>
+        </div>
 
-              <!-- "Assigned Beneficiaries" CARD -->
-              <div class="col-lg-7">
-                <div class="card">
-                  <div class="card-body">
-                    <h4 class="header-title">Assigned Beneficiaries</h4>
-                    <input type="text" id="searchBox" class="form-control mb-3" placeholder="Search by name or reference ID..." onkeyup="filterTable()" />
-                    
-                    <div class="table-responsive" style="max-height: 350px; overflow-y: auto;">
-                      <table class="table table-hover table-centered mb-0" id="beneficiaryTable">
-                        <thead class="thead-light">
-                          <tr>
-                            <th>Student Name</th>
-                            <th>Reference ID</th> <!-- NEW COLUMN -->
-                            <th>Payment Status</th>
-                            <th>Action</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {% if grantees %}
-                            {% for grantee_detail in grantees %}
-                              <tr>
-                                <td>
-                                  <strong>{{ grantee_detail.user.name }}</strong>
-                                  <br>
-                                  <small class="text-muted">ID: {{ grantee_detail.user.user_id }}</small>
-                                </td>
-                                <td>
-                                  <!-- DISPLAYS THE COMMITMENT ID LINKED IN SPONSOR.PY -->
-                                  <span class="badge badge-light border" style="font-family: monospace;">{{ grantee_detail.reference_id }}</span>
-                                </td>
-                                <td>
-                                  {% if grantee_detail.payment_status == 'Overdue' %}
-                                    <span class="badge badge-danger" style="font-size: 13px;">{{ grantee_detail.payment_status }}</span>
-                                  {% elif grantee_detail.payment_status == 'Due Soon' %}
-                                    <span class="badge badge-warning" style="font-size: 13px;">{{ grantee_detail.payment_status }}</span>
-                                  {% elif grantee_detail.payment_status == 'On Schedule' or grantee_detail.payment_status == 'Completed' %}
-                                    <span class="badge badge-success" style="font-size: 13px;">{{ grantee_detail.payment_status }}</span>
-                                  {% else %}
-                                    <span class="badge badge-secondary" style="font-size: 13px;">{{ grantee_detail.payment_status }}</span>
-                                  {% endif %}
-                                </td>
-                                <td>
-                                  <a href="{{ url_for('sponsor.sponsor_payments') }}" class="btn btn-sm btn-info">Payments</a>
-                                </td>
-                              </tr>
-                            {% endfor %}
-                          {% else %}
-                            <tr>
-                              <td colspan="4" class="text-center text-muted">No beneficiaries assigned yet.</td>
-                            </tr>
-                          {% endif %}
-                        </tbody>
-                      </table>
+        <div class="content-page">
+            <div class="content">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-12"><div class="page-title-box"><h4 class="page-title">Sponsor Overview</h4></div></div>
                     </div>
-                  </div>
+
+                    <div class="row">
+                        <!-- Profile Card -->
+                        <div class="col-lg-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h4 class="header-title card-header-title">Master Profile</h4>
+                                    <div class="profile-img-container">
+                                        <img src="#" alt="profile">
+                                    </div>
+                                    <div class="text-center">
+                                        <h5 class="mb-1">{{ sponsor.name if sponsor.name else 'Name Not Found' }}</h5>
+                                        <p class="text-muted mb-3">{{ sponsor.email or 'N/A' }}</p>
+                                    </div>
+                                    <hr>
+                                    <p class="mb-1"><strong>Phone:</strong> {{ sponsor.phone or 'N/A' }}</p>
+                                    <p class="mb-1"><strong>Location:</strong> {{ sponsor.region or 'N/A' }}</p>
+                                    <div class="alert alert-light border mt-3 mb-0 small">
+                                        All commitments (Reference IDs) linked to this account are managed in the beneficiaries table.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Beneficiary List Card -->
+                        <div class="col-lg-8">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h4 class="header-title card-header-title">Assigned Beneficiaries</h4>
+                                    <div class="row mb-3">
+                                        <div class="col-md-12">
+                                            <input type="text" id="searchBox" class="form-control" placeholder="Search by student name or reference ID..." onkeyup="filterAndPaginate()" />
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="table-responsive">
+                                        <table class="table table-hover table-centered mb-0" id="beneficiaryTable">
+                                            <thead>
+                                                <tr>
+                                                    <th>Student Details</th>
+                                                    <th>Fund Reference</th>
+                                                    <th>Current Status</th>
+                                                    <th class="text-right">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="beneficiaryBody">
+                                                {% if grantees %}
+                                                    {% for grantee in grantees %}
+                                                        <tr class="beneficiary-row">
+                                                            <td>
+                                                                <span class="font-weight-bold d-block text-dark">{{ grantee.user.name }}</span>
+                                                                <small class="text-muted">Ref: {{ grantee.user.user_id }}</small>
+                                                            </td>
+                                                            <td><span class="badge badge-light border text-monospace">{{ grantee.reference_id }}</span></td>
+                                                            <td>
+                                                                {% if grantee.payment_status == 'Overdue' %}
+                                                                    <span class="badge badge-danger px-2 py-1">Overdue</span>
+                                                                {% elif grantee.payment_status == 'On Schedule' or grantee.payment_status == 'Completed' %}
+                                                                    <span class="badge badge-success px-2 py-1">{{ grantee.payment_status }}</span>
+                                                                {% else %}
+                                                                    <span class="badge badge-warning px-2 py-1">{{ grantee.payment_status }}</span>
+                                                                {% endif %}
+                                                            </td>
+                                                            <td class="text-right">
+                                                                <!-- Correctly passing grantee_id to auto-select student in payments page -->
+                                                                <a href="{{ url_for('sponsor.sponsor_payments', grantee_id=grantee.user.user_id) }}" class="btn btn-xs btn-outline-success font-weight-bold">Pay Now</a>
+                                                            </td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <tr><td colspan="4" class="text-center py-4 text-muted">No students assigned yet.</td></tr>
+                                                {% endif %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <!-- Pagination Controls -->
+                                    <nav class="mt-3">
+                                        <ul class="pagination pagination-rounded justify-content-center" id="pagination"></ul>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-2">
+                        <div class="col-xl-6"><div class="card-box"><h4 class="header-title">Student Performance Trend</h4><div id="website-stats" class="flot-chart" style="height: 250px"></div></div></div>
+                        <div class="col-xl-6"><div class="card-box"><h4 class="header-title">Sponsorship Distribution</h4><div id="donut-chart-container" class="flot-chart" style="height: 250px"></div></div></div>
+                    </div>
                 </div>
-              </div>
             </div>
 
-            <!-- Charts Section (NO CHANGES) -->
-            <div class="row">
-                <div class="col-xl-6"><div class="card-box"><h4 class="header-title">Marks Comparison Between Grantors</h4><div id="website-stats" class="flot-chart" style="height: 320px"></div></div></div>
-                <div class="col-xl-6"><div class="card-box"><h4 class="header-title">Marks Distribution</h4><div id="donut-chart-container" class="flot-chart" style="height: 246px"></div><p class="text-muted mt-3">Pie chart showing marks distribution on various exam types</p></div></div>
-            </div>
-          </div>
+            <footer class="footer"><p class="mb-0">Developed by <strong>Cognifly AI System</strong></p></footer>
         </div>
-
-        <!-- Footer -->
-        <footer class="footer"><p class="mb-0">Developed by <strong>Cognifly AI System</strong></p></footer>
-      </div>
     </div>
 
-    <!-- Scripts (NO CHANGES TO FILTERS OR CHARTS) -->
+    <!-- Scripts -->
     <script src="{{ url_for('static', filename='js/vendor.min.js') }}"></script>
     <script src="{{ url_for('static', filename='libs/flot-charts/jquery.flot.js') }}"></script>
     <script src="{{ url_for('static', filename='libs/flot-charts/jquery.flot.pie.js') }}"></script>
-    <script src="{{ url_for('static', filename='libs/moment/moment.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='libs/bootstrap-daterangepicker/daterangepicker.js') }}"></script>
     <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
 
     <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        initializeCharts();
-      });
+        let currentPage = 1;
+        const rowsPerPage = 5;
+        let allRows = [];
 
-      function filterTable() {
-        const input = document.getElementById("searchBox");
-        const filter = input.value.toLowerCase();
-        const table = document.getElementById("beneficiaryTable");
-        const tr = table.getElementsByTagName("tr");
+        document.addEventListener("DOMContentLoaded", function () {
+            allRows = Array.from(document.querySelectorAll(".beneficiary-row"));
+            filterAndPaginate();
+            initializeCharts();
+        });
 
-        for (let i = 1; i < tr.length; i++) {
-          const txtValue = tr[i].textContent || tr[i].innerText;
-          if (txtValue.toLowerCase().indexOf(filter) > -1) {
-            tr[i].style.display = "";
-          } else {
-            tr[i].style.display = "none";
-          }
-        }
-      }
+        function filterAndPaginate() {
+            const searchTerm = document.getElementById("searchBox").value.toLowerCase();
+            const filteredRows = allRows.filter(row => row.innerText.toLowerCase().includes(searchTerm));
+            const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
 
-      function initializeCharts() {
-        if (document.getElementById("donut-chart-container")) {
-            var donutData = [
-              { label: "Exam A", data: 20, color: "#44a0cb" },
-              { label: "Exam B", data: 30, color: "#f7d766" },
-              { label: "Exam C", data: 50, color: "#a4d65e" },
-            ];
-            $.plot("#donut-chart-container", donutData, { series: { pie: { innerRadius: 0.5, show: true, } }, legend: { show: true }, grid: { hoverable: true, clickable: true } });
+            if (currentPage > totalPages) currentPage = 1;
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+
+            allRows.forEach(row => row.style.display = "none");
+            filteredRows.slice(start, end).forEach(row => row.style.display = "");
+
+            renderPagination(totalPages, filteredRows.length);
         }
-        if (document.getElementById("website-stats")) {
-            var lineData = [];
-            for (var i = 0; i <= 10; i += 1) { lineData.push([i, Math.sin(i / 1.5) * 10 + 20 + Math.random() * 5]); }
-            $.plot("#website-stats", [{ data: lineData, label: "Beneficiary Performance", color: "#44a0cb" }], { series: { lines: { show: true, fill: true, lineWidth: 2 }, points: { show: true, radius: 3 }, shadowSize: 0 }, grid: { hoverable: true, clickable: true, borderColor: "#f1f1f1", borderWidth: 1, labelMargin: 15, backgroundColor: "#fff" }, yaxis: { min: 0, max: 40, color: "rgba(0,0,0,0.1)" }, xaxis: { color: "rgba(0,0,0,0.1)" }, tooltip: true, tooltipOpts: { content: "X: %x, Y: %y", shifts: { x: -60, y: 25 } } });
+
+        function renderPagination(totalPages, totalRows) {
+            const paginationUl = document.getElementById("pagination");
+            paginationUl.innerHTML = "";
+            if (totalRows <= rowsPerPage) return;
+
+            for (let i = 1; i <= totalPages; i++) {
+                const li = document.createElement("li");
+                li.className = `page-item ${i === currentPage ? 'active' : ''}`;
+                li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+                li.onclick = (e) => { e.preventDefault(); currentPage = i; filterAndPaginate(); };
+                paginationUl.appendChild(li);
+            }
         }
-      }
+
+        function initializeCharts() {
+            if (document.getElementById("donut-chart-container")) {
+                var donutData = [
+                    { label: "On Track", data: 70, color: "#28a745" },
+                    { label: "Due Soon", data: 20, color: "#f7d766" },
+                    { label: "Overdue", data: 10, color: "#fb6d9d" }
+                ];
+                $.plot("#donut-chart-container", donutData, { series: { pie: { innerRadius: 0.5, show: true, } }, legend: { show: true } });
+            }
+            if (document.getElementById("website-stats")) {
+                var lineData = [[0, 20], [1, 25], [2, 35], [3, 30], [4, 45], [5, 40]];
+                $.plot("#website-stats", [{ data: lineData, color: "#28a745" }], { series: { lines: { show: true, fill: true }, points: { show: true } }, grid: { borderColor: "#eee", borderWidth: 1 } });
+            }
+        }
     </script>
-  </body>
+</body>
 </html>

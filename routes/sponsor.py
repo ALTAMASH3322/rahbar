@@ -39,9 +39,12 @@ def sponsor_dashboard():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True, buffered=True)
     sponsor_id = current_user.user_id
-    today = datetime.now().date()
 
-    # UPDATED: Fetch students mapped to ANY of this sponsor's Reference IDs
+    # --- NEW: Explicitly fetch the Sponsor's own details to ensure Name is loaded ---
+    cursor.execute("SELECT * FROM users WHERE user_id = %s", (sponsor_id,))
+    sponsor_full_details = cursor.fetchone()
+
+    # Fetch students mapped to ANY of this sponsor's Reference IDs
     cursor.execute("""
         SELECT gg.*, sr.reference_id as linked_ref_id
         FROM grantor_grantees gg
@@ -53,17 +56,13 @@ def sponsor_dashboard():
     grantees = []
     for gg in grantor_grantees:
         grantee_id = gg['grantee_id']
-
         cursor.execute("SELECT * FROM users WHERE user_id = %s", (grantee_id,))
         grantee = cursor.fetchone()
-
         cursor.execute("SELECT * FROM bank_details WHERE user_id = %s", (grantee_id,))
         bank_details = cursor.fetchone()
-
         cursor.execute("SELECT * FROM payments WHERE grantee_id = %s ORDER BY created_at DESC LIMIT 1", (grantee_id,))
         latest_payment = cursor.fetchone()
 
-        # Course Logic (Preserved)
         cursor.execute("""
             SELECT sic.assigned_at, c.number_of_semesters
             FROM student_institution_courses sic
@@ -72,37 +71,30 @@ def sponsor_dashboard():
         """, (grantee_id,))
         course_info = cursor.fetchone()
 
-        payment_status = "Awaiting Course Assignment"
+        payment_status = "Pending"
         if course_info and course_info.get('assigned_at'):
-            cursor.execute("SELECT COUNT(*) as paid_count FROM payments WHERE grantee_id = %s AND status = 'Paid'", (grantee_id,))
-            paid_count = cursor.fetchone()['paid_count']
-            
-            base_date = course_info['assigned_at']
-            total_payments = int((course_info['number_of_semesters'] / 2.0) * 4)
-
-            if paid_count >= total_payments: payment_status = "Completed"
-            else:
-                months_to_add = 3 * (paid_count + 1)
-                # ... (Date calculation logic remains same) ...
-                payment_status = "On Schedule" # Simplified for brevity, keep your original logic
+            payment_status = "On Schedule"
 
         grantees.append({
             'user': grantee,
             'bank_details': bank_details,
             'latest_payment': latest_payment,
             'payment_status': payment_status,
-            'reference_id': gg['linked_ref_id'] # Added to show which fund is paying
+            'reference_id': gg['linked_ref_id']
         })
 
     cursor.close()
     conn.close()
-    return render_template('sponsor/dashboard.html', sponsor=current_user, grantees=grantees)
+    
+    # Pass the explicitly fetched 'sponsor_full_details' as 'sponsor'
+    return render_template('sponsor/dashboard.html', sponsor=sponsor_full_details, grantees=grantees)
 
 
 # 2. SPONSOR PAYMENTS
 @sponsor_bp.route('/payments', methods=['GET', 'POST'])
 @login_required
 def sponsor_payments():
+    # Ensure only Sponsors (role_id 5) can access
     if current_user.role_id != 5:
         return render_template('sponsor/error.html', error="Unauthorized."), 403
 
@@ -110,41 +102,50 @@ def sponsor_payments():
     cursor = conn.cursor(dictionary=True, buffered=True)
     sponsor_id = current_user.user_id
 
+    # --- 1. HANDLE POST REQUEST (RECORDING A PAYMENT) ---
     if request.method == 'POST':
         action = request.form.get('action')
         grantee_id = request.form.get('grantee_id')
         amount = request.form.get('amount')
+        payment_date = request.form.get('payment_date') # Captures the date from the modal
         receipt = request.files.get('receipt')
 
         if action == 'pay':
-            # NEW: We must find the specific Reference ID this student is mapped to
+            # Identify which Reference ID fund this student belongs to
             cursor.execute("SELECT grantor_id FROM grantor_grantees WHERE grantee_id = %s LIMIT 1", (grantee_id,))
             mapping = cursor.fetchone()
             ref_id = mapping['grantor_id'] if mapping else None
 
             if not ref_id:
-                flash('Critical Error: Student is not linked to a valid sponsorship reference.', 'error')
+                flash('Error: Student is not linked to a valid sponsorship reference.', 'error')
                 return redirect(url_for('sponsor.sponsor_payments'))
 
+            # Save the Foundation Receipt file
             filename = secure_filename(receipt.filename)
             filepath = os.path.join(UPLOAD_FOLDER, filename)
             receipt.save(filepath)
 
             try:
-                # We record the payment against the Reference ID (fund)
+                # Insert payment using the manual date provided by the sponsor
                 cursor.execute("""
-                    INSERT INTO payments (grantor_id, grantee_id, amount, payment_date, receipt_url, status)
-                    VALUES (%s, %s, %s, NOW(), %s, 'Paid')
-                """, (ref_id, grantee_id, amount, filename))
+                    INSERT INTO payments (grantor_id, grantee_id, amount, payment_date, receipt_url, status, created_at, updated_by)
+                    VALUES (%s, %s, %s, %s, %s, 'Paid', NOW(), %s)
+                """, (ref_id, grantee_id, amount, payment_date, filename, current_user.user_id))
+                
                 conn.commit()
                 flash('Payment recorded successfully!', 'success')
             except Exception as e:
                 conn.rollback()
-                flash(f'Error: {str(e)}', 'error')
+                flash(f'Database Error: {str(e)}', 'error')
 
         return redirect(url_for('sponsor.sponsor_payments'))
 
-    # GET method processing
+    # --- 2. HANDLE GET REQUEST (DISPLAYING DATA) ---
+    
+    # Capture grantee_id from URL if redirecting from Dashboard (e.g., ?grantee_id=M001)
+    selected_grantee_id = request.args.get('grantee_id')
+
+    # Fetch all students assigned to this human sponsor across all their Reference IDs
     cursor.execute("""
         SELECT u.*, gg.grantor_id as linked_ref_id
         FROM users u
@@ -159,13 +160,27 @@ def sponsor_payments():
 
     for student in assigned_students:
         s_id = student['user_id']
+        
+        # A. Fetch the scheduled scholarship amount based on student's batch year
+        cursor.execute("""
+            SELECT amount FROM payment_schedules 
+            WHERE year = %s AND status = 1 LIMIT 1
+        """, (student['year'],))
+        sched_res = cursor.fetchone()
+        student['annual_schedule_amount'] = sched_res['amount'] if sched_res else 0
+
+        # B. Fetch bank details for the student
         cursor.execute("SELECT * FROM bank_details WHERE user_id = %s", (s_id,))
         bank = cursor.fetchone()
 
+        # C. Fetch all successful payments and generate links for foundation and student receipts
         cursor.execute("SELECT * FROM payments WHERE grantee_id = %s AND status = 'Paid' ORDER BY payment_date DESC", (s_id,))
         all_payments = cursor.fetchall()
-        
-        # Course info (Preserved logic)
+        for p in all_payments:
+            p['foundation_receipt'] = url_for('sponsor.uploaded_file', filename=p['receipt_url']) if p['receipt_url'] else None
+            p['student_expenditure_proof'] = url_for('sponsor.uploaded_file', filename=p['student_proof_url']) if p['student_proof_url'] else None
+
+        # D. Fetch course and enrollment date for schedule generation
         cursor.execute("""
             SELECT sic.assigned_at, c.number_of_semesters, c.fees_per_semester
             FROM student_institution_courses sic
@@ -184,15 +199,20 @@ def sponsor_payments():
         payment_details.append(detail)
         student_data_map[s_id] = detail
 
-    # Fetch past payments (Filter by sponsor's references)
+    # --- 3. FETCH RECENT HISTORY (LATEST 5 PAYMENTS) ---
     cursor.execute("""
         SELECT p.*, u.name AS grantee_name
         FROM payments p
         JOIN users u ON p.grantee_id = u.user_id
         JOIN sponsor_references sr ON p.grantor_id COLLATE utf8mb4_general_ci = sr.reference_id COLLATE utf8mb4_general_ci
         WHERE sr.user_id = %s AND p.status = 'Paid'
+        ORDER BY p.payment_date DESC LIMIT 5
     """, (sponsor_id,))
     past_payments = cursor.fetchall()
+
+    for pp in past_payments:
+        pp['foundation_receipt'] = url_for('sponsor.uploaded_file', filename=pp['receipt_url']) if pp['receipt_url'] else None
+        pp['student_proof'] = url_for('sponsor.uploaded_file', filename=pp['student_proof_url']) if pp['student_proof_url'] else None
 
     cursor.close()
     conn.close()
@@ -202,6 +222,7 @@ def sponsor_payments():
         past_payments=past_payments, 
         sponsor=current_user,
         student_data_map=student_data_map,
+        selected_grantee_id=selected_grantee_id, # Passed to JS for auto-selection
         students_for_dropdown=[d['grantee'] for d in payment_details])
 
 

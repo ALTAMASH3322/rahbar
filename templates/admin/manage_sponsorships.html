@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap4.min.css">
     
     <style>
+      /* Corrected Responsive Footer */
       .footer {
         position: fixed;
         bottom: 0;
@@ -35,7 +36,7 @@
         z-index: 1030;
       }
       .content-page {
-        padding-bottom: 70px;
+        padding-bottom: 80px; /* Space for footer */
       }
       .glassy-modal .modal-content {
         background: rgba(255, 255, 255, 0.98);
@@ -58,6 +59,25 @@
         color: #333;
       }
 
+      /* Sidebar toggle button (Hamburger) */
+      .button-menu-mobile {
+        background-color: transparent;
+        border: none;
+        color: #333;
+        font-size: 24px;
+        height: 70px;
+        width: 60px;
+        cursor: pointer;
+      }
+
+      /* Logo box centering for responsive topbar */
+      .navbar-custom .logo-box-centered {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        top: 15px;
+      }
+
       /* --- SPINNER OVERLAY STYLES --- */
       #loading-overlay {
         position: fixed;
@@ -72,6 +92,17 @@
         justify-content: center;
         flex-direction: column;
       }
+
+      @media (max-width: 768px) {
+        .navbar-custom .logo-box-centered h4 {
+          font-size: 16px;
+        }
+        .lookup-container {
+            width: 100% !important;
+            margin-bottom: 10px;
+            margin-right: 0 !important;
+        }
+      }
     </style>
   </head>
 
@@ -84,16 +115,25 @@
     </div>
 
     <div id="wrapper">
-      <!-- Topbar Start -->
+      
+      <!-- Topbar Start (Updated for Responsiveness) -->
       <div class="navbar-custom">
-        <div class="d-flex justify-content-between align-items-center w-100">
-          <div><h6 class="page-title mb-0">Admin Panel</h6></div>
-          <div>
-            <a href="{{ url_for('main.homepage') }}" class="text-success">
-              <h4>Rahbar Scholarship Information Management System</h4>
-            </a>
-          </div>
-          <ul class="list-unstyled topnav-menu mb-0">
+        <div class="container-fluid">
+          
+          <!-- LEFT SIDE: Hamburger Toggle & Admin Label -->
+          <ul class="list-unstyled topnav-menu topnav-menu-left m-0 float-left">
+            <li>
+              <button class="button-menu-mobile waves-effect">
+                <i class="mdi mdi-menu"></i>
+              </button>
+            </li>
+            <li class="d-none d-lg-block">
+              <h6 class="page-title mb-0 mt-3 ml-2">Admin Panel</h6>
+            </li>
+          </ul>
+
+          <!-- RIGHT SIDE: User Dropdown -->
+          <ul class="list-unstyled topnav-menu float-right mb-0">
             <li class="dropdown notification-list">
               <a class="nav-link dropdown-toggle nav-user waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
                 <img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" alt="user-image" class="rounded-circle" />
@@ -107,8 +147,17 @@
               </div>
             </li>
           </ul>
+
+          <!-- CENTER: Logo -->
+          <div class="logo-box-centered">
+            <a href="{{ url_for('main.homepage') }}" class="text-success">
+              <h4 class="m-0">RSMS</h4>
+            </a>
+          </div>
+
         </div>
       </div>
+      <!-- end Topbar -->
 
       <!-- Left Sidebar Start -->
       <div class="left-side-menu">
@@ -116,19 +165,65 @@
           <div id="sidebar-menu">
             <ul class="metismenu" id="side-menu">
               <li class="menu-title">Navigation</li>
-              <li><a href="{{ url_for('admin.admin_dashboard') }}"><i class="mdi mdi-view-dashboard"></i><span>Dashboard</span></a></li>
-              <li><a href="{{ url_for('admin.manage_users') }}"><i class="mdi mdi-account-multiple"></i><span>Manage Users</span></a></li>
-              <li><a href="{{ url_for('admin.system_configuration') }}"><i class="mdi mdi-settings"></i><span>Payment Configuration</span></a></li>
-              <li><a href="{{ url_for('admin.admin_generate_reports') }}"><i class="mdi mdi-chart-bar"></i><span>Generate Reports</span></a></li>
-              <li><a href="{{ url_for('admin.manage_application_period') }}"><i class="mdi mdi-calendar"></i><span>Application Period</span></a></li>
-              <li><a href="{{ url_for('admin.manage_rcc_centers') }}"><i class="mdi mdi-bank"></i><span>Manage RCC Centers</span></a></li>
-              <li><a href="{{ url_for('admin.manage_courses') }}"><i class="mdi mdi-book-open"></i><span>Manage Courses</span></a></li>
-              <li><a href="{{ url_for('admin.manage_sponsorships') }}" class="active"><i class="mdi mdi-account-switch"></i><span>Manage Sponsorships</span></a></li>
-              <li><a href="{{ url_for('admin.student_directory') }}"><i class="mdi mdi-account-details"></i><span>Student Directory</span></a></li>
+              <li>
+                <a href="{{ url_for('admin.admin_dashboard') }}" class="waves-effect">
+                  <i class="mdi mdi-view-dashboard"></i>
+                  <span>Dashboard</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('admin.manage_users') }}" class="waves-effect">
+                  <i class="mdi mdi-account-multiple"></i>
+                  <span>Manage Users</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('admin.system_configuration') }}" class="waves-effect">
+                  <i class="mdi mdi-settings"></i>
+                  <span>Payment Configuration</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('admin.admin_generate_reports') }}" class="waves-effect">
+                  <i class="mdi mdi-chart-bar"></i>
+                  <span>Generate Reports</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('admin.manage_application_period') }}" class="waves-effect">
+                  <i class="mdi mdi-calendar"></i>
+                  <span>Application Period</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('admin.manage_rcc_centers') }}" class="waves-effect">
+                  <i class="mdi mdi-bank"></i>
+                  <span>Manage RCC Centers</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('admin.manage_courses') }}" class="waves-effect">
+                  <i class="mdi mdi-book-open"></i>
+                  <span>Manage Courses</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('admin.manage_sponsorships') }}" class="waves-effect active">
+                  <i class="mdi mdi-account-switch"></i>
+                  <span>Manage Sponsorships</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('admin.student_directory') }}" class="waves-effect">
+                  <i class="mdi mdi-account-details"></i>
+                  <span>Student Directory</span>
+                </a>
+              </li>
             </ul>
           </div>
         </div>
       </div>
+      <!-- Left Sidebar End -->
 
       <div class="content-page">
         <div class="content">
@@ -157,24 +252,26 @@
                       {% endif %}
                     {% endwith %}
 
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h4 class="header-title">Sponsors & Direct ID Lookup</h4>
+                    <!-- Updated Header Row for Mobile Stacking -->
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
+                        <h4 class="header-title mb-2 mb-md-0">Sponsors & Direct ID Lookup</h4>
                         
-                        <div class="d-flex align-items-center">
+                        <div class="d-flex flex-column flex-sm-row align-items-center w-100 w-md-auto">
                             <!-- SEARCH BY REFERENCE ID BOX -->
-                            <div class="input-group mr-3" style="width: 320px;">
+                            <div class="input-group mr-sm-3 lookup-container" style="width: 320px;">
                                 <input type="text" id="refLookupInput" class="form-control" placeholder="Lookup Ref ID (e.g. 2024-001)">
                                 <div class="input-group-append">
                                     <button class="btn btn-dark" type="button" id="btnRefLookup">Go</button>
                                 </div>
                             </div>
 
-                            <button type="button" class="btn btn-success waves-effect waves-light" data-toggle="modal" data-target="#uploadSponsorCsvModal">
+                            <button type="button" class="btn btn-success waves-effect waves-light w-100 w-sm-auto" data-toggle="modal" data-target="#uploadSponsorCsvModal">
                                 <i class="mdi mdi-file-upload"></i> Bulk Upload
                             </button>
                         </div>
                     </div>
 
+                    <!-- CRITICAL: Wrapped in table-responsive -->
                     <div class="table-responsive">
                       <table class="table table-bordered table-striped dt-responsive nowrap" id="sponsorTable" style="width:100%">
                         <thead>
@@ -235,7 +332,7 @@
       </div>
     </div>
 
-    <!-- MODAL: UPLOAD SPONSOR CSV -->
+    <!-- MODAL: UPLOAD SPONSOR CSV (Preserved Verbatim) -->
     <div class="modal fade glassy-modal" id="uploadSponsorCsvModal" tabindex="-1" role="dialog" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -263,7 +360,7 @@
       </div>
     </div>
 
-    <!-- MODAL: EDIT SPONSOR -->
+    <!-- MODAL: EDIT SPONSOR (Preserved Verbatim) -->
     <div class="modal fade glassy-modal" id="editSponsorModal" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
@@ -308,7 +405,7 @@
         </div>
     </div>
 
-    <!-- Scripts -->
+    <!-- Scripts (Preserved Verbatim) -->
     <script src="{{ url_for('static', filename='js/vendor.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
@@ -338,7 +435,7 @@
                 $('#loading-overlay').css('display', 'flex');
             });
 
-            // --- EDIT SPONSOR LOGIC (Using Event Delegation for sorting support) ---
+            // --- EDIT SPONSOR LOGIC ---
             $(document).on('click', '.edit-sponsor-btn', function() {
                 const userId = $(this).data('id');
                 $.get(`/api/sponsor/details/${userId}`, function(res) {

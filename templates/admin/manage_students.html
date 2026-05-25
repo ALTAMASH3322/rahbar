@@ -16,29 +16,80 @@
     <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" id="bootstrap-stylesheet" />
     <link href="{{ url_for('static', filename='css/icons.min.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ url_for('static', filename='css/app.min.css') }}" rel="stylesheet" type="text/css" id="app-stylesheet" />
+
+    <style>
+        /* Responsive Footer Fix */
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #f8f9fa;
+            padding: 10px 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #6c757d;
+            border-top: 1px solid #ddd;
+            z-index: 1030;
+        }
+
+        .content-page {
+            padding-bottom: 80px; /* Prevents overlap with footer */
+        }
+
+        /* Sidebar toggle logic button (Hamburger menu) */
+        .button-menu-mobile {
+            background-color: transparent;
+            border: none;
+            color: #333;
+            font-size: 24px;
+            height: 70px;
+            width: 60px;
+            cursor: pointer;
+        }
+
+        /* Centered Logo Box for responsive topbar */
+        .navbar-custom .logo-box-centered {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 15px;
+        }
+
+        @media (max-width: 480px) {
+            .navbar-custom .logo-box-centered h4 {
+                font-size: 16px;
+            }
+            .filter-btns {
+                width: 100%;
+                margin-top: 10px;
+            }
+        }
+    </style>
 </head>
 
 <body>
     <!-- Begin page -->
     <div id="wrapper">
 
-        <!-- Topbar Start -->
+        <!-- Topbar Start (Updated for Mobile Toggle support) -->
         <div class="navbar-custom">
-            <div class="d-flex justify-content-between align-items-center w-100">
-                <!-- Left side - Admin Panel -->
-                <div>
-                    <h6 class="page-title mb-0">Admin Panel</h6>
-                </div>
+            <div class="container-fluid">
+                
+                <!-- LEFT SIDE: Hamburger Toggle & Admin Title -->
+                <ul class="list-unstyled topnav-menu topnav-menu-left m-0 float-left">
+                    <li>
+                        <button class="button-menu-mobile waves-effect">
+                            <i class="mdi mdi-menu"></i>
+                        </button>
+                    </li>
+                    <li class="d-none d-lg-block">
+                        <h6 class="page-title mb-0 mt-3 ml-2">Admin Panel</h6>
+                    </li>
+                </ul>
 
-                <!-- Middle - Logo -->
-                <div>
-                    <a href="{{ url_for('main.homepage') }}" class="text-success">
-                        <h4>Rahbar Scholarship Information Management System</h4>
-                        </a>
-                </div>
-
-                <!-- Right side - User Dropdown -->
-                <ul class="list-unstyled topnav-menu mb-0">
+                <!-- RIGHT SIDE: User Dropdown -->
+                <ul class="list-unstyled topnav-menu float-right mb-0">
                     <li class="dropdown notification-list">
                         <a class="nav-link dropdown-toggle nav-user waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
                             <img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" alt="user-image" class="rounded-circle">
@@ -52,112 +103,97 @@
                         </div>
                     </li>
                 </ul>
+
+                <!-- CENTER: Logo -->
+                <div class="logo-box-centered">
+                    <a href="{{ url_for('main.homepage') }}" class="text-success">
+                        <h4 class="m-0">RSMS</h4>
+                    </a>
+                </div>
+
             </div>
         </div>
         <!-- end Topbar -->
 
-        <!-- ========== Left Sidebar Start ========== -->
-        <!-- ========== Left Sidebar Start ========== -->
-      <div class="left-side-menu">
-        <div class="slimscroll-menu">
-          <!--- Sidemenu -->
-          <div id="sidebar-menu">
-            <ul class="metismenu" id="side-menu">
-              <li class="menu-title">Navigation</li>
-              <!-- Dashboard -->
-              <li>
-                <a
-                  href="{{ url_for('admin.admin_dashboard') }}"
-                  class="waves-effect waves-light"
-                >
-                  <i class="mdi mdi-view-dashboard"></i>
-                  <span>Dashboard</span>
-                </a>
-              </li>
-              <!-- Manage Users -->
-              <li>
-                <a
-                  href="{{ url_for('admin.manage_users') }}"
-                  class="waves-effect waves-light"
-                >
-                  <i class="mdi mdi-account-multiple"></i>
-                  <span>Manage Users</span>
-                </a>
-              </li>
-              <!-- System Configuration -->
-              <li>
-                <a
-                  href="{{ url_for('admin.system_configuration') }}"
-                  class="waves-effect waves-light"
-                >
-                  <i class="mdi mdi-settings"></i>
-                  <span>Payment Configuration</span>
-                </a>
-              </li>
-              <!-- Generate Reports -->
-              <li>
-                <a
-                  href="{{ url_for('admin.admin_generate_reports') }}"
-                  class="waves-effect waves-light"
-                >
-                  <i class="mdi mdi-chart-bar"></i>
-                  <span>Generate Reports</span>
-                </a>
-              </li>
-              <!-- Application Period -->
-              <li>
-                <a
-                  href="{{ url_for('admin.manage_application_period') }}"
-                  class="waves-effect waves-light"
-                >
-                  <i class="mdi mdi-calendar"></i>
-                  <span>Application Period</span>
-                </a>
-              </li>
-              <!-- In admin/dashboard.html -->
-              <li>
-                <a
-                  href="{{ url_for('admin.manage_rcc_centers') }}"
-                  class="waves-effect waves-light"
-                >
-                  <i class="mdi mdi-bank"></i>
-                  <span>Manage RCC Centers</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="{{ url_for('admin.manage_courses') }}"
-                  class="waves-effect waves-light"
-                >
-                  <i class="mdi mdi-book-open"></i>
-                  <span>Manage Courses</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="{{ url_for('admin.manage_sponsorships') }}"
-                  class="waves-effect waves-light active"
-                >
-                  <i class="mdi mdi-account-switch"></i>
-                  <span>Manage Sponsorships</span>
-                </a>
-              </li>
-              <li><a href="{{ url_for('admin.student_directory') }}" class="waves-effect waves-light active"><i class="mdi mdi-account-details"></i><span>Student Directory</span></a></li>
-            </ul>
-          </div>
-          <!-- End Sidebar -->
+        <!-- ========== Left Sidebar Start (Full sidebar maintained) ========== -->
+        <div class="left-side-menu">
+            <div class="slimscroll-menu">
+                <!--- Sidemenu -->
+                <div id="sidebar-menu">
+                    <ul class="metismenu" id="side-menu">
+                        <li class="menu-title">Navigation</li>
+                        <!-- Dashboard -->
+                        <li>
+                            <a href="{{ url_for('admin.admin_dashboard') }}" class="waves-effect waves-light">
+                                <i class="mdi mdi-view-dashboard"></i>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <!-- Manage Users -->
+                        <li>
+                            <a href="{{ url_for('admin.manage_users') }}" class="waves-effect waves-light">
+                                <i class="mdi mdi-account-multiple"></i>
+                                <span>Manage Users</span>
+                            </a>
+                        </li>
+                        <!-- System Configuration -->
+                        <li>
+                            <a href="{{ url_for('admin.system_configuration') }}" class="waves-effect waves-light">
+                                <i class="mdi mdi-settings"></i>
+                                <span>Payment Configuration</span>
+                            </a>
+                        </li>
+                        <!-- Generate Reports -->
+                        <li>
+                            <a href="{{ url_for('admin.admin_generate_reports') }}" class="waves-effect waves-light">
+                                <i class="mdi mdi-chart-bar"></i>
+                                <span>Generate Reports</span>
+                            </a>
+                        </li>
+                        <!-- Application Period -->
+                        <li>
+                            <a href="{{ url_for('admin.manage_application_period') }}" class="waves-effect waves-light">
+                                <i class="mdi mdi-calendar"></i>
+                                <span>Application Period</span>
+                            </a>
+                        </li>
+                        <!-- RCC Centers -->
+                        <li>
+                            <a href="{{ url_for('admin.manage_rcc_centers') }}" class="waves-effect waves-light">
+                                <i class="mdi mdi-bank"></i>
+                                <span>Manage RCC Centers</span>
+                            </a>
+                        </li>
+                        <!-- Courses -->
+                        <li>
+                            <a href="{{ url_for('admin.manage_courses') }}" class="waves-effect waves-light">
+                                <i class="mdi mdi-book-open"></i>
+                                <span>Manage Courses</span>
+                            </a>
+                        </li>
+                        <!-- Sponsorships -->
+                        <li>
+                            <a href="{{ url_for('admin.manage_sponsorships') }}" class="waves-effect waves-light active">
+                                <i class="mdi mdi-account-switch"></i>
+                                <span>Manage Sponsorships</span>
+                            </a>
+                        </li>
+                        <!-- Student Directory -->
+                        <li>
+                            <a href="{{ url_for('admin.student_directory') }}" class="waves-effect waves-light active">
+                                <i class="mdi mdi-account-details"></i>
+                                <span>Student Directory</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <!-- End Sidebar -->
+            </div>
         </div>
-      </div>
-      <!-- Left Sidebar End -->
-      <!-- Left Sidebar End -->
-
-        <!-- ============================================================== -->
-        <!-- Start Page Content here -->
-        <!-- ============================================================== -->
+        <!-- Left Sidebar End -->
 
         <div class="content-page">
             <div class="content">
-                <!-- Start Content-->
                 <div class="container-fluid">
                     <!-- start page title -->
                     <div class="row">
@@ -167,17 +203,16 @@
                             </div>
                         </div>
                     </div>
-                    <!-- end page title -->
 
                     <!-- Filter & Search Section -->
                     <div class="row">
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-body">
-                                    <h4 class="header-title">Filters & Search</h4>
+                                    <h4 class="header-title mb-3">Filters & Search</h4>
                                     <div class="row">
-                                        <!-- Search Field (New) -->
-                                        <div class="col-md-3">
+                                        <!-- Search Field -->
+                                        <div class="col-12 col-md-3">
                                             <div class="form-group">
                                                 <label>Search (Any Field)</label>
                                                 <input type="text" id="searchInput" class="form-control" placeholder="Name, Email, Phone...">
@@ -185,7 +220,7 @@
                                         </div>
 
                                         <!-- Institution Filter -->
-                                        <div class="col-md-3">
+                                        <div class="col-12 col-md-3">
                                             <div class="form-group">
                                                 <label>Institution</label>
                                                 <select id="filterInstitution" class="form-control">
@@ -198,7 +233,7 @@
                                         </div>
 
                                         <!-- Course Filter -->
-                                        <div class="col-md-3">
+                                        <div class="col-12 col-md-3">
                                             <div class="form-group">
                                                 <label>Course</label>
                                                 <select id="filterCourse" class="form-control">
@@ -211,10 +246,10 @@
                                         </div>
 
                                         <!-- Buttons -->
-                                        <div class="col-md-3">
+                                        <div class="col-12 col-md-3">
                                             <div class="form-group" style="margin-top: 28px;">
-                                                <button class="btn btn-primary" onclick="applyFilters()">Apply</button>
-                                                <button class="btn btn-secondary" onclick="resetFilters()">Reset</button>
+                                                <button class="btn btn-primary filter-btns" onclick="applyFilters()">Apply Filters</button>
+                                                <button class="btn btn-secondary filter-btns" onclick="resetFilters()">Reset</button>
                                             </div>
                                         </div>
                                     </div>
@@ -223,7 +258,7 @@
                         </div>
                     </div>
 
-                    <!-- Student Table -->
+                    <!-- Student Table (Wrapped in responsive container) -->
                     <div class="row">
                         <div class="col-12">
                             <div class="card">
@@ -234,7 +269,7 @@
                                                 <tr>
                                                     <th>Student Name</th>
                                                     <th>Email</th>
-                                                    <th> Student Phone</th>
+                                                    <th>Student Phone</th>
                                                     <th>Rcc Center</th>
                                                     <th>Sponsor</th>
                                                     <th>Institution</th>
@@ -245,7 +280,7 @@
                                             <tbody>
                                                 {% for student in students %}
                                                 <tr data-institution="{{ student.institution_id }}" data-course="{{ student.course_id }}">
-                                                    <td>{{ student.student_name }}</td>
+                                                    <td><strong>{{ student.student_name }}</strong></td>
                                                     <td>{{ student.student_email }}</td>
                                                     <td>{{ student.student_phone }}</td>
                                                     <td>{{ student.region }}</td>
@@ -253,7 +288,7 @@
                                                     <td>{{ student.institution_name or 'Unassigned' }}</td>
                                                     <td>{{ student.course_name or 'Unassigned' }}</td>
                                                     <td>
-                                                        <button type="button" class="btn btn-xs btn-primary" 
+                                                        <button type="button" class="btn btn-xs btn-primary waves-effect waves-light" 
                                                                 data-toggle="modal" 
                                                                 data-target="#assignModal{{ student.user_id }}">
                                                             <i class="mdi mdi-pencil"></i> Assign
@@ -271,7 +306,7 @@
                 </div>
             </div>
 
-            <!-- Modals -->
+            <!-- Modals (Full logic preserved) -->
             {% for student in students %}
             <div class="modal fade" id="assignModal{{ student.user_id }}" tabindex="-1" role="dialog" 
                 aria-labelledby="assignModalLabel" aria-hidden="true">
@@ -320,9 +355,8 @@
             </div>
             {% endfor %}
 
-            <!-- Footer -->
             <footer class="footer">
-                <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
+                <p class="mb-0">Developed by <strong>Cognifly AI System</strong></p>
             </footer>
         </div>
     </div>
@@ -332,7 +366,7 @@
     <!-- App js -->
     <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
 
-    <!-- Custom Script -->
+    <!-- VERBATIM SCRIPT PRESERVATION -->
     <script>
     // Initialize data
     const allStudents = Array.from(document.querySelectorAll('#studentsTable tbody tr'));
@@ -343,7 +377,6 @@
     const searchInput = document.getElementById('searchInput');
     searchInput.addEventListener('keyup', applyFilters);
 
-    // Filter functions (Now includes Search Logic)
     function applyFilters() {
         const institutionId = document.getElementById('filterInstitution').value;
         const courseId = document.getElementById('filterCourse').value;
@@ -352,20 +385,12 @@
         allStudents.forEach(row => {
             const rowInstitution = row.dataset.institution;
             const rowCourse = row.dataset.course;
-            
-            // Get all text content from the row for searching (includes Name, Email, Phone, Region, etc.)
             const rowText = row.innerText.toLowerCase();
             
-            // 1. Check Institution Filter
             const institutionMatch = !institutionId || rowInstitution === institutionId;
-            
-            // 2. Check Course Filter
             const courseMatch = !courseId || rowCourse === courseId;
-            
-            // 3. Check Search Filter (matches any text in the row)
             const searchMatch = !searchTerm || rowText.includes(searchTerm);
             
-            // Show row ONLY if ALL conditions are met
             row.style.display = (institutionMatch && courseMatch && searchMatch) ? '' : 'none';
         });
     }
@@ -373,11 +398,10 @@
     function resetFilters() {
         document.getElementById('filterInstitution').value = '';
         document.getElementById('filterCourse').value = '';
-        document.getElementById('searchInput').value = ''; // Reset search input
+        document.getElementById('searchInput').value = '';
         allStudents.forEach(row => row.style.display = '');
     }
 
-    // Modal course loading
     document.querySelectorAll('.institution-select').forEach(select => {
         select.addEventListener('change', function() {
             const institutionId = this.value;

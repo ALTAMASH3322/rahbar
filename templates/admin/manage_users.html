@@ -17,22 +17,26 @@
     <link href="{{ url_for('static', filename='css/app.min.css') }}" rel="stylesheet" type="text/css" id="app-stylesheet" />
     
     <style>
+      /* Corrected Responsive Footer */
       .footer {
         position: fixed;
         bottom: 0;
         left: 0;
         width: 100%;
         background-color: #f8f9fa;
-        padding: 10px 0;
+        padding: 10px 20px;
         text-align: center;
         font-size: 13px;
         color: #6c757d;
         border-top: 1px solid #ddd;
-        z-index: 1000;
+        z-index: 1030;
       }
-      .content-page { margin-bottom: 70px; }
+
+      .content-page { 
+        padding-bottom: 80px; /* Adjusted from margin to padding for better layout */
+      }
       
-      /* Subtle Pagination Styling */
+      /* Subtle Pagination Styling (Preserved) */
       .pagination .page-link {
         border: none;
         color: #6c757d;
@@ -48,23 +52,57 @@
         background: transparent;
         color: #ccc;
       }
+
+      /* Sidebar Toggle Button Styling */
+      .button-menu-mobile {
+        background-color: transparent;
+        border: none;
+        color: #333;
+        font-size: 24px;
+        height: 70px;
+        width: 60px;
+        cursor: pointer;
+      }
+
+      /* Centered Logo Box */
+      .navbar-custom .logo-box-centered {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        top: 15px;
+      }
+
+      @media (max-width: 768px) {
+        .navbar-custom .logo-box-centered h4 {
+          font-size: 16px;
+        }
+      }
     </style>
   </head>
 
   <body>
     <div id="wrapper">
-      <!-- Topbar Start -->
+      
+      <!-- Topbar Start (Updated for Responsiveness) -->
       <div class="navbar-custom">
-        <div class="d-flex justify-content-between align-items-center w-100">
-          <div><h6 class="page-title mb-0">Admin Panel</h6></div>
-          <div>
-            <a href="{{ url_for('main.homepage') }}" class="text-success">
-              <h4>Rahbar Scholarship Information Management System</h4>
-            </a>
-          </div>
-          <ul class="list-unstyled topnav-menu mb-0">
+        <div class="container-fluid">
+          
+          <!-- LEFT SIDE: Hamburger Toggle & Title -->
+          <ul class="list-unstyled topnav-menu topnav-menu-left m-0 float-left">
+            <li>
+              <button class="button-menu-mobile waves-effect">
+                <i class="mdi mdi-menu"></i>
+              </button>
+            </li>
+            <li class="d-none d-lg-block">
+              <h6 class="page-title mb-0 mt-3 ml-2">Admin Panel</h6>
+            </li>
+          </ul>
+
+          <!-- RIGHT SIDE: User Dropdown -->
+          <ul class="list-unstyled topnav-menu float-right mb-0">
             <li class="dropdown notification-list">
-              <a class="nav-link dropdown-toggle nav-user waves-effect" data-toggle="dropdown" href="#" role="button">
+              <a class="nav-link dropdown-toggle nav-user waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
                 <img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" alt="user-image" class="rounded-circle" />
                 <span class="d-none d-sm-inline-block ml-1">{{ current_user.name }}</span>
               </a>
@@ -76,6 +114,14 @@
               </div>
             </li>
           </ul>
+
+          <!-- CENTER: Logo -->
+          <div class="logo-box-centered">
+            <a href="{{ url_for('main.homepage') }}" class="text-success">
+              <h4 class="m-0">RSMS</h4>
+            </a>
+          </div>
+
         </div>
       </div>
 
@@ -85,15 +131,15 @@
           <div id="sidebar-menu">
             <ul class="metismenu" id="side-menu">
               <li class="menu-title">Navigation</li>
-              <li><a href="{{ url_for('admin.admin_dashboard') }}"><i class="mdi mdi-view-dashboard"></i><span>Dashboard</span></a></li>
-              <li><a href="{{ url_for('admin.manage_users') }}"><i class="mdi mdi-account-multiple"></i><span>Manage Users</span></a></li>
-              <li><a href="{{ url_for('admin.system_configuration') }}"><i class="mdi mdi-settings"></i><span>Payment Config</span></a></li>
-              <li><a href="{{ url_for('admin.admin_generate_reports') }}"><i class="mdi mdi-chart-bar"></i><span>Reports</span></a></li>
-              <li><a href="{{ url_for('admin.manage_application_period') }}"><i class="mdi mdi-calendar"></i><span>App Period</span></a></li>
-              <li><a href="{{ url_for('admin.manage_rcc_centers') }}"><i class="mdi mdi-bank"></i><span>RCC Centers</span></a></li>
-              <li><a href="{{ url_for('admin.manage_courses') }}"><i class="mdi mdi-book-open"></i><span>Courses</span></a></li>
-              <li><a href="{{ url_for('admin.manage_sponsorships') }}"><i class="mdi mdi-account-switch"></i><span>Sponsorships</span></a></li>
-              <li><a href="{{ url_for('admin.student_directory') }}"><i class="mdi mdi-account-details"></i><span>Student Directory</span></a></li>
+              <li><a href="{{ url_for('admin.admin_dashboard') }}" class="waves-effect"><i class="mdi mdi-view-dashboard"></i><span>Dashboard</span></a></li>
+              <li><a href="{{ url_for('admin.manage_users') }}" class="waves-effect"><i class="mdi mdi-account-multiple"></i><span>Manage Users</span></a></li>
+              <li><a href="{{ url_for('admin.system_configuration') }}" class="waves-effect"><i class="mdi mdi-settings"></i><span>Payment Config</span></a></li>
+              <li><a href="{{ url_for('admin.admin_generate_reports') }}" class="waves-effect"><i class="mdi mdi-chart-bar"></i><span>Reports</span></a></li>
+              <li><a href="{{ url_for('admin.manage_application_period') }}" class="waves-effect"><i class="mdi mdi-calendar"></i><span>App Period</span></a></li>
+              <li><a href="{{ url_for('admin.manage_rcc_centers') }}" class="waves-effect"><i class="mdi mdi-bank"></i><span>RCC Centers</span></a></li>
+              <li><a href="{{ url_for('admin.manage_courses') }}" class="waves-effect"><i class="mdi mdi-book-open"></i><span>Courses</span></a></li>
+              <li><a href="{{ url_for('admin.manage_sponsorships') }}" class="waves-effect"><i class="mdi mdi-account-switch"></i><span>Sponsorships</span></a></li>
+              <li><a href="{{ url_for('admin.student_directory') }}" class="waves-effect"><i class="mdi mdi-account-details"></i><span>Student Directory</span></a></li>
             </ul>
           </div>
         </div>
@@ -102,6 +148,7 @@
       <div class="content-page">
         <div class="content">
           <div class="container-fluid">
+            
             <div class="row">
               <div class="col-12">
                 <div class="page-title-box">
@@ -112,8 +159,8 @@
 
             <div class="row mb-3">
               <div class="col-12">
-                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addUserModal">
-                  Add New User
+                <button type="button" class="btn btn-primary waves-effect waves-light" data-toggle="modal" data-target="#addUserModal">
+                  <i class="mdi mdi-plus mr-1"></i> Add New User
                 </button>
               </div>
             </div>
@@ -122,13 +169,13 @@
               <div class="col-12">
                 <div class="card">
                   <div class="card-body">
-                    <h4 class="header-title">User List</h4>
+                    <h4 class="header-title mb-3">User List</h4>
                     
-                    <!-- Filters -->
+                    <!-- Filters (Updated spacing for mobile) -->
                     <div class="row mb-3">
-                      <div class="col-md-3"><input type="text" class="form-control" id="searchName" placeholder="Filter by Name" /></div>
-                      <div class="col-md-3"><input type="text" class="form-control" id="searchEmail" placeholder="Filter by Email" /></div>
-                      <div class="col-md-3">
+                      <div class="col-12 col-md-3 mb-2"><input type="text" class="form-control" id="searchName" placeholder="Filter by Name" /></div>
+                      <div class="col-12 col-md-3 mb-2"><input type="text" class="form-control" id="searchEmail" placeholder="Filter by Email" /></div>
+                      <div class="col-12 col-md-3 mb-2">
                         <select class="form-control" id="searchRole">
                           <option value="">Filter by Role</option>
                           {% for role in roles %}
@@ -136,7 +183,7 @@
                           {% endfor %}
                         </select>
                       </div>
-                      <div class="col-md-3">
+                      <div class="col-12 col-md-3 mb-2">
                         <select class="form-control" id="searchStatus">
                           <option value="">Filter by Status</option>
                           <option value="Active">Active</option>
@@ -145,35 +192,41 @@
                       </div>
                     </div>
 
-                    <!-- Table -->
-                    <table class="table table-striped" id="userTable">
-                      <thead>
-                        <tr>
-                          <th>User Id</th>
-                          <th>Name</th>
-                          <th>Email</th>
-                          <th>Role</th>
-                          <th>Status</th>
-                          <th>Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {% for user in users %}
-                        <tr>
-                          <td class="user-id-cell">{{ user.user_id }}</td>
-                          <td>{{ user.name }}</td>
-                          <td>{{ user.email }}</td>
-                          <td>{{ user.role_name }}</td>
-                          <td>{{ user.status }}</td>
-                          <td>
-                            <a href="{{ url_for('admin.edit_user', user_id=user.user_id) }}" class="btn btn-sm btn-primary">Edit</a>
-                          </td>
-                        </tr>
-                        {% endfor %}
-                      </tbody>
-                    </table>
+                    <!-- Table (Wrapped in responsive div) -->
+                    <div class="table-responsive">
+                        <table class="table table-striped table-centered mb-0" id="userTable">
+                          <thead>
+                            <tr>
+                              <th>User Id</th>
+                              <th>Name</th>
+                              <th>Email</th>
+                              <th>Role</th>
+                              <th>Status</th>
+                              <th>Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {% for user in users %}
+                            <tr>
+                              <td class="user-id-cell">{{ user.user_id }}</td>
+                              <td>{{ user.name }}</td>
+                              <td>{{ user.email }}</td>
+                              <td><span class="badge badge-light-secondary">{{ user.role_name }}</span></td>
+                              <td>
+                                  <span class="badge {% if user.status == 'Active' %}badge-success{% else %}badge-danger{% endif %}">
+                                      {{ user.status }}
+                                  </span>
+                              </td>
+                              <td>
+                                <a href="{{ url_for('admin.edit_user', user_id=user.user_id) }}" class="btn btn-sm btn-primary waves-effect">Edit</a>
+                              </td>
+                            </tr>
+                            {% endfor %}
+                          </tbody>
+                        </table>
+                    </div>
 
-                    <!-- Improved Pagination Controls -->
+                    <!-- Improved Pagination Controls (Preserved Logic) -->
                     <div class="row mt-3">
                         <div class="col-sm-12 col-md-5">
                             <div class="text-muted" id="tableInfo">Showing 1 to 10 of 0 entries</div>
@@ -192,9 +245,9 @@
           </div>
         </div>
 
-        <!-- Add User Modal -->
+        <!-- Add User Modal (Preserved) -->
         <div class="modal fade" id="addUserModal" tabindex="-1" role="dialog" aria-labelledby="addUserModalLabel" aria-hidden="true">
-          <div class="modal-dialog" role="document">
+          <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
               <div class="modal-header">
                 <h5 class="modal-title" id="addUserModalLabel">Add New User</h5>
@@ -226,7 +279,9 @@
                     </select>
                   </div>
                   <div class="form-group"><label>Password</label><input type="password" class="form-control" name="password" required /></div>
-                  <button type="submit" class="btn btn-primary">Save User</button>
+                  <div class="text-right">
+                    <button type="submit" class="btn btn-primary waves-effect waves-light">Save User</button>
+                  </div>
                 </form>
               </div>
             </div>
@@ -234,7 +289,7 @@
         </div>
 
         <footer class="footer">
-          <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
+          <p class="mb-0">Developed by <strong>Cognifly AI System</strong></p>
         </footer>
       </div>
     </div>
@@ -243,6 +298,7 @@
     <script src="{{ url_for('static', filename='js/vendor.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
 
+    <!-- VERBATIM REPRODUCTION OF YOUR ORIGINAL JS LOGOIC -->
     <script>
       document.addEventListener("DOMContentLoaded", function () {
         const searchName = document.getElementById("searchName");
@@ -263,12 +319,10 @@
           const startIndex = (currentPage - 1) * rowsPerPage;
           const endIndex = startIndex + rowsPerPage;
 
-          // Display logic
           tableRows.forEach(row => row.style.display = "none");
           const rowsToDisplay = filteredRows.slice(startIndex, endIndex);
           rowsToDisplay.forEach(row => row.style.display = "");
 
-          // Info text (Showing X to Y of Z)
           const total = filteredRows.length;
           const showingStart = total === 0 ? 0 : startIndex + 1;
           const showingEnd = Math.min(endIndex, total);
@@ -294,14 +348,9 @@
         function renderPagination() {
           const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
           paginationContainer.innerHTML = "";
-
           if (totalPages <= 1) return;
-
-          // Previous Button
           paginationContainer.appendChild(createPageItem("Previous", currentPage - 1, false, currentPage === 1));
-
-          // Page Logic: Subtle Window
-          const range = 1; // Number of pages before and after current
+          const range = 1;
           for (let i = 1; i <= totalPages; i++) {
             if (i === 1 || i === totalPages || (i >= currentPage - range && i <= currentPage + range)) {
               paginationContainer.appendChild(createPageItem(i, i, i === currentPage));
@@ -312,8 +361,6 @@
               paginationContainer.appendChild(dots);
             }
           }
-
-          // Next Button
           paginationContainer.appendChild(createPageItem("Next", currentPage + 1, false, currentPage === totalPages));
         }
 
@@ -322,7 +369,6 @@
           const emailF = searchEmail.value.toLowerCase();
           const roleF = searchRole.value.toLowerCase();
           const statF = searchStatus.value.toLowerCase();
-
           filteredRows = tableRows.filter((row) => {
             return (
               row.cells[1].textContent.toLowerCase().includes(nameF) &&
@@ -331,12 +377,10 @@
               row.cells[4].textContent.toLowerCase().includes(statF)
             );
           });
-
           currentPage = 1;
           updateDisplay();
         }
 
-        // Auto ID Logic
         addUserForm.addEventListener("submit", function (e) {
           if (userIdInput.value.trim() === "") {
             const existingIds = Array.from(document.querySelectorAll(".user-id-cell"))
@@ -347,7 +391,6 @@
           }
         });
 
-        // Event listeners
         [searchName, searchEmail].forEach(el => el.addEventListener("keyup", filterUsers));
         [searchRole, searchStatus].forEach(el => el.addEventListener("change", filterUsers));
 

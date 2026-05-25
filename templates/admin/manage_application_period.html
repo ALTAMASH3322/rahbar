@@ -4,42 +4,24 @@
     <meta charset="utf-8" />
     <title>Application Period | Rahbar</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      content="Application Period Management for Rahbar Application"
-      name="description"
-    />
+    <meta content="Application Period Management for Rahbar Application" name="description" />
     <meta content="Coderthemes" name="author" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
     <!-- App favicon -->
-    <link
-      rel="shortcut icon"
-      href="{{ url_for('static', filename='images/favicon.ico') }}"
-    />
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}" />
 
     <!-- App css -->
-    <link
-      href="{{ url_for('static', filename='css/bootstrap.min.css') }}"
-      rel="stylesheet"
-      type="text/css"
-      id="bootstrap-stylesheet"
-    />
-    <link
-      href="{{ url_for('static', filename='css/icons.min.css') }}"
-      rel="stylesheet"
-      type="text/css"
-    />
-    <link
-      href="{{ url_for('static', filename='css/app.min.css') }}"
-      rel="stylesheet"
-      type="text/css"
-      id="app-stylesheet"
-    />
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" id="bootstrap-stylesheet" />
+    <link href="{{ url_for('static', filename='css/icons.min.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ url_for('static', filename='css/app.min.css') }}" rel="stylesheet" type="text/css" id="app-stylesheet" />
+    
     <style>
+      /* Responsive Footer Fix */
       .footer {
         position: fixed;
         bottom: 0;
-        left: 0; /* Changed for simpler full-width */
+        left: 0;
         width: 100%;
         background-color: #f8f9fa;
         padding: 10px 20px;
@@ -50,58 +32,87 @@
         z-index: 1030;
       }
       .content-page {
-        padding-bottom: 70px; /* To prevent footer overlap */
+        padding-bottom: 80px; /* To prevent footer overlap */
+      }
+
+      /* Sidebar toggle logic button (Hamburger) */
+      .button-menu-mobile {
+        background-color: transparent;
+        border: none;
+        color: #333;
+        font-size: 24px;
+        height: 70px;
+        width: 60px;
+        cursor: pointer;
+      }
+
+      /* Logo box centering for responsive topbar */
+      .navbar-custom .logo-box-centered {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        top: 15px;
+      }
+
+      @media (max-width: 480px) {
+        .navbar-custom .logo-box-centered h4 {
+          font-size: 16px;
+        }
+        .page-title-box h4 {
+            font-size: 18px;
+        }
       }
     </style>
   </head>
 
   <body>
     <div id="wrapper">
-      <!-- Topbar Start -->
+      
+      <!-- Topbar Start (Rewritten for Mobile Toggle support) -->
       <div class="navbar-custom">
-        <div class="d-flex justify-content-between align-items-center w-100">
-          <div><h6 class="page-title mb-0">Admin Panel</h6></div>
-          <div>
-            <a href="{{ url_for('main.homepage') }}" class="text-success">
-              <h4>Rahbar Scholarship Information Management System</h4>
-            </a>
-          </div>
-          <ul class="list-unstyled topnav-menu mb-0">
+        <div class="container-fluid">
+          
+          <!-- LEFT SIDE: Hamburger Toggle & Admin Title -->
+          <ul class="list-unstyled topnav-menu topnav-menu-left m-0 float-left">
+            <li>
+              <!-- This button triggers the sidebar toggle in app.min.js -->
+              <button class="button-menu-mobile waves-effect">
+                <i class="mdi mdi-menu"></i>
+              </button>
+            </li>
+            <li class="d-none d-lg-block">
+              <h6 class="page-title mb-0 mt-3 ml-2">Admin Panel</h6>
+            </li>
+          </ul>
+
+          <!-- RIGHT SIDE: User Dropdown -->
+          <ul class="list-unstyled topnav-menu float-right mb-0">
             <li class="dropdown notification-list">
-              <a
-                class="nav-link dropdown-toggle nav-user waves-effect"
-                data-toggle="dropdown"
-                href="#"
-                role="button"
-                aria-haspopup="false"
-                aria-expanded="false"
-              >
-                <img
-                  src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}"
-                  alt="user-image"
-                  class="rounded-circle"
-                />
-                <span class="d-none d-sm-inline-block ml-1"
-                  >{{ current_user.name }}</span
-                >
+              <a class="nav-link dropdown-toggle nav-user waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
+                <img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" alt="user-image" class="rounded-circle" />
+                <span class="d-none d-sm-inline-block ml-1">{{ current_user.name }}</span>
               </a>
               <div class="dropdown-menu dropdown-menu-right profile-dropdown">
-                <a
-                  href="{{ url_for('auth.logout') }}"
-                  class="dropdown-item notify-item"
-                >
+                <a href="{{ url_for('auth.logout') }}" class="dropdown-item notify-item">
                   <i class="mdi mdi-logout-variant"></i>
                   <span>Logout</span>
                 </a>
               </div>
             </li>
           </ul>
+
+          <!-- CENTER: Logo -->
+          <div class="logo-box-centered">
+            <a href="{{ url_for('main.homepage') }}" class="text-success">
+              <h4 class="m-0">RSMS</h4>
+            </a>
+          </div>
+
         </div>
       </div>
       <!-- end Topbar -->
 
-     <!-- ========== Left Sidebar Start ========== -->
-        <!-- ========== Left Sidebar Start ========== -->
+      <!-- ========== Left Sidebar Start (Full sidebar maintained) ========== -->
       <div class="left-side-menu">
         <div class="slimscroll-menu">
           <!--- Sidemenu -->
@@ -110,117 +121,91 @@
               <li class="menu-title">Navigation</li>
               <!-- Dashboard -->
               <li>
-                <a
-                  href="{{ url_for('admin.admin_dashboard') }}"
-                  class="waves-effect waves-light"
-                >
+                <a href="{{ url_for('admin.admin_dashboard') }}" class="waves-effect waves-light">
                   <i class="mdi mdi-view-dashboard"></i>
                   <span>Dashboard</span>
                 </a>
               </li>
               <!-- Manage Users -->
               <li>
-                <a
-                  href="{{ url_for('admin.manage_users') }}"
-                  class="waves-effect waves-light"
-                >
+                <a href="{{ url_for('admin.manage_users') }}" class="waves-effect waves-light">
                   <i class="mdi mdi-account-multiple"></i>
                   <span>Manage Users</span>
                 </a>
               </li>
               <!-- System Configuration -->
               <li>
-                <a
-                  href="{{ url_for('admin.system_configuration') }}"
-                  class="waves-effect waves-light"
-                >
+                <a href="{{ url_for('admin.system_configuration') }}" class="waves-effect waves-light">
                   <i class="mdi mdi-settings"></i>
                   <span>Payment Configuration</span>
                 </a>
               </li>
               <!-- Generate Reports -->
               <li>
-                <a
-                  href="{{ url_for('admin.admin_generate_reports') }}"
-                  class="waves-effect waves-light"
-                >
+                <a href="{{ url_for('admin.admin_generate_reports') }}" class="waves-effect waves-light">
                   <i class="mdi mdi-chart-bar"></i>
                   <span>Generate Reports</span>
                 </a>
               </li>
               <!-- Application Period -->
               <li>
-                <a
-                  href="{{ url_for('admin.manage_application_period') }}"
-                  class="waves-effect waves-light"
-                >
+                <a href="{{ url_for('admin.manage_application_period') }}" class="waves-effect waves-light">
                   <i class="mdi mdi-calendar"></i>
                   <span>Application Period</span>
                 </a>
               </li>
               <!-- In admin/dashboard.html -->
               <li>
-                <a
-                  href="{{ url_for('admin.manage_rcc_centers') }}"
-                  class="waves-effect waves-light"
-                >
+                <a href="{{ url_for('admin.manage_rcc_centers') }}" class="waves-effect waves-light">
                   <i class="mdi mdi-bank"></i>
                   <span>Manage RCC Centers</span>
                 </a>
               </li>
               <li>
-                <a
-                  href="{{ url_for('admin.manage_courses') }}"
-                  class="waves-effect waves-light"
-                >
+                <a href="{{ url_for('admin.manage_courses') }}" class="waves-effect waves-light">
                   <i class="mdi mdi-book-open"></i>
                   <span>Manage Courses</span>
                 </a>
               </li>
               <li>
-                <a
-                  href="{{ url_for('admin.manage_sponsorships') }}"
-                  class="waves-effect waves-light active"
-                >
+                <a href="{{ url_for('admin.manage_sponsorships') }}" class="waves-effect waves-light">
                   <i class="mdi mdi-account-switch"></i>
                   <span>Manage Sponsorships</span>
                 </a>
               </li>
-              <li><a href="{{ url_for('admin.student_directory') }}" class="waves-effect waves-light active"><i class="mdi mdi-account-details"></i><span>Student Directory</span></a></li>
+              <li>
+                <a href="{{ url_for('admin.student_directory') }}" class="waves-effect waves-light">
+                  <i class="mdi mdi-account-details"></i>
+                  <span>Student Directory</span>
+                </a>
+              </li>
             </ul>
           </div>
           <!-- End Sidebar -->
         </div>
       </div>
       <!-- Left Sidebar End -->
-      <!-- Left Sidebar End -->
 
       <div class="content-page">
         <div class="content">
           <div class="container-fluid">
             <!-- Flash Messages -->
-            {% with messages = get_flashed_messages(with_categories=true) %} {%
-            if messages %} {% for category, message in messages %}
-            <div
-              class="alert alert-{{ category }} alert-dismissible fade show mt-3"
-              role="alert"
-            >
-              {{ message }}
-              <button
-                type="button"
-                class="close"
-                data-dismiss="alert"
-                aria-label="Close"
-              >
-                <span aria-hidden="true">×</span>
-              </button>
-            </div>
-            {% endfor %} {% endif %} {% endwith %}
+            {% with messages = get_flashed_messages(with_categories=true) %} 
+              {% if messages %} 
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show mt-3" role="alert">
+                  {{ message }}
+                  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                  </button>
+                </div>
+                {% endfor %} 
+              {% endif %} 
+            {% endwith %}
 
             <div class="row">
               <div class="col-12">
                 <div class="page-title-box mt-3">
-                  <!-- Added mt-3 -->
                   <h4 class="page-title">Application Period Management</h4>
                 </div>
               </div>
@@ -228,8 +213,7 @@
 
             <!-- Application Period Status Display -->
             <div class="row">
-              <div class="col-md-8 col-lg-6">
-                <!-- Adjusted column width -->
+              <div class="col-12 col-md-8 col-lg-6">
                 <div class="card">
                   <div class="card-body">
                     <h5 class="card-title">Current Status</h5>
@@ -261,13 +245,10 @@
                     </p>
                     {% else %}
                     <p>
-                      <span class="badge badge-secondary font-14"
-                        >INACTIVE</span
-                      >
+                      <span class="badge badge-secondary font-14">INACTIVE</span>
                     </p>
                     <p class="mb-0">
-                      No application period is currently active or has been set
-                      up yet.
+                      No application period is currently active or has been set up yet.
                     </p>
                     {% endif %}
                   </div>
@@ -277,15 +258,11 @@
 
             <!-- Start/End Application Period Form -->
             <div class="row">
-              <div class="col-md-8 col-lg-6">
-                <!-- Adjusted column width -->
+              <div class="col-12 col-md-8 col-lg-6">
                 <div class="card">
                   <div class="card-body">
                     <h5 class="card-title">Manage Application Period</h5>
-                    <form
-                      method="POST"
-                      action="{{ url_for('admin.manage_application_period') }}"
-                    >
+                    <form method="POST" action="{{ url_for('admin.manage_application_period') }}">
                       <div class="form-group">
                         <label for="start_date">Set New Start Date</label>
                         <input
@@ -294,18 +271,9 @@
                           id="start_date"
                           name="start_date"
                           value="{{ (application_period.start_date.strftime('%Y-%m-%d') if application_period and application_period.start_date else '') if not (application_period and application_period.is_active) else '' }}"
-                          {%
-                          if
-                          application_period
-                          and
-                          application_period.is_active
-                          %}disabled{%
-                          endif
-                          %}
+                          {% if application_period and application_period.is_active %}disabled{% endif %}
                         />
-                        <small class="form-text text-muted"
-                          >Required to start a new period.</small
-                        >
+                        <small class="form-text text-muted">Required to start a new period.</small>
                       </div>
                       <div class="form-group">
                         <label for="end_date">Set New End Date</label>
@@ -315,40 +283,18 @@
                           id="end_date"
                           name="end_date"
                           value="{{ (application_period.end_date.strftime('%Y-%m-%d') if application_period and application_period.end_date else '') if not (application_period and application_period.is_active) else '' }}"
-                          {%
-                          if
-                          application_period
-                          and
-                          application_period.is_active
-                          %}disabled{%
-                          endif
-                          %}
+                          {% if application_period and application_period.is_active %}disabled{% endif %}
                         />
-                        <small class="form-text text-muted"
-                          >Required to start a new period.</small
-                        >
+                        <small class="form-text text-muted">Required to start a new period.</small>
                       </div>
 
-                      {% if application_period and application_period.is_active
-                      %}
-                      <button
-                        type="submit"
-                        name="action"
-                        value="end"
-                        class="btn btn-danger btn-block"
-                      >
-                        <i class="mdi mdi-stop-circle-outline mr-1"></i> End
-                        Current Active Period
+                      {% if application_period and application_period.is_active %}
+                      <button type="submit" name="action" value="end" class="btn btn-danger btn-block waves-effect waves-light">
+                        <i class="mdi mdi-stop-circle-outline mr-1"></i> End Current Active Period
                       </button>
                       {% else %}
-                      <button
-                        type="submit"
-                        name="action"
-                        value="start"
-                        class="btn btn-success btn-block"
-                      >
-                        <i class="mdi mdi-play-circle-outline mr-1"></i> Start
-                        New Application Period
+                      <button type="submit" name="action" value="start" class="btn btn-success btn-block waves-effect waves-light">
+                        <i class="mdi mdi-play-circle-outline mr-1"></i> Start New Application Period
                       </button>
                       {% endif %}
                     </form>
@@ -362,14 +308,16 @@
         <!-- content -->
 
         <footer class="footer">
-          <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
+          <p class="mb-0">Developed by <strong>Cognifly AI System</strong></p>
         </footer>
       </div>
       <!-- End Page content -->
     </div>
     <!-- END wrapper -->
 
+    <!-- Vendor js -->
     <script src="{{ url_for('static', filename='js/vendor.min.js') }}"></script>
+    <!-- App js -->
     <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
   </body>
 </html>

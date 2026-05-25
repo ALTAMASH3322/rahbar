@@ -16,31 +16,112 @@
     <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" id="bootstrap-stylesheet" />
     <link href="{{ url_for('static', filename='css/icons.min.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ url_for('static', filename='css/app.min.css') }}" rel="stylesheet" type="text/css" id="app-stylesheet" />
+
+    <style>
+        /* Responsive Footer Fix */
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #f8f9fa;
+            padding: 10px 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #6c757d;
+            border-top: 1px solid #ddd;
+            z-index: 1030;
+        }
+
+        .content-page {
+            padding-bottom: 80px; /* Prevents footer overlap */
+        }
+
+        /* Sidebar toggle logic button (Hamburger menu) */
+        .button-menu-mobile {
+            background-color: transparent;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            height: 70px;
+            width: 60px;
+            cursor: pointer;
+        }
+
+        /* Logo box centering for responsive topbar */
+        .navbar-custom .logo-box-centered {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .navbar-custom .logo-box-centered h4 {
+                font-size: 16px;
+                margin-top: 5px;
+            }
+            .navbar-custom .page-title {
+                display: none;
+            }
+            .search-btn-group {
+                width: 100%;
+                margin-top: 10px;
+            }
+            .search-btn-group button {
+                width: 48%;
+            }
+        }
+    </style>
 </head>
 
 <body>
     <div id="wrapper">
 
-        <!-- Topbar Start -->
+        <!-- Topbar Start (Updated for Responsiveness) -->
         <div class="navbar-custom">
-            <div class="d-flex justify-content-between align-items-center w-100">
-                <div><h6 class="page-title mb-0">Sponsor Panel</h6></div>
-                <div><a href="{{ url_for('main.homepage') }}" class="text-success"><h4>Rahbar Scholarship Information Management System</h4></a></div>
-                <ul class="list-unstyled topnav-menu mb-0">
+            <div class="container-fluid">
+                
+                <!-- LEFT SIDE: Hamburger Toggle & Title -->
+                <ul class="list-unstyled topnav-menu topnav-menu-left m-0 float-left">
+                    <li>
+                        <button class="button-menu-mobile waves-effect">
+                            <i class="mdi mdi-menu"></i>
+                        </button>
+                    </li>
+                    <li class="d-none d-lg-block">
+                        <h5 class="page-title mb-0 mt-3 ml-2 text-white">Sponsor Panel</h5>
+                    </li>
+                </ul>
+
+                <!-- RIGHT SIDE: User Dropdown -->
+                <ul class="list-unstyled topnav-menu float-right mb-0">
                     <li class="dropdown notification-list">
                         <a class="nav-link dropdown-toggle nav-user waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
                             <img src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" alt="user-image" class="rounded-circle">
-                            <span class="d-none d-sm-inline-block ml-1">{{ sponsor.name }}</span>
+                            <span class="d-none d-sm-inline-block ml-1 text-white">{{ sponsor.name }}</span>
                         </a>
                         <div class="dropdown-menu dropdown-menu-right profile-dropdown">
-                            <a href="{{ url_for('auth.logout') }}" class="dropdown-item notify-item"><i class="mdi mdi-logout-variant"></i><span>Logout</span></a>
+                            <a href="{{ url_for('auth.logout') }}" class="dropdown-item notify-item">
+                                <i class="mdi mdi-logout-variant"></i>
+                                <span>Logout</span>
+                            </a>
                         </div>
                     </li>
                 </ul>
+
+                <!-- CENTER: RSMS Logo -->
+                <div class="logo-box-centered">
+                    <a href="{{ url_for('main.homepage') }}" class="text-success">
+                        <h4 class="m-0">RSMS</h4>
+                    </a>
+                </div>
+
             </div>
         </div>
+        <!-- end Topbar -->
 
-        <!-- Sidebar -->
+        <!-- Sidebar (Maintained) -->
         <div class="left-side-menu">
             <div class="slimscroll-menu">
                 <div id="sidebar-menu">
@@ -48,7 +129,7 @@
                         <li class="menu-title">Navigation</li>
                         <li><a href="{{ url_for('sponsor.sponsor_dashboard') }}" class="waves-effect waves-light"><i class="mdi mdi-view-dashboard"></i><span>Dashboard</span></a></li>
                         <li><a href="{{ url_for('sponsor.sponsor_payments') }}" class="waves-effect waves-light"><i class="mdi mdi-cash-multiple"></i><span>Payments</span></a></li>
-                        <li><a href="{{ url_for('sponsor.sponsor_student_progress') }}" class="waves-effect waves-light"><i class="mdi mdi-chart-line"></i><span>Student Progress</span></a></li>
+                        <li><a href="{{ url_for('sponsor.sponsor_student_progress') }}" class="waves-effect waves-light active"><i class="mdi mdi-chart-line"></i><span>Student Progress</span></a></li>
                     </ul>
                 </div>
             </div>
@@ -58,45 +139,49 @@
             <div class="content">
                 <div class="container-fluid">
                     <div class="row">
-                        <div class="col-12"><div class="page-title-box"><h4 class="page-title">Student Progress Reports</h4></div></div>
+                        <div class="col-12">
+                            <div class="page-title-box mt-2">
+                                <h4 class="page-title">Student Progress Reports</h4>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="row">
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-body">
-                                    <h4 class="header-title">Academic Records</h4>
+                                    <h4 class="header-title mb-3">Academic Records</h4>
                                     <p class="text-muted">Review the marks and uploaded progress files of your beneficiaries.</p>
 
-                                    <!-- Search Form -->
+                                    <!-- Search Form (Responsive Grid) -->
                                     <form class="mb-4">
                                         <div class="row">
-                                            <div class="col-md-3 mb-2">
+                                            <div class="col-12 col-md-3 mb-2">
                                                 <input type="text" id="searchName" class="form-control" placeholder="Student Name">
                                             </div>
-                                            <div class="col-md-2 mb-2">
+                                            <div class="col-12 col-md-2 mb-2">
                                                 <input type="text" id="searchRefId" class="form-control" placeholder="Reference ID">
                                             </div>
-                                            <div class="col-md-2 mb-2">
+                                            <div class="col-12 col-md-2 mb-2">
                                                 <input type="text" id="searchSession" class="form-control" placeholder="Session">
                                             </div>
-                                            <div class="col-md-2 mb-2">
+                                            <div class="col-12 col-md-2 mb-2">
                                                 <input type="text" id="searchYear" class="form-control" placeholder="Year">
                                             </div>
-                                            <div class="col-md-3">
-                                                <button type="button" id="searchButton" class="btn btn-primary mr-1">Search</button>
-                                                <button type="button" id="clearButton" class="btn btn-secondary">Clear</button>
+                                            <div class="col-12 col-md-3 search-btn-group">
+                                                <button type="button" id="searchButton" class="btn btn-primary mr-1 waves-effect waves-light">Search</button>
+                                                <button type="button" id="clearButton" class="btn btn-secondary waves-effect waves-light">Clear</button>
                                             </div>
                                         </div>
                                     </form>
 
-                                    <!-- Progress Table -->
-                                    <div class="table-responsive mt-4">
-                                        <table id="progressDataTable" class="table table-centered mb-0">
+                                    <!-- Progress Table (Wrapped for Mobile Scrolling) -->
+                                    <div class="table-responsive">
+                                        <table id="progressDataTable" class="table table-centered table-striped mb-0">
                                             <thead>
                                                 <tr>
                                                     <th>Student Name</th>
-                                                    <th>Reference ID</th> <!-- NEW COLUMN -->
+                                                    <th>Reference ID</th>
                                                     <th>Progress (%)</th>
                                                     <th>Session</th>
                                                     <th>Year</th>
@@ -119,7 +204,7 @@
                                                 </tr>
                                                 {% else %}
                                                 <tr>
-                                                    <td colspan="7" class="text-center">No progress data found.</td>
+                                                    <td colspan="7" class="text-center text-muted">No progress data found.</td>
                                                 </tr>
                                                 {% endfor %}
                                             </tbody>
@@ -132,15 +217,9 @@
                 </div>
             </div>
 
-            <!-- Footer -->
             <footer class="footer">
                 <p class="mb-0">Developed by <strong>Cognifly AI System</strong></p>
             </footer>
-        
-            <style>
-                .footer { position: fixed; bottom: 0; left: 0; width: 100%; background-color: #f8f9fa; padding: 10px 0; text-align: center; font-size: 14px; color: #6c757d; border-top: 1px solid #ddd; z-index: 1000;}
-                .content-page { padding-bottom: 60px; }
-            </style>
         </div>
     </div>
 
@@ -148,6 +227,7 @@
     <script src="{{ url_for('static', filename='js/vendor.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
 
+    <!-- Verbatim Preservation of Original JS Filtering Logic -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const searchNameInput = document.getElementById('searchName');

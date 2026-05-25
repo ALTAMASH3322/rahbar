@@ -35,30 +35,80 @@
       type="text/css"
       id="app-stylesheet"
     />
+
+    <style>
+      /* Responsive Footer Fix */
+      .footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background-color: #f8f9fa;
+        padding: 10px 20px;
+        text-align: center;
+        font-size: 14px;
+        color: #6c757d;
+        border-top: 1px solid #ddd;
+        z-index: 1030;
+      }
+
+      .content-page {
+        padding-bottom: 80px; /* Space for the fixed footer */
+      }
+
+      /* Sidebar toggle logic button (Hamburger) */
+      .button-menu-mobile {
+        background-color: transparent;
+        border: none;
+        color: #333;
+        font-size: 24px;
+        height: 70px;
+        width: 60px;
+        cursor: pointer;
+      }
+
+      /* Logo box centering for responsive topbar */
+      .navbar-custom .logo-box-centered {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        top: 15px;
+      }
+
+      @media (max-width: 480px) {
+        .navbar-custom .logo-box-centered h4 {
+          font-size: 16px;
+        }
+        .btn-responsive {
+          width: 100%;
+          margin-bottom: 10px;
+        }
+      }
+    </style>
   </head>
 
   <body>
     <!-- Begin page -->
-    <!-- Begin page -->
     <div id="wrapper">
-      <!-- Topbar Start -->
+      
       <!-- Topbar Start -->
       <div class="navbar-custom">
-        <div class="d-flex justify-content-between align-items-center w-100">
-          <!-- Left side - Admin Panel -->
-          <div>
-            <h6 class="page-title mb-0">Admin Panel</h6>
-          </div>
+        <div class="container-fluid">
+          
+          <!-- LEFT SIDE: Hamburger Toggle & Admin Panel Label -->
+          <ul class="list-unstyled topnav-menu topnav-menu-left m-0 float-left">
+            <li>
+              <button class="button-menu-mobile waves-effect">
+                <i class="mdi mdi-menu"></i>
+              </button>
+            </li>
+            <li class="d-none d-lg-block">
+              <h6 class="page-title mb-0 mt-3 ml-2">Admin Panel</h6>
+            </li>
+          </ul>
 
-          <!-- Middle - Logo -->
-          <div>
-            <a href="{{ url_for('main.homepage') }}" class="text-success">
-              <h4>Rahbar Scholarship Information Management System</h4>
-            </a>
-          </div>
-
-          <!-- Right side - User Dropdown -->
-          <ul class="list-unstyled topnav-menu mb-0">
+          <!-- RIGHT SIDE: User Dropdown -->
+          <ul class="list-unstyled topnav-menu float-right mb-0">
             <li class="dropdown notification-list">
               <a
                 class="nav-link dropdown-toggle nav-user waves-effect"
@@ -88,19 +138,26 @@
               </div>
             </li>
           </ul>
+
+          <!-- CENTER: Logo -->
+          <div class="logo-box-centered">
+            <a href="{{ url_for('main.homepage') }}" class="text-success">
+              <h4 class="m-0">RSMS</h4>
+            </a>
+          </div>
+
         </div>
       </div>
       <!-- end Topbar -->
 
       <!-- ========== Left Sidebar Start ========== -->
-        <!-- ========== Left Sidebar Start ========== -->
       <div class="left-side-menu">
         <div class="slimscroll-menu">
           <!--- Sidemenu -->
           <div id="sidebar-menu">
             <ul class="metismenu" id="side-menu">
               <li class="menu-title">Navigation</li>
-              <!-- Dashboard -->
+              
               <li>
                 <a
                   href="{{ url_for('admin.admin_dashboard') }}"
@@ -110,7 +167,7 @@
                   <span>Dashboard</span>
                 </a>
               </li>
-              <!-- Manage Users -->
+
               <li>
                 <a
                   href="{{ url_for('admin.manage_users') }}"
@@ -120,7 +177,7 @@
                   <span>Manage Users</span>
                 </a>
               </li>
-              <!-- System Configuration -->
+
               <li>
                 <a
                   href="{{ url_for('admin.system_configuration') }}"
@@ -130,7 +187,7 @@
                   <span>Payment Configuration</span>
                 </a>
               </li>
-              <!-- Generate Reports -->
+
               <li>
                 <a
                   href="{{ url_for('admin.admin_generate_reports') }}"
@@ -140,7 +197,7 @@
                   <span>Generate Reports</span>
                 </a>
               </li>
-              <!-- Application Period -->
+
               <li>
                 <a
                   href="{{ url_for('admin.manage_application_period') }}"
@@ -150,7 +207,7 @@
                   <span>Application Period</span>
                 </a>
               </li>
-              <!-- In admin/dashboard.html -->
+
               <li>
                 <a
                   href="{{ url_for('admin.manage_rcc_centers') }}"
@@ -160,6 +217,7 @@
                   <span>Manage RCC Centers</span>
                 </a>
               </li>
+
               <li>
                 <a
                   href="{{ url_for('admin.manage_courses') }}"
@@ -169,6 +227,7 @@
                   <span>Manage Courses</span>
                 </a>
               </li>
+
               <li>
                 <a
                   href="{{ url_for('admin.manage_sponsorships') }}"
@@ -178,19 +237,25 @@
                   <span>Manage Sponsorships</span>
                 </a>
               </li>
-              <li><a href="{{ url_for('admin.student_directory') }}" class="waves-effect waves-light active"><i class="mdi mdi-account-details"></i><span>Student Directory</span></a></li>
+
+              <li>
+                <a 
+                  href="{{ url_for('admin.student_directory') }}" 
+                  class="waves-effect waves-light active"
+                >
+                  <i class="mdi mdi-account-details"></i>
+                  <span>Student Directory</span>
+                </a>
+              </li>
+
             </ul>
           </div>
           <!-- End Sidebar -->
         </div>
       </div>
       <!-- Left Sidebar End -->
-      <!-- Left Sidebar End -->
 
-      <!-- ============================================================== -->
       <!-- Start Page Content here -->
-      <!-- ============================================================== -->
-
       <div class="content-page">
         <div class="content">
           <!-- Start Content-->
@@ -210,9 +275,9 @@
               <div class="col-12">
                 <a
                   href="{{ url_for('admin.edit_rcc_center') }}"
-                  class="btn btn-primary"
+                  class="btn btn-primary btn-responsive"
                 >
-                  Add New RCC Center
+                  <i class="mdi mdi-plus mr-1"></i>Add New RCC Center
                 </a>
               </div>
             </div>
@@ -222,52 +287,56 @@
               <div class="col-12">
                 <div class="card">
                   <div class="card-body">
-                    <h4 class="header-title">RCC Center List</h4>
+                    <h4 class="header-title mb-3">RCC Center List</h4>
                     <div class="row mb-3">
-                      <div class="col-md-4">
+                      <div class="col-12 col-md-4">
                         <input
                           type="text"
                           id="searchInput"
                           class="form-control"
-                          placeholder="Search by Center Name, Incharge Name, or Location..."
+                          placeholder="Search Center, Incharge, or Location..."
                         />
                       </div>
                     </div>
 
-                    <table class="table table-striped">
-                      <thead>
-                        <tr>
-                          <th>Center Name</th>
-                          <th>Incharge Name</th>
-                          <th>Contact Number</th>
-                          <th>Location</th>
-                          <th>Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {% for center in rcc_centers %}
-                        <tr>
-                          <td>{{ center.center_name }}</td>
-                          <td>{{ center.incharge_name }}</td>
-                          <td>{{ center.contact_number }}</td>
-                          <td>{{ center.location }}</td>
-                          <td>
-                            <a
-                              href="{{ url_for('admin.edit_rcc_center', rcc_center_id=center.rcc_center_id) }}"
-                              class="btn btn-sm btn-primary"
-                              >Edit</a
-                            >
-                            <a
-                              href="{{ url_for('admin.delete_rcc_center', rcc_center_id=center.rcc_center_id) }}"
-                              class="btn btn-sm btn-danger"
-                              onclick="return confirm('Are you sure you want to delete this RCC center?')"
-                              >Delete</a
-                            >
-                          </td>
-                        </tr>
-                        {% endfor %}
-                      </tbody>
-                    </table>
+                    <!-- CRITICAL: Wrapped table in table-responsive for mobile -->
+                    <div class="table-responsive">
+                      <table class="table table-striped table-centered mb-0">
+                        <thead>
+                          <tr>
+                            <th>Center Name</th>
+                            <th>Incharge Name</th>
+                            <th>Contact Number</th>
+                            <th>Location</th>
+                            <th>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for center in rcc_centers %}
+                          <tr>
+                            <td>{{ center.center_name }}</td>
+                            <td>{{ center.incharge_name }}</td>
+                            <td>{{ center.contact_number }}</td>
+                            <td>{{ center.location }}</td>
+                            <td>
+                              <a
+                                href="{{ url_for('admin.edit_rcc_center', rcc_center_id=center.rcc_center_id) }}"
+                                class="btn btn-sm btn-primary waves-effect"
+                                >Edit</a
+                              >
+                              <a
+                                href="{{ url_for('admin.delete_rcc_center', rcc_center_id=center.rcc_center_id) }}"
+                                class="btn btn-sm btn-danger waves-effect"
+                                onclick="return confirm('Are you sure you want to delete this RCC center?')"
+                                >Delete</a
+                              >
+                            </td>
+                          </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                    <!-- end table responsive -->
                   </div>
                 </div>
               </div>
@@ -277,29 +346,10 @@
         </div>
         <!-- end content -->
 
-        <!-- Footer Start -->
-        <!-- Footer -->
-        <!-- Footer -->
         <footer class="footer">
-          <p class="mb-0">Developed by <strong>Congnifly AI System</strong></p>
+          <p class="mb-0">Developed by <strong>Cognifly AI System</strong></p>
         </footer>
 
-        <style>
-          .footer {
-            position: fixed;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            background-color: #f8f9fa;
-            padding: 10px 0;
-            text-align: center;
-            font-size: 14px;
-            color: #6c757d;
-            border-top: 1px solid #ddd;
-          }
-        </style>
-        <!-- end Footer -->
       </div>
       <!-- End Page content -->
     </div>
@@ -311,6 +361,7 @@
     <!-- App js -->
     <script src="{{ url_for('static', filename='js/app.min.js') }}"></script>
 
+    <!-- Custom Search Script Preserved Verbatim -->
     <script>
       document
         .getElementById("searchInput")

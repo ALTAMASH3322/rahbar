@@ -1136,43 +1136,58 @@ def delete_course(course_id):
 @admin_bp.route('/add_institution', methods=['GET', 'POST'])
 @login_required
 def add_institution():
-    if current_user.role_id not in [1, 2]:  # Ensure only Admins can access this route
+    # Ensure only Admins (1) or Staff (2) can access this route
+    if current_user.role_id not in [1, 2]:  
         flash('You do not have permission to access this page.', 'error')
         return redirect(url_for('auth.login'))
 
+    # Initialize connection and cursor outside the try block for scope access
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True, buffered=True)
 
     if request.method == 'POST':
         try:
-            # Get form data
+            # Retrieve values from the form
             institution_id = request.form.get('institution_id')
             institution_name = request.form.get('institution_name')
             address = request.form.get('address')
             contact_number = request.form.get('contact_number')
             email = request.form.get('email')
 
-            # Insert into institutions table
+            # AUTO-GENERATION LOGIC: Check if ID was left blank by the user
+            if not institution_id or institution_id.strip() == "":
+                # Query the database to see how many institutions currently exist
+                cursor.execute("SELECT COUNT(*) as total FROM institutions")
+                result = cursor.fetchone()
+                # Create a new ID using the count + a starting offset (e.g., INST-101, INST-102)
+                new_val = result['total'] + 101
+                institution_id = f"INST-{new_val}"
+
+            # Execute the insertion into the database
             cursor.execute("""
                 INSERT INTO institutions (institution_id, institution_name, address, contact_number, email)
                 VALUES (%s, %s, %s, %s, %s)
             """, (institution_id, institution_name, address, contact_number, email))
 
+            # Commit the transaction to save changes
             conn.commit()
-            flash('Institution added successfully!', 'success')
+            flash(f'Institution added successfully with ID: {institution_id}', 'success')
             return redirect(url_for('admin.manage_courses'))
 
         except mysql.connector.Error as err:
+            # Rollback in case of database-specific errors
             conn.rollback()
             flash(f'Database error: {err.msg}', 'error')
         except Exception as e:
+            # Rollback for any other unexpected Python errors
             conn.rollback()
             flash(f'Error adding institution: {str(e)}', 'error')
         finally:
+            # Ensure resources are closed regardless of success or failure
             cursor.close()
             conn.close()
 
-    # For GET requests, render the form
+    # For GET requests (or if POST fails and falls through), render the template
     return render_template('admin/add_institution.html')
 
 
